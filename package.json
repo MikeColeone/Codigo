@@ -3,26 +3,36 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
   "scripts": {
-    "run:client":"pnpm --filter client run dev",
-    "run:server":"pnpm --filter server run start:dev",
-    "run:share":"pnpm --filter share run dev",
-    "run:release":"pnpm --filter release run dev",
-    "build:client":"pnpm --filter client run build",
-    "build:server":"pnpm --filter server run build",
-    "build:release":"pnpm --filter release run build",
-    "build:share":"pnpm --filter share run build",
-    "start:server":"pnpm --filter server run start:prod",
-    "start:release":"pnpm --filter release run start"
+    "run:client": "pnpm --filter client run dev",
+    "run:server": "pnpm --filter server run start:dev",
+    "run:share": "pnpm --filter share run dev",
+    "run:release": "pnpm --filter release run dev",
+    "build:client": "pnpm --filter client run build",
+    "build:server": "pnpm --filter server run build",
+    "build:release": "pnpm --filter release run build",
+    "build:share": "pnpm --filter share run build",
+    "start:server": "pnpm --filter server run start:prod",
+    "start:release": "pnpm --filter release run start",
+    "commit": "git-cz"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.28.2",
   "devDependencies": {
+    "@commitlint/cli": "^20.4.2",
+    "@commitlint/config-conventional": "^20.4.2",
     "@types/lodash": "^4.17.23",
     "@types/node": "^25.1.0",
     "@types/react-dom": "^19.2.3",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
