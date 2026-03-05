@@ -1,13 +1,13 @@
-
-import './App.css'
-import { test } from '@codigo/share'
+import { test } from "@codigo/share";
+import { Button } from "antd";
+import "./assets/base.css";
 function App() {
-  
   return (
     <>
-      {test}
+      <Button type="primary">Hello World</Button>
+      <div className="text-lg font-bold text-red-100">{test}</div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
