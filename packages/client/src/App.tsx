@@ -1,11 +1,11 @@
-import { test } from "@codigo/share";
-import { Button } from "antd";
+// import { test } from "@codigo/share";
+// import { Button } from "antd";
 import "./assets/base.css";
+import LoginPage from "./pages/LoginPage.tsx";
 function App() {
   return (
     <>
-      <Button type="primary">Hello World</Button>
-      <div className="text-lg font-bold text-red-100">{test}</div>
+      <LoginPage />
     </>
   );
 }

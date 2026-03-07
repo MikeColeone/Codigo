@@ -1,6 +1,15 @@
-POST http://localhost:3000/api/user/captcha
+# POST http://localhost:3000/api/user/captcha
+# Content-Type: application/json
+
+# {
+#   "type": "register"
+# }
+
+
+POST http://localhost:3000/api/user/send_code
 Content-Type: application/json
 
 {
-  "type": "register"
+  "phone": "19839704896",
+  "randomCode": "123456"
 }
