@@ -90,7 +90,6 @@ export class UserService {
       const randomCodeTime = `${Date.now()}_${randomCode}`;
       this.redis.set(`${type}:code:${phone}`, randomCodeTime, 60);
     } else {
-      console.log('短信发送失败', codeRes);
       this.redis.del(`${type}:code:${phone}`);
       throw new BadRequestException('发送失败请重试');
     }
@@ -164,7 +163,6 @@ export class UserService {
       throw new BadRequestException('密码错误');
     }
 
-    console.log('登录成功，生成 token');
     return {
       data: this.jwtService.sign({ id: foundUser.id }),
       msg: '登录成功',

@@ -34,5 +34,15 @@ export const jwtConfig: JwtModuleOptions = {
   global: true,
 };
 
+// 阿里云 oss 配置
+export const aliOssConfig = {
+  region: 'oss-cn-beijing',
+  accessKeyId: 'LTAI5tDVf27tw64n85oxgKmc',
+  accessKeySecret: 'process.env.ACCESS_KEY_SECRET',
+  bucket: 'codigo-oss',
+};
+
+export const aliOssDomain = 'codigo-oss.oss-cn-beijing.aliyuncs.com';
+
 // 微信登陆配置
 export const WeChatLoginConfig = {};

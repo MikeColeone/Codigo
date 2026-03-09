@@ -1,12 +1,15 @@
 import { Controller, Post, Body, UseGuards, Get, Query } from '@nestjs/common';
 import { LowCodeService } from './low-code.service';
-import { PostReleaseRequest, PostQuestionDataRequest } from '@codigo/share';
+import type {
+  PostReleaseRequest,
+  PostQuestionDataRequest,
+} from '@codigo/share';
 import {
   GetUserAgent,
   GetUserIP,
   getUserMess,
 } from '../utils/GetUserMessageTool';
-import { TCurrentUser } from '../utils/GetUserMessageTool';
+import type { TCurrentUser } from '../utils/GetUserMessageTool';
 import { AuthGuard } from '@nestjs/passport';
 import { SecretTool } from '../utils/SecretTool';
 
