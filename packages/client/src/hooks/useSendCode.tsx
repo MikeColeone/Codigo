@@ -33,7 +33,6 @@ export function useSendCode(form: FormInstance, type: string) {
     () => getCaptcha({ type }),
     {
       onSuccess: (result) => {
-        console.log("验证码接口被调用");
         setCaptchaSrc(result.data);
       },
       onError: () => {

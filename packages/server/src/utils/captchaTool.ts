@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import * as svgCaptcha from 'svg-captcha';
+
 /**
  * @description: 生成验证码
  * @return {object} 包含验证码文本和SVG图像的对象
  */
-
 @Injectable()
 export class CaptchaTool {
   async generateCaptcha() {

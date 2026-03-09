@@ -7,6 +7,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { jwtConfig } from 'config';
 import { User } from '../user/entities/user.entity';
 
+/**
+ * JWT 策略类，负责验证 JWT 令牌的有效性
+ * @description 该类通过继承 PassportStrategy，并使用 passport-jwt 库来实现 JWT 令牌的验证逻辑。在 validate 方法中，验证令牌的有效性，并根据令牌中的用户 ID 从数据库中获取用户信息。如果令牌无效或用户不存在，则抛出 UnauthorizedException 异常；如果验证成功，则返回用户信息（不包含密码）
+ * @throws UnauthorizedException 当令牌无效或用户不存在时抛出异常
+ * @returns 用户信息（不包含密码）
+ */
 @Injectable()
 export class JWTstrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(

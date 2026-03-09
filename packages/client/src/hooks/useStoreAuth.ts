@@ -1,4 +1,4 @@
-import { createStoreAuth } from "../store";
+import { createStoreAuth } from "../stores";
 import { computed, action } from "mobx";
 import { useNavigate } from "react-router-dom";
 

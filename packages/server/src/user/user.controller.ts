@@ -1,33 +1,31 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { UserService } from './user.service';
 import { SendCodeDto } from './dto/sendSms.dto';
 import { GetUserIP, GetUserAgent } from '../utils/GetUserMessageTool';
 import { CaptchaDto } from './dto/captcha.dto';
-import { SecretTool } from 'src/utils/secretTool';
+import { SecretTool } from 'src/utils/SecretTool';
 import { RandomTool } from 'src/utils/RandomTool';
-import { RedisModule } from 'src/utils/modules/redis.module';
-import { TextMessageTool } from 'src/utils/TextMessageTool';
 import { RegisterDto } from './dto/register.dto';
 import { PhoneLoginDto, PasswordLoginDto } from './dto/login.dto';
+
+/**
+ * 用户控制器，处理与用户相关的 HTTP 请求
+ */
 @Controller('user')
 export class UserController {
   constructor(
-    private readonly redis: RedisModule,
     private readonly userService: UserService,
     private readonly secrectTool: SecretTool,
-    private readonly textMessageTool: TextMessageTool,
     private readonly randomTool: RandomTool,
   ) {}
 
-  // 图形验证码接口
+  /**
+   * 图形验证码接口
+   * @param body 请求体，包含验证码类型
+   * @param ip 用户 IP 地址
+   * @param agent 用户代理信息
+   * @returns
+   */
   @Post('captcha')
   async getCaptcha(
     @Body() body: CaptchaDto,
@@ -39,20 +37,13 @@ export class UserController {
     return this.userService.getCaptcha(type, key);
   }
 
-  // 测试接口;
-  // @Post('send_code')
-  // async sendCode() {
-  //   console.log('发送短信接口被调用');
-  //   const phone = '19839704896';
-  //   const randomCode = 1234;
-  //   const codeRes = await this.textMessageTool.sendTextMessage(
-  //     phone,
-  //     randomCode,
-  //   );
-  //   return codeRes;
-  // }
-
-  // 发送短信验证码接口
+  /**
+   * 发送短信验证码接口
+   * @param body 请求体，包含手机号、图形验证码和验证码类型
+   * @param agent 用户代理信息
+   * @param ip 用户 IP 地址
+   * @returns 发送结果
+   */
   @Post('send_code')
   async sendCode(
     @Body() body: SendCodeDto,
@@ -70,7 +61,11 @@ export class UserController {
     );
   }
 
-  // 注册接口
+  /**
+   * 注册接口
+   * @param body 请求体，包含注册信息
+   * @returns 注册结果
+   */
   @Post('register')
   register(@Body() body: RegisterDto) {
     const { phone, sendCode, password, confirm } = body;
@@ -82,11 +77,14 @@ export class UserController {
    */
   @Post('password_login')
   passwordLogin(@Body() body: PasswordLoginDto) {
+    console.log('账号密码登录被调用', body);
     return this.userService.passwordLogin(body);
   }
 
   /**
    * 手机验证码登录控制器
+   * @param body 请求体，包含手机号和验证码
+   * @return 登录结果，包括 JWT token 或错误信息
    */
   @Post('phone_login')
   phoneLogin(@Body() body: PhoneLoginDto) {

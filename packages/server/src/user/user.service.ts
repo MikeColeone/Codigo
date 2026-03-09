@@ -7,9 +7,14 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import dayjs from 'dayjs';
 import { RandomTool } from '../utils/RandomTool';
-import { SecretTool } from '../utils/secretTool';
+import { SecretTool } from '../utils/SecretTool';
 import { JwtService } from '@nestjs/jwt';
 
+/**
+ * 用户服务，处理与用户相关的业务逻辑
+ * 包括图形验证码生成、短信验证码发送、用户注册和登录等功能
+ * @description 该服务通过注入各种工具类和数据库仓库来实现用户相关的功能，确保代码的模块化和可维护性
+ */
 @Injectable()
 export class UserService {
   constructor(
@@ -24,6 +29,10 @@ export class UserService {
 
   /**
    * 图形验证码服务
+   * @param key 唯一标识符，通常由用户 IP 和 User Agent 组合生成
+   * @param type 验证码类型，例如注册、登录等
+   * @returns 包含 SVG 图形验证码数据和文本的对象
+   * @description 生成并返回图形验证码，同时将验证码文本存储在 Redis 中以供后续验证使用
    */
   async getCaptcha(key: string, type: string) {
     const svgCaptcha = await this.captchaTool.generateCaptcha();
@@ -33,6 +42,12 @@ export class UserService {
 
   /**
    * 短信验证码服务
+   * @param phone 手机号
+   * @param captcha 用户输入的图形验证码
+   * @param type 验证码类型
+   * @param key 唯一标识符
+   * @param randomCode 随机生成的短信验证码
+   * @returns 发送结果
    */
   async sendCode(
     phone: string,
@@ -51,15 +66,15 @@ export class UserService {
       }
     }
 
-    // // 是否有获取图形验证码
-    // if (!(await this.redis.exists(`${type}:captcha:${key}`)))
-    //   throw new BadRequestException('请先获取图形验证码');
+    // 是否有获取图形验证码
+    if (!(await this.redis.exists(`${type}:captcha:${key}`)))
+      throw new BadRequestException('请先获取图形验证码');
 
-    // // 对比用户传入的图形验证码和存入 redis 的是否一致
-    // const captchaRedis = await this.redis.get(`${type}:captcha:${key}`);
+    // 对比用户传入的图形验证码和存入 redis 的是否一致
+    const captchaRedis = await this.redis.get(`${type}:captcha:${key}`);
 
-    // if (!(captcha.toLowerCase() === captchaRedis!.toLowerCase()))
-    //   throw new BadRequestException('图形验证码不正确');
+    if (!(captcha.toLowerCase() === captchaRedis!.toLowerCase()))
+      throw new BadRequestException('图形验证码不正确');
 
     // 发送短信验证码
     const codeRes = await this.textMessageTool.sendTextMessage(
@@ -70,7 +85,6 @@ export class UserService {
     // 删除图形验证码
     this.redis.del(`${type}:captcha:${key}`);
 
-    // console.log(codeRes.code);
     if (codeRes.code === 200) {
       // 储存短信验证码
       const randomCodeTime = `${Date.now()}_${randomCode}`;
@@ -84,6 +98,12 @@ export class UserService {
 
   /**
    * 注册服务
+   * @param phone 手机号
+   * @param sendCode 用户输入的短信验证码
+   * @param password 用户输入的密码
+   * @param confirm 用户输入的确认密码
+   * @return 注册结果，包括 JWT token 或错误信息
+   * @description 处理用户注册逻辑，包括手机号查重、短信验证码验证、密码确认、用户数据存储和 JWT token 生成
    */
   async register(
     phone: string,
@@ -91,11 +111,8 @@ export class UserService {
     password: string,
     confirm: string,
   ) {
-    // 手机号注册查重
     const existUser = await this.userRepository.findOne({ where: { phone } });
     if (existUser) throw new BadRequestException('该手机号已被注册');
-
-    // 用户传入的短信验证码对比 redis 中的是否一致
     if (await this.redis.exists(`register:code:${phone}`)) {
       const codeRes = (await this.redis.get(`register:code:${phone}`))!.split(
         '_',
@@ -105,20 +122,12 @@ export class UserService {
     } else {
       throw new BadRequestException('请先获取短信验证码');
     }
-
-    // 验证二次密码
     if (password !== confirm) {
       throw new BadRequestException('输入的两次密码不一致');
     }
-
-    // 随机生成头像和昵称
     const name = this.randomTool.randomNickName();
     const avatar = this.randomTool.randomImage();
-
-    // 生成加密密码
     const pwd = this.secretTool.getSecret(password);
-
-    // 将新用户的数据插入数据库
     const user = await this.userRepository.save({
       username: name,
       head_img: avatar,
@@ -126,10 +135,7 @@ export class UserService {
       password: pwd,
       open_id: '',
     });
-
-    // 生成 7 天过期的 token
     const token = this.jwtService.sign({ id: user.id });
-
     return {
       data: token,
       msg: '注册成功',
@@ -138,17 +144,27 @@ export class UserService {
 
   /**
    * 账号密码登录服务
+   * @param phone 用户输入的手机号
+   * @param password 用户输入的密码
+   * @return 登录结果，包括 JWT token 或错误信息
+   * @description 处理账号密码登录逻辑，包括用户查找、密码验证和 JWT token 生成
+   * @throws BadRequestException 当账号不存在或密码错误时抛出异常
    */
   async passwordLogin({ phone, password }) {
     // 查找用户是否注册
     const foundUser = await this.userRepository.findOneBy({ phone });
     if (!foundUser) throw new BadRequestException('账号不存在');
+    console.log('找到用户', foundUser);
 
     // 检查密码是否正确
     const isPasswordValid =
       foundUser.password === this.secretTool.getSecret(password);
-    if (!isPasswordValid) throw new BadRequestException('密码错误');
+    if (!isPasswordValid) {
+      console.log('密码错误');
+      throw new BadRequestException('密码错误');
+    }
 
+    console.log('登录成功，生成 token');
     return {
       data: this.jwtService.sign({ id: foundUser.id }),
       msg: '登录成功',
@@ -157,9 +173,15 @@ export class UserService {
 
   /**
    * 验证码登录服务
+   * @param phone 用户输入的手机号
+   * @param sendCode 用户输入的短信验证码
+   * @return 登录结果，包括 JWT token 或错误信息
+   * @description 处理验证码登录逻辑，包括用户查找、短信验证码验证和 JWT token 生成
+   * @throws BadRequestException 当账号不存在、未获取验证码或验证码错误时抛出异常
    */
   async phoneLogin({ phone, sendCode }) {
     // 查找用户是否注册
+    console.log('手机号登录被调用', phone, sendCode);
     const foundUser = await this.userRepository.findOneBy({ phone });
     if (!foundUser) throw new BadRequestException('账号不存在');
 
