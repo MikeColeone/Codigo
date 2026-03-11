@@ -77,7 +77,6 @@ export class UserController {
    */
   @Post('password_login')
   passwordLogin(@Body() body: PasswordLoginDto) {
-    console.log('账号密码登录被调用', body);
     return this.userService.passwordLogin(body);
   }
 

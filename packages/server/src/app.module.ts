@@ -5,6 +5,9 @@ import { jwtConfig, redisConfig, typeOrmConfig } from '../config';
 import { UserModule } from './user/user.module';
 import { RedisModule } from './utils/modules/redis.module';
 import { User } from './user/entities/user.entity';
+import { LowCodeModule } from './low-code/low-code.module';
+import { ResourcesModule } from './resources/resources.module';
+import { JWTstrategy } from './utils/JwtStrategyTool';
 
 /**
  * 应用程序模块，作为 NestJS 应用的根模块
@@ -20,10 +23,12 @@ import { User } from './user/entities/user.entity';
     TypeOrmModule.forRoot(typeOrmConfig),
     { ...TypeOrmModule.forFeature([User]), global: true },
     UserModule,
+    LowCodeModule,
+    ResourcesModule,
     RedisModule.forRoot(redisConfig),
     JwtModule.register(jwtConfig),
   ],
   controllers: [],
-  providers: [],
+  providers: [JWTstrategy],
 })
 export class AppModule {}

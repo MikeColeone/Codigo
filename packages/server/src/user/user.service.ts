@@ -153,16 +153,14 @@ export class UserService {
     // 查找用户是否注册
     const foundUser = await this.userRepository.findOneBy({ phone });
     if (!foundUser) throw new BadRequestException('账号不存在');
-    console.log('找到用户', foundUser);
-
     // 检查密码是否正确
     const isPasswordValid =
       foundUser.password === this.secretTool.getSecret(password);
     if (!isPasswordValid) {
-      console.log('密码错误');
       throw new BadRequestException('密码错误');
     }
 
+    console.log('用户登录成功，生成 JWT token，用户 ID：', foundUser.id);
     return {
       data: this.jwtService.sign({ id: foundUser.id }),
       msg: '登录成功',
@@ -179,7 +177,6 @@ export class UserService {
    */
   async phoneLogin({ phone, sendCode }) {
     // 查找用户是否注册
-    console.log('手机号登录被调用', phone, sendCode);
     const foundUser = await this.userRepository.findOneBy({ phone });
     if (!foundUser) throw new BadRequestException('账号不存在');
 

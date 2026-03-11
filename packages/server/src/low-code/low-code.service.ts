@@ -32,12 +32,12 @@ export class LowCodeService {
    */
   async release(body: PostReleaseRequest, user: TCurrentUser) {
     const { components, ...otherBody } = body;
-    let id = null;
+    let id = 0;
     const queryRunner = this.dataSource.createQueryRunner();
 
     // 插入页面的组件到 component 表
     async function insertComponents(pageId: number) {
-      const insertComponents = [];
+      const insertComponents: string[] = [];
       for (const component of components) {
         const componentResult = await queryRunner.manager.insert(Component, {
           ...component,
@@ -106,7 +106,6 @@ export class LowCodeService {
         await createLowCodePage();
       }
     } catch (err) {
-      console.log(err);
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(`发布失败，${err}`);
     } finally {
@@ -161,8 +160,12 @@ export class LowCodeService {
   /**
    * 获取低代码组件接口服务（无缓存）
    */
-  async getReleaseData(id: number, user?: TCurrentUser) {
+  async getReleaseData(id: number | null, user?: TCurrentUser) {
     // 查找该用户是否发布过页面
+    if (id == null) {
+      return null;
+    }
+
     const lowCode = await this.PageCodeRepository.findOneBy({
       id,
       account_id: user?.id,
@@ -170,7 +173,7 @@ export class LowCodeService {
     // 如果没有发布过页面就停止
     if (!lowCode) return;
 
-    const components = [];
+    const components: (Component | null)[] = [];
     const componentIds = lowCode.components;
     for (const componentId of componentIds) {
       const component = await this.ComponentRepository.findOneBy({

@@ -13,9 +13,6 @@ export default function Account() {
       onSuccess: ({ data }) => {
         login(data);
       },
-      onError: (err) => {
-        console.log("登录失败", err);
-      },
     },
   );
 

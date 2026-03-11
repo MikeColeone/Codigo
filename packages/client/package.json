@@ -11,14 +11,23 @@
   },
   "dependencies": {
     "@codigo/share": "workspace:*",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "ahooks": "^3.9.6",
     "antd": "^6.2.2",
     "autoprefixer": "^10.4.27",
     "axios": "^1.6.2",
+    "exceljs": "^4.4.0",
+    "jszip": "^3.10.1",
     "mobx": "^6.15.0",
+    "mobx-react-lite": "^4.1.1",
+    "mobx-shallow-undo": "^1.1.0",
     "postcss": "^8.5.8",
+    "react-quill": "^2.0.0",
     "react-router-dom": "^7.13.1",
-    "tailwindcss": "^4.2.1"
+    "tailwindcss": "^4.2.1",
+    "ulid": "^3.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

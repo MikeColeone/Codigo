@@ -1,7 +1,7 @@
 import { Buffer } from 'node:buffer';
 import { resolve } from 'node:path';
 import { unlinkSync } from 'node:fs';
-import * as AliOss from 'ali-oss';
+import AliOss from 'ali-oss';
 import { Options as AliOssOptions } from 'ali-oss';
 import type { DynamicModule, Provider } from '@nestjs/common';
 import { BadRequestException, Module } from '@nestjs/common';

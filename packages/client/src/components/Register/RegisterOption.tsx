@@ -16,7 +16,6 @@ export default function RegisterCaptcha() {
     {
       manual: true,
       onSuccess: ({ data }) => {
-        console.log("注册成功", data);
         login(data);
       },
       onFinally: () => {

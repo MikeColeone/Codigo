@@ -35,9 +35,6 @@ export function useSendCode(form: FormInstance, type: string) {
       onSuccess: (result) => {
         setCaptchaSrc(result.data);
       },
-      onError: () => {
-        console.log("验证码接口请求失败");
-      },
     },
   );
 

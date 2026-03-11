@@ -1,7 +1,7 @@
 // low-code.entity.ts
 import type { IComponent, IComponentData, ILowCode } from '@codigo/share';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { TComponentTypes } from '@codigo/share';
+import type { TComponentTypes } from '@codigo/share';
 
 @Entity({ name: 'page' })
 export class Page implements ILowCode {

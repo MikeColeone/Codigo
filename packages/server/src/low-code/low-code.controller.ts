@@ -35,6 +35,7 @@ export class LowCodeController {
   @Get('release_with_user')
   @UseGuards(AuthGuard('jwt'))
   getReleaseDataWithUser(@getUserMess() user: TCurrentUser) {
+    console.log('获取发布页面数据，当前用户：', user);
     return this.lowCodeService.getReleaseData(null, user);
   }
 

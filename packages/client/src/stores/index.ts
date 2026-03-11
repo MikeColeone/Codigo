@@ -1,2 +1,3 @@
-export * from "./authStore";
+export * from "./auth";
+export * from "./components";
 export * from "./page";
