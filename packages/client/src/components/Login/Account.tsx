@@ -1,10 +1,13 @@
 import { Button, Form, Input } from "antd";
 import { useRequest } from "ahooks";
+import { createStoreAuth } from "../../stores";
 import { getLoginWithPassword } from "../../api/user";
 import { useStoreAuth } from "../../hooks/useStoreAuth";
-
+import { useNavigate } from "react-router-dom";
 export default function Account() {
   const { login } = useStoreAuth();
+  const storeAuth = createStoreAuth();
+  const nav = useNavigate();
   //  账号密码登录请求
   const { run, loading } = useRequest(
     async (values) => await getLoginWithPassword(values),
@@ -12,6 +15,8 @@ export default function Account() {
       manual: true,
       onSuccess: ({ data }) => {
         login(data);
+        nav("/editor");
+        console.log(storeAuth.token);
       },
     },
   );

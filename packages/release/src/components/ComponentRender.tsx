@@ -4,7 +4,7 @@ import {
   type GetReleaseDataResponse,
   type TBasicComponentConfig,
   getComponentByType,
-} from "@lowcode/share";
+} from "@codigo/share";
 import { useRequest } from "ahooks";
 import { useImmer } from "use-immer";
 import { useState } from "react";
@@ -15,7 +15,7 @@ const usingInputType = ["input", "textArea", "radio", "checkbox"];
 // 生成组件
 function generateComponent(
   conf: TBasicComponentConfig,
-  onUpdate: (value: any) => void
+  onUpdate: (value: any) => void,
 ) {
   const Component = getComponentByType(conf.type);
 
@@ -52,7 +52,7 @@ export default function ComponentRender({ data, id }: ComponentRenderType) {
   const [isPosted, setIsPosted] = useState(false);
   // 克隆数据并进行局部状态保存
   const [localData, setLocalData] = useImmer(
-    JSON.parse(JSON.stringify(data)) as ComponentRenderType["data"]
+    JSON.parse(JSON.stringify(data)) as ComponentRenderType["data"],
   );
 
   // 生成组件
@@ -70,14 +70,14 @@ export default function ComponentRender({ data, id }: ComponentRenderType) {
           // 更新局部保存的数据
           setLocalData((draft) => {
             const target = draft.components.find(
-              (item) => item.id === comp.id
+              (item) => item.id === comp.id,
             )!;
             const questionComponentValueField =
               getQuestionComponentValueField(target);
             if (questionComponentValueField)
               target.options[questionComponentValueField] = value;
           });
-        })
+        }),
       );
   }
 
@@ -85,7 +85,7 @@ export default function ComponentRender({ data, id }: ComponentRenderType) {
   useRequest(
     async () => {
       const _f = await fetch(
-        `http://8.134.163.0:5000/api/low_code/is_question_data_posted?page_id=${data.id}`
+        `http://8.134.163.0:5000/api/low_code/is_question_data_posted?page_id=${data.id}`,
       );
       return _f.json() as Promise<{ data: boolean }>;
     },
@@ -97,7 +97,7 @@ export default function ComponentRender({ data, id }: ComponentRenderType) {
           message.open({ content: "您已提交过问卷，感谢您的参与" });
         }
       },
-    }
+    },
   );
 
   // 提交问卷请求
@@ -113,7 +113,7 @@ export default function ComponentRender({ data, id }: ComponentRenderType) {
           !comp.options[questionComponentValueField]
         )
           return !["defaultRadio", "defaultChecked"].includes(
-            questionComponentValueField
+            questionComponentValueField,
           );
 
         return false;
@@ -140,7 +140,7 @@ export default function ComponentRender({ data, id }: ComponentRenderType) {
                 };
               }),
           }),
-        }
+        },
       );
 
       return _f.json();
@@ -155,7 +155,7 @@ export default function ComponentRender({ data, id }: ComponentRenderType) {
           setIsPosted(true);
         }
       },
-    }
+    },
   );
 
   return (

@@ -29,7 +29,7 @@ export const listItem: IListItem = {
   id: "",
   title: "标题",
   description: "描述",
-  titleLink: "https://xdclass.net",
+  titleLink: "https://test.net",
   avatar: "https://sdfsdf.dev/50x50.png",
 };
 

@@ -1,0 +1,114 @@
+@startuml
+title Secure Register & Login Flow
+
+actor User
+participant Browser
+participant "API Gateway" as Gateway
+participant "Auth Service" as Auth
+participant Redis
+participant "User Service" as UserService
+participant Database
+participant "JWT Service" as JWT
+
+== 获取验证码 ==
+User -> Browser : 打开注册/登录页
+
+Browser -> Gateway : GET /api/captcha
+Gateway -> Auth : forward request
+
+Auth -> Auth : 生成 captchaCode
+Auth -> Auth : captchaId = UUID()
+
+Auth -> Redis : SET captcha:{captchaId} -> code EX 60s
+Redis --> Auth : OK
+
+Auth --> Browser : 返回 captchaImage + captchaId
+
+
+== 用户注册 ==
+User -> Browser : 输入手机号\n密码x2\n验证码
+Browser -> Gateway : POST /api/register
+Gateway -> Auth : 校验验证码
+
+Auth -> Redis : GET captcha:{captchaId}
+Redis --> Auth : captcha
+
+Auth -> Auth : 校验验证码
+
+alt 验证成功
+    Auth -> Redis : DEL captcha:{captchaId}
+
+    Auth -> UserService : 创建用户
+    UserService -> Database : INSERT user(phone,passwordHash)
+
+    alt 手机号唯一约束冲突
+        Database --> UserService : duplicate key
+        UserService --> Auth : 注册失败
+        Auth --> Browser : 手机号已存在
+    else 注册成功
+        Database --> UserService : OK
+        UserService --> Auth : userId
+    end
+
+    Auth -> Auth : bcrypt加密密码
+    Auth -> Auth : 生成默认昵称+头像
+
+    Auth -> JWT : 生成 AccessToken(30min)
+    Auth -> JWT : 生成 RefreshToken(7d)
+
+    JWT --> Auth : tokens
+
+    Auth --> Browser : 返回登录成功
+    Browser -> Browser : 存储 httpOnly cookie
+
+else 验证失败
+    Auth --> Browser : 验证码错误
+end
+
+
+== 用户登录 ==
+User -> Browser : 输入账号密码
+
+Browser -> Gateway : POST /api/login
+Gateway -> Auth : forward
+
+Auth -> UserService : 查询用户
+UserService -> Database : SELECT user
+
+Database --> UserService : userInfo
+UserService --> Auth : userInfo
+
+Auth -> Auth : 校验密码(bcrypt)
+
+alt 登录成功
+    Auth -> JWT : 生成 AccessToken
+    Auth -> JWT : 生成 RefreshToken
+    JWT --> Auth : tokens
+
+    Auth --> Browser : Set-Cookie token
+else 登录失败
+    Auth --> Browser : 账号或密码错误
+end
+
+
+== API访问 ==
+Browser -> Gateway : API Request\nCookie: AccessToken
+
+Gateway -> Auth : verify token
+Auth -> JWT : verify(accessToken)
+
+alt token有效
+    Auth --> Gateway : OK
+    Gateway --> Browser : 返回业务数据
+else token过期
+    Gateway -> Auth : 使用RefreshToken刷新
+    Auth -> JWT : verify(refreshToken)
+
+    alt refresh有效
+        Auth -> JWT : 生成新AccessToken
+        Auth --> Browser : 返回新token
+    else refresh失效
+        Auth --> Browser : 401 重新登录
+    end
+end
+@enduml

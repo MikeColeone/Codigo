@@ -3,13 +3,13 @@ import { useTitle } from "ahooks";
 
 import EditorHeader from "./Editor/EditorHeader";
 import EditorLeftPanel from "./Editor/EditorLeftPanel";
-// import EditorRightPanel from "./Editor/EditorRightPanel";
-// import EditorCanvas from "./Editor/EditorCanvas";
+import EditorRightPanel from "./Editor/EditorRightPanel";
+import EditorCanvas from "./Editor/EditorCanvas";
 
-// import { useStoreComponents } from "@/hooks";
+import { useStoreComponents } from "@/hooks";
 function Editor() {
-  useTitle("Codigo低代码平台 - 页面编辑");
-  // const { store: storeComps, localStorageInStore } = useStoreComponents();
+  useTitle("小滴低代码平台 - 页面编辑");
+  const { store: storeComps, localStorageInStore } = useStoreComponents();
 
   //  创建容器用于调用子组件的函数
   const canvasRef = createRef<any>();
@@ -19,9 +19,9 @@ function Editor() {
   const [scrolling, setScrolling] = useState(false);
 
   // 从本地缓存或者服务端获取上一次配置的页面组件
-  // useEffect(() => {
-  //   localStorageInStore();
-  // }, []);
+  useEffect(() => {
+    localStorageInStore();
+  }, []);
 
   useEffect(() => {
     let scrollTimeout: NodeJS.Timeout;
@@ -72,13 +72,12 @@ function Editor() {
             ref={canvasContainerRef}
             className="editor-canvas-container w-[380px] h-[700px] bg-white text-left overflow-y-auto overflow-x-hidden"
           >
-            {/* <EditorCanvas store={storeComps} onRef={canvasRef} /> */}
-            {/* <EditorCanvas onRef={canvasRef} /> */}
+            <EditorCanvas store={storeComps} onRef={canvasRef} />
           </div>
         </div>
         {/* 右侧编辑组件 */}
         <div className={`w-80 bg-white px-4 overflow-y-auto`}>
-          {/* <EditorRightPanel /> */}
+          <EditorRightPanel />
         </div>
       </main>
     </div>

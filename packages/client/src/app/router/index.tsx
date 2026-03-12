@@ -1,5 +1,5 @@
 import { createHashRouter } from "react-router-dom";
-import Editor from "@/modules/editor/EditorPage";
+import Editor from "@/pages/Editor";
 import Home from "@/pages/index";
 // import DataCount from "@/pages/dataCount";
 // import Release from "@/pages/release";

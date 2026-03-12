@@ -29,12 +29,19 @@ export function useStoreComponents() {
 
   // 定义添加组件的函数
   const push = action((type: TComponentTypes) => {
-    // 创建一个新的组件配置
-    // @ts-ignore
-    const comp: TComponentPropsUnion = { id: ulid(), type, props: {} };
+    if (!storeComponents.compConfigs) {
+      storeComponents.compConfigs = {};
+    }
+
+    const comp: TComponentPropsUnion = {
+      id: ulid(),
+      type,
+      props: {},
+    };
+
     storeComponents.compConfigs[comp.id] = comp;
     storeComponents.sortableCompConfig.push(comp.id);
-    // 设置默认选中的组件
+
     setCurrentComponent(comp.id);
   });
 

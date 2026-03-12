@@ -37,7 +37,7 @@ export const defaultImageInfo: IImageComponentProps = {
   height: 200,
   handleClicked: "open-url",
   name: "图片名称",
-  link: "https://xdclass.net",
+  link: "https://test.net",
 };
 
 // 图片表单配置属性的值
@@ -63,8 +63,8 @@ export const imageComponentDefaultConfig: TImageComponentConfigResult = {
     isHidden: false,
   },
   link: {
-    value: "https://xdclass.net",
-    defaultValue: "https://xdclass.net",
+    value: "https://test.net",
+    defaultValue: "https://test.net",
     isHidden: false,
   },
   name: {
