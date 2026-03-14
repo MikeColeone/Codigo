@@ -1,4 +1,4 @@
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const stats = [
   { label: "在线模板", value: "180+" },
@@ -67,7 +67,7 @@ const features = [
 ];
 
 export function HomeCenter() {
-  //   const navigate = useNavigate();
+  const navigate = useNavigate();
 
   return (
     <section className="mx-auto w-full max-w-7xl px-6 pb-20 pt-10">
@@ -98,7 +98,7 @@ export function HomeCenter() {
           <div className="mt-10 flex flex-wrap items-center gap-5">
             <button
               className="group relative inline-flex items-center justify-center rounded-xl bg-emerald-500 px-8 py-4 text-sm font-bold text-white transition-all hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#07090f]"
-              //   onClick={() => navigate("/editor")}
+              onClick={() => navigate("/editor")}
             >
               <span className="mr-2">进入编辑器</span>
               <svg
@@ -117,7 +117,7 @@ export function HomeCenter() {
             </button>
             <button
               className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-8 py-4 text-sm font-medium text-white transition-all hover:bg-white/10 hover:border-white/30"
-              //   onClick={() => navigate("/dataCount")}
+              onClick={() => navigate("/dataCount")}
             >
               查看数据看板
             </button>

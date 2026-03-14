@@ -35,13 +35,13 @@ export function HomeHeader() {
         <div className="flex items-center gap-4">
           <button
             className="text-sm font-medium text-gray-400 transition hover:text-white"
-            // onClick={() => navigate("/login_or_register")}
+            onClick={() => navigate("/login_or_register")}
           >
             登录
           </button>
           <button
             className="rounded-lg bg-emerald-500 px-5 py-2 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:shadow-emerald-500/40 hover:-translate-y-0.5"
-            // onClick={() => navigate("/editor")}
+            onClick={() => navigate("/editor")}
           >
             开始搭建
           </button>

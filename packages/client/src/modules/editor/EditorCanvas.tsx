@@ -50,10 +50,12 @@ const ComponentWrapper: FC<ComponentWrapperProps> = ({
   // 设置选中的组件样式和鼠标hover的样式
   const classNames = useMemo(() => {
     return ClassNames({
-      "absolute left-0 top-0 w-full h-full z-[999]": true,
-      "hover:border-[3px] hover:border-blue-500":
+      "absolute left-0 top-0 w-full h-full z-[999] transition-all duration-200":
+        true,
+      "hover:border-[2px] hover:border-emerald-400 hover:shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]":
         !isCurrentComponent && !isDragable,
-      "border-[2px] border-blue-400": isCurrentComponent,
+      "border-[2px] border-emerald-500 shadow-[inset_0_0_20px_rgba(16,185,129,0.2)]":
+        isCurrentComponent,
     });
   }, [isCurrentComponent, isDragable]);
 
@@ -80,7 +82,7 @@ const EditorChooiseToolbarIconContainer: FC<{
 }> = ({ children, onClick }) => {
   return (
     <div
-      className="cursor-pointer hover:bg-gray-50/50 px-[0.5px] transition-colors"
+      className="cursor-pointer hover:bg-white/20 p-1 rounded transition-colors flex items-center justify-center"
       onClick={onClick}
     >
       {children}
@@ -111,7 +113,7 @@ const EditorChooiseToolbar: FC<{
   const classNames = useMemo(() => {
     return ClassNames({
       hidden: hidden || localHidden,
-      "absolute bg-blue-500 p-[4px] flex items-center text-sm text-white gap-2":
+      "absolute bg-emerald-600/90 backdrop-blur-md px-3 py-1.5 flex items-center text-xs font-medium text-white gap-2 rounded-r-lg shadow-lg shadow-emerald-500/20 border-l-2 border-emerald-400 z-[1000] transition-all duration-300":
         true,
     });
   }, [hidden, localHidden]);
@@ -225,11 +227,12 @@ const EditorChooiseToolbar: FC<{
         className={classNames}
         style={{
           left: `${currentComponentRect?.right}px`, // 设置工具栏定位的 left 等于当前组件的 right，左手坐标系定位
-          top: `${currentComponentRect && currentComponentRect.bottom - 28}px`, // 设置工具栏定位的 top 等于当前组件的 bottom-工具栏高度，左手坐标系定位
+          top: `${currentComponentRect && currentComponentRect.bottom - 36}px`, // 设置工具栏定位的 top 等于当前组件的 bottom-工具栏高度，左手坐标系定位
         }}
       >
         {/* 组件名字 */}
-        <span>{componentName} |</span>
+        <span className="mr-1">{componentName}</span>
+        <div className="w-px h-3 bg-white/30 mx-1"></div>
 
         {/* 删除按钮 */}
         <EditorChooiseToolbarIconContainer
@@ -298,37 +301,43 @@ const EditorCanvas: FC<{
   useComponentKeyPress();
 
   // 提供父组件调用自身的函数，控制工具栏的展示隐藏
-  useImperativeHandle(onRef, () => ({ setShowToolbar }));
+  useImperativeHandle(onRef, () => ({
+    setShowToolbar,
+  }));
 
   return (
-    <>
+    <div className="min-h-[700px] bg-white">
+      <EditorChooiseToolbar
+        onRef={toolbarRef}
+        hidden={!showToolbar || isDragable}
+      />
       <SortableContainer
         items={store.sortableCompConfig}
         onDragEnd={handleDragEnd}
         onDragStart={handleDragStart}
       >
-        {store.sortableCompConfig
-          .map((id) => getComponentById(id))
-          .map((conf) => {
-            return (
-              <SortableItem id={conf.id} key={conf.id}>
-                <ComponentWrapper
-                  id={conf.id}
-                  key={conf.id}
-                  isDragable={isDragable}
-                  onClick={() => handleComponentClick(conf)}
-                  isCurrentComponent={
-                    getCurrentComponentConfig.get()?.id === conf.id
-                  }
-                >
-                  {generateComponent(conf)}
-                </ComponentWrapper>
-              </SortableItem>
-            );
-          })}
+        {store.sortableCompConfig.map((item) => (
+          <SortableItem key={item} id={item}>
+            <ComponentWrapper
+              isDragable={isDragable}
+              onClick={() =>
+                handleComponentClick(
+                  getComponentById(item) as TComponentPropsUnion
+                )
+              }
+              isCurrentComponent={isCurrentComponent(
+                getComponentById(item) as TComponentPropsUnion
+              )}
+              id={item}
+            >
+              {generateComponent(
+                getComponentById(item) as TBasicComponentConfig
+              )}
+            </ComponentWrapper>
+          </SortableItem>
+        ))}
       </SortableContainer>
-      <EditorChooiseToolbar hidden={!showToolbar} onRef={toolbarRef} />
-    </>
+    </div>
   );
 });
 

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { ConfigProvider, theme } from "antd";
-import Register from "../components/Register";
-import Login from "../components/Login";
-import { ParticleBackground } from "../modules/auth/components/background/ParticleBackground";
+import Register from "./components/Register";
+import Login from "./components/Login";
+import { ParticleBackground } from "./components/background/ParticleBackground";
 
 export default function LoginOrRegister() {
   // 切换弹窗逻辑

@@ -1,6 +1,6 @@
 import { useTitle } from "ahooks";
 import RegisterOption from "./register/RegisterOption";
-import WechatLogin from "./Login/WechatLogin";
+import WechatLogin from "./login/WechatLogin";
 
 interface IRegisterProps {
   changeState: () => void; // 切换弹窗

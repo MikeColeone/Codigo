@@ -1,8 +1,8 @@
 import { useTitle } from "ahooks";
 import { useState } from "react";
-import Account from "./Login/Account.tsx";
-import Captcha from "./Login/Captcha.tsx";
-import WechatLogin from "./Login/WechatLogin.tsx";
+import Account from "./login/Account.tsx";
+import Captcha from "./login/Captcha.tsx";
+import WechatLogin from "./login/WechatLogin";
 
 interface ILoginProps {
   changeState: () => void;

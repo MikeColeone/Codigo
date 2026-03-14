@@ -358,7 +358,7 @@ export const UploadComponent: FC<UploadComponentProps> = ({
     execUpload(formData);
 
     // 清空掉files
-    uploadRef.current.value = "";
+    uploadRef.current && (uploadRef.current.value = "");
   };
 
   // 如果是图片直接地址显示，如果是视频则截取视频第一帧作为封面

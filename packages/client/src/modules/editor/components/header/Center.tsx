@@ -60,16 +60,26 @@ export default function Center() {
   }
 
   return (
-    <Space>
-      <Button className="flex items-center" onClick={handleGoPreview}>
-        预览 <FundViewOutlined />
+    <Space className="bg-white/5 p-1 rounded-lg border border-white/10">
+      <Button
+        type="text"
+        className="flex items-center text-gray-400 hover:text-white hover:bg-white/10"
+        onClick={handleGoPreview}
+      >
+        <FundViewOutlined /> 预览
       </Button>
-      <Button className="flex items-center" onClick={storeInLocalStorage}>
-        存至草稿 <PlusOutlined />
+      <div className="w-px h-4 bg-white/10"></div>
+      <Button
+        type="text"
+        className="flex items-center text-gray-400 hover:text-white hover:bg-white/10"
+        onClick={storeInLocalStorage}
+      >
+        <PlusOutlined /> 存至草稿
       </Button>
+      <div className="w-px h-4 bg-white/10"></div>
       <Button
         loading={loading}
-        className="flex items-center"
+        className="flex items-center bg-emerald-500 hover:!bg-emerald-400 border-none text-white font-medium shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all"
         type="primary"
         onClick={handleGoRelease}
       >

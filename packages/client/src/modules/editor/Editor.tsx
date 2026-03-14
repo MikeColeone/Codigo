@@ -1,5 +1,6 @@
 import { createRef, useEffect, useRef, useState } from "react";
 import { useTitle } from "ahooks";
+import { ConfigProvider, theme } from "antd";
 
 import EditorHeader from "./EditorHeader";
 import EditorLeftPanel from "./EditorLeftPanel";
@@ -7,6 +8,7 @@ import EditorRightPanel from "./EditorRightPanel";
 import EditorCanvas from "./EditorCanvas";
 
 import { useStoreComponents } from "@/shared/hooks";
+
 function Editor() {
   useTitle("codigo - 页面编辑");
   const { store: storeComps, localStorageInStore } = useStoreComponents();
@@ -56,31 +58,76 @@ function Editor() {
   }, [scrolling]);
 
   return (
-    <div className="flex flex-col h-full bg-[#f1f2f4]">
-      {/* 头部组件 */}
-      <header className="shadow-sm p-4 bg-white">
-        <EditorHeader />
-      </header>
-      <main className="flex flex-1 border overflow-x-hidden">
-        {/* 左侧编辑组件 */}
-        <div className={`w-80 bg-white px-4 overflow-y-auto`}>
-          <EditorLeftPanel />
-        </div>
-        {/* 中间编辑组件 */}
-        <div className="flex-auto flex items-center justify-center">
+    <ConfigProvider
+      theme={{
+        algorithm: theme.darkAlgorithm,
+        token: {
+          colorPrimary: "#10b981", // emerald-500
+          colorBgContainer: "rgba(255, 255, 255, 0.05)",
+          colorBorder: "rgba(255, 255, 255, 0.1)",
+          colorText: "#ffffff",
+          colorTextSecondary: "#9ca3af", // gray-400
+          borderRadius: 8,
+        },
+        components: {
+          Button: {
+            primaryShadow: "0 4px 14px 0 rgba(16, 185, 129, 0.39)",
+          },
+          Layout: {
+            bodyBg: "#07090f",
+            headerBg: "rgba(10, 12, 20, 0.8)",
+            siderBg: "rgba(10, 12, 20, 0.5)",
+          },
+        },
+      }}
+    >
+      <div className="flex flex-col h-full bg-[#07090f] text-white overflow-hidden font-sans">
+        {/* Background Grid */}
+        <div className="fixed inset-0 pointer-events-none z-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)]"></div>
+
+        {/* 头部组件 */}
+        <header className="relative z-20 border-b border-white/10 bg-[#0A0C14]/80 backdrop-blur-xl px-4 py-3">
+          <EditorHeader />
+        </header>
+
+        <main className="relative z-10 flex flex-1 overflow-hidden">
+          {/* 左侧编辑组件 */}
           <div
-            ref={canvasContainerRef}
-            className="editor-canvas-container w-[380px] h-[700px] bg-white text-left overflow-y-auto overflow-x-hidden"
+            className={`w-80 border-r border-white/10 bg-[#0A0C14]/60 backdrop-blur-md px-4 py-4 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent`}
           >
-            <EditorCanvas store={storeComps} onRef={canvasRef} />
+            <EditorLeftPanel />
           </div>
-        </div>
-        {/* 右侧编辑组件 */}
-        <div className={`w-80 bg-white px-4 overflow-y-auto`}>
-          <EditorRightPanel />
-        </div>
-      </main>
-    </div>
+
+          {/* 中间编辑组件 */}
+          <div className="flex-auto flex items-center justify-center bg-[#07090f] relative">
+            {/* Canvas Glow Effect */}
+            <div className="absolute w-[400px] h-[720px] bg-emerald-500/5 blur-3xl rounded-full pointer-events-none"></div>
+
+            <div
+              ref={canvasContainerRef}
+              className="editor-canvas-container relative z-10 w-[380px] h-[700px] bg-white text-left overflow-y-auto overflow-x-hidden rounded-[30px] border-[8px] border-[#1a1d26] shadow-2xl scrollbar-hide"
+            >
+              {/* Mobile Status Bar Simulation */}
+              <div className="sticky top-0 z-50 h-6 bg-black/90 text-white text-[10px] flex items-center justify-between px-4 font-mono">
+                <span>9:41</span>
+                <div className="flex gap-1">
+                  <div className="w-3 h-3 bg-white/20 rounded-full"></div>
+                  <div className="w-3 h-3 bg-white/20 rounded-full"></div>
+                </div>
+              </div>
+              <EditorCanvas store={storeComps} onRef={canvasRef} />
+            </div>
+          </div>
+
+          {/* 右侧编辑组件 */}
+          <div
+            className={`w-80 border-l border-white/10 bg-[#0A0C14]/60 backdrop-blur-md px-4 py-4 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent`}
+          >
+            <EditorRightPanel />
+          </div>
+        </main>
+      </div>
+    </ConfigProvider>
   );
 }
 export default Editor;

@@ -113,10 +113,12 @@ const EditorComponent: FC<ComponentProps> = ({ icon, name, type }) => {
   return (
     <div
       onClick={handleClick}
-      className="border py-2 pl-2 w-full flex items-center gap-1 text-xs cursor-pointer select-none hover:border-blue-500"
+      className="group relative flex flex-col items-center justify-center gap-2 rounded-xl border border-white/5 bg-white/5 p-4 text-xs text-gray-400 cursor-pointer select-none transition-all hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] hover:-translate-y-1"
     >
-      {icon}
-      <span>{name}</span>
+      <div className="text-xl text-emerald-500/70 group-hover:text-emerald-400 transition-colors">
+        {icon}
+      </div>
+      <span className="font-medium">{name}</span>
     </div>
   );
 };
@@ -125,13 +127,21 @@ const EditorComponent: FC<ComponentProps> = ({ icon, name, type }) => {
 export default function ComponentList() {
   return (
     <div>
-      <div className="grid grid-cols-2 items-center gap-2">
+      <div className="mb-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-1">
+        基础组件
+      </div>
+      <div className="grid grid-cols-2 gap-3">
         {components.map((item, index) => (
           <EditorComponent {...item} key={index} />
         ))}
       </div>
-      <Divider />
-      <div className="grid grid-cols-2 items-center gap-2">
+
+      <div className="my-6 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+
+      <div className="mb-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-1">
+        表单组件
+      </div>
+      <div className="grid grid-cols-2 gap-3">
         {componentByUserInput.map((item, index) => (
           <EditorComponent {...item} key={index} />
         ))}
