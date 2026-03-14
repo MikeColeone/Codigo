@@ -32,7 +32,7 @@ export type TImageComponentConfigResult =
 // 图片属性的默认值
 export const defaultImageInfo: IImageComponentProps = {
   id: "",
-  url: "https://sdfsdf.dev/380x200.png",
+  url: "https://www.keaitupian.cn/cjpic/frombd/2/253/1465323558/580685714.jpg",
   fit: "cover",
   height: 200,
   handleClicked: "open-url",
@@ -73,8 +73,10 @@ export const imageComponentDefaultConfig: TImageComponentConfigResult = {
     isHidden: false,
   },
   url: {
-    value: "https://sdfsdf.dev/380x200.png",
-    defaultValue: "https://sdfsdf.dev/380x200.png",
+    value:
+      "https://www.keaitupian.cn/cjpic/frombd/2/253/1465323558/580685714.jpg",
+    defaultValue:
+      "https://www.keaitupian.cn/cjpic/frombd/2/253/1465323558/580685714.jpg",
     isHidden: false,
   },
 };

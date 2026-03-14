@@ -18,7 +18,7 @@ export default function SwiperComponent(_props: ISwiperComponentProps) {
       autoplaySpeed={props.interval}
       autoplay={props.autoPlay}
       dots={props.showIndicators}
-      dotPosition={props.dotPosition}
+      dotPlacement={props.dotPlacement}
     >
       {props.images.map((image, index) => (
         <ImageComponent {...image} key={index} />

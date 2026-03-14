@@ -12,7 +12,7 @@ export interface ISwiperComponentProps {
   autoPlay: boolean;
   images: IImageComponentProps[];
   showIndicators: boolean;
-  dotPosition: "bottom" | "top" | "left" | "right";
+  dotPlacement: "bottom" | "top" | "start" | "end";
 }
 
 // 转换成通用组件类型
@@ -52,7 +52,7 @@ export const swiperComponentDefaultConfig: TSwiperComponentConfigResult = {
     defaultValue: true,
     isHidden: false,
   },
-  dotPosition: {
+  dotPlacement: {
     value: "bottom",
     defaultValue: "bottom",
     isHidden: false,
