@@ -13,13 +13,17 @@ import {
   SplitCellsOutlined,
   UnorderedListOutlined,
   WarningOutlined,
+  BarChartOutlined,
+  TableOutlined,
 } from "@ant-design/icons";
-import { Divider } from "antd";
+import { Divider, Collapse } from "antd";
 import type { FC, ReactNode } from "react";
 import { useStoreComponents } from "@/shared/hooks";
 
-// 不同组件配置数组
-export const components = [
+const { Panel } = Collapse;
+
+// 基础组件配置数组
+const basicComponents = [
   {
     type: "video",
     name: "视频组件",
@@ -72,8 +76,8 @@ export const components = [
   },
 ];
 
-// 不同输入型组件配置数组
-const componentByUserInput = [
+// 表单组件配置数组
+const formComponents = [
   {
     type: "input",
     name: "输入框组件",
@@ -95,6 +99,23 @@ const componentByUserInput = [
     icon: <CheckSquareOutlined />,
   },
 ];
+
+// 报表组件配置数组
+const reportComponents = [
+  {
+    type: "chart",
+    name: "图表组件",
+    icon: <BarChartOutlined />,
+  },
+  {
+    type: "table",
+    name: "表格组件",
+    icon: <TableOutlined />,
+  },
+];
+
+// 导出所有组件配置，用于其他地方引用
+export const components = [...basicComponents, ...formComponents];
 
 interface ComponentProps {
   name: string;
@@ -125,27 +146,50 @@ const EditorComponent: FC<ComponentProps> = ({ icon, name, type }) => {
 
 // 不同组件列表
 export default function ComponentList() {
+  const items = [
+    {
+      key: "basic",
+      label: "基础组件",
+      children: (
+        <div className="grid grid-cols-2 gap-3">
+          {basicComponents.map((item, index) => (
+            <EditorComponent {...item} key={index} />
+          ))}
+        </div>
+      ),
+    },
+    {
+      key: "form",
+      label: "表单组件",
+      children: (
+        <div className="grid grid-cols-2 gap-3">
+          {formComponents.map((item, index) => (
+            <EditorComponent {...item} key={index} />
+          ))}
+        </div>
+      ),
+    },
+    {
+      key: "report",
+      label: "报表组件",
+      children: (
+        <div className="grid grid-cols-2 gap-3">
+          {reportComponents.map((item, index) => (
+            <EditorComponent {...item} key={index} />
+          ))}
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <div>
-      <div className="mb-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-1">
-        基础组件
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        {components.map((item, index) => (
-          <EditorComponent {...item} key={index} />
-        ))}
-      </div>
-
-      <div className="my-6 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-
-      <div className="mb-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-1">
-        表单组件
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        {componentByUserInput.map((item, index) => (
-          <EditorComponent {...item} key={index} />
-        ))}
-      </div>
+    <div className="component-list">
+      <Collapse
+        defaultActiveKey={["basic", "form", "report"]}
+        ghost
+        items={items}
+        expandIconPosition="end"
+      />
     </div>
   );
 }

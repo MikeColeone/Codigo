@@ -103,7 +103,7 @@ export function useStoreComponents() {
   // 定义撤销操作的函数
   const undo = action(() => {
     // 判断有无上一步
-    if (!sotreComponentsUndoer.hasUndo) {
+    if (!sotreComponentsUndoer.canUndo) {
       message.warning("没有可撤销的操作");
       return;
     }
@@ -114,7 +114,7 @@ export function useStoreComponents() {
   // 定义重做操作的函数
   const redo = action(() => {
     //  判断有无下一步
-    if (!sotreComponentsUndoer.hasRedo) {
+    if (!sotreComponentsUndoer.canRedo) {
       message.warning("没有可重做的操作");
       return;
     }
@@ -326,8 +326,14 @@ export function useStoreComponents() {
     updateCurrentComponent,
     updateCurrentCompConfigWithArray,
     setItemsExpandIndex,
+    // 导出撤销操作的函数
     undo,
+    // 导出重做操作的函数
     redo,
+    // 导出是否有上一步
+    hasUndo: sotreComponentsUndoer.canUndo,
+    // 导出是否有下一步
+    hasRedo: sotreComponentsUndoer.canRedo,
     moveComponent,
     moveUpComponent,
     moveDownComponent,

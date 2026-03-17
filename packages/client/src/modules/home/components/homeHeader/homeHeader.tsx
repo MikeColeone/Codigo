@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
 const menus = [
-  { label: "产品能力", path: "/" },
   { label: "模板案例", path: "/" },
   { label: "数据看板", path: "/dataCount" },
   { label: "开发文档", path: "/doc" },

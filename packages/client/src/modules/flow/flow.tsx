@@ -1,6 +1,8 @@
 import { observer } from "mobx-react-lite";
 import { useRef, useState, useEffect } from "react";
 import { flowStore } from "./stores/flowStore";
+import { RedoOutlined, UndoOutlined } from "@ant-design/icons";
+import { Button } from "antd";
 
 type NodeType =
   | "start"
@@ -192,6 +194,23 @@ export default observer(() => {
         </div>
 
         <div className="flex gap-2">
+          <Button
+            type="text"
+            className="flex items-center text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+            onClick={() => flowStore.undoer.undo()}
+            disabled={!flowStore.undoer.canUndo}
+          >
+            <UndoOutlined /> 撤销
+          </Button>
+          <Button
+            type="text"
+            className="flex items-center text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+            onClick={() => flowStore.undoer.redo()}
+            disabled={!flowStore.undoer.canRedo}
+          >
+            <RedoOutlined /> 重做
+          </Button>
+          <div className="w-px h-6 bg-slate-200 mx-2 self-center"></div>
           {Object.entries(NODE_TYPES).map(([key, t]) => (
             <button
               key={key}

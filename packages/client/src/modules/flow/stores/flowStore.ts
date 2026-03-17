@@ -1,5 +1,6 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, toJS } from "mobx";
 import type { FlowNode, FlowEdge, NodeType } from "../types";
+import { trackUndo } from "mobx-shallow-undo";
 
 function genId(p: string = "e"): string {
   return `${p}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
@@ -72,8 +73,17 @@ class FlowStore {
   selectedNodeId: string = "";
   selectedEdgeId: string | null = null;
 
+  undoer: any;
+
   constructor() {
     makeAutoObservable(this);
+    this.undoer = trackUndo(
+      () => ({ nodes: toJS(this.nodes), edges: toJS(this.edges) }),
+      (value) => {
+        this.nodes = value.nodes;
+        this.edges = value.edges;
+      }
+    );
   }
 
   /* 计算属性：选中节点 */

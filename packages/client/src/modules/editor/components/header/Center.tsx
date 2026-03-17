@@ -2,6 +2,8 @@ import {
   CheckOutlined,
   FundViewOutlined,
   PlusOutlined,
+  RedoOutlined,
+  UndoOutlined,
 } from "@ant-design/icons";
 import type { IComponent, PostReleaseRequest } from "@codigo/share";
 import { useRequest } from "ahooks";
@@ -60,23 +62,41 @@ export default function Center() {
   }
 
   return (
-    <Space className="bg-white/5 p-1 rounded-lg border border-white/10">
+    <Space className="bg-white/5 p-1 rounded-lg border border-slate-200">
       <Button
         type="text"
-        className="flex items-center text-gray-400 hover:text-white hover:bg-white/10"
+        className="flex items-center text-slate-500 hover:text-slate-900 hover:bg-slate-100"
         onClick={handleGoPreview}
       >
         <FundViewOutlined /> 预览
       </Button>
-      <div className="w-px h-4 bg-white/10"></div>
+      <div className="w-px h-4 bg-slate-200"></div>
       <Button
         type="text"
-        className="flex items-center text-gray-400 hover:text-white hover:bg-white/10"
+        className="flex items-center text-slate-500 hover:text-slate-900 hover:bg-slate-100"
         onClick={storeInLocalStorage}
       >
         <PlusOutlined /> 存至草稿
       </Button>
-      <div className="w-px h-4 bg-white/10"></div>
+      <div className="w-px h-4 bg-slate-200"></div>
+      <Button
+        type="text"
+        className="flex items-center text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+        onClick={storeComponents.undo}
+        disabled={!storeComponents.hasUndo}
+      >
+        <UndoOutlined /> 撤销
+      </Button>
+      <div className="w-px h-4 bg-slate-200"></div>
+      <Button
+        type="text"
+        className="flex items-center text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+        onClick={storeComponents.redo}
+        disabled={!storeComponents.hasRedo}
+      >
+        <RedoOutlined /> 重做
+      </Button>
+      <div className="w-px h-4 bg-slate-200"></div>
       <Button
         loading={loading}
         className="flex items-center bg-emerald-500 hover:!bg-emerald-400 border-none text-white font-medium shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all"
