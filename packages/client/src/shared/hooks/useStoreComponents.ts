@@ -254,9 +254,18 @@ export function useStoreComponents() {
       toJS(storeComponents.currentCompConfig)
     );
 
+    // Get current page store state
+    const { store: pageStore } = useStorePage();
+    const pageSettings = JSON.stringify({
+      deviceType: pageStore.deviceType,
+      canvasWidth: pageStore.canvasWidth,
+      canvasHeight: pageStore.canvasHeight,
+    });
+
     localStorage.setItem("compConfig", compConfig);
     localStorage.setItem("sortableCompConfig", sortableCompConfig);
     localStorage.setItem("currentCompConfig", currentCompConfig);
+    localStorage.setItem("pageSettings", pageSettings);
     // 保存当前操作的时间
     localStorage.setItem("store_time", String(Date.now()));
 
@@ -269,6 +278,7 @@ export function useStoreComponents() {
     const compConfig = localStorage.getItem("compConfig");
     const sortableCompConfig = localStorage.getItem("sortableCompConfig");
     const currentCompConfig = localStorage.getItem("currentCompConfig");
+    const pageSettings = localStorage.getItem("pageSettings");
 
     const storeTime = localStorage.getItem("store_time");
     const releaseTime = localStorage.getItem("release_time");
@@ -283,6 +293,17 @@ export function useStoreComponents() {
         storeComponents.compConfigs = JSON.parse(compConfig);
         storeComponents.sortableCompConfig = JSON.parse(sortableCompConfig!);
         storeComponents.currentCompConfig = JSON.parse(currentCompConfig!);
+
+        // Restore page settings
+        if (pageSettings) {
+          const settings = JSON.parse(pageSettings);
+          const { setDeviceType, setCanvasSize } = useStorePage();
+          if (settings.deviceType) setDeviceType(settings.deviceType);
+          if (settings.canvasWidth && settings.canvasHeight) {
+            setCanvasSize(settings.canvasWidth, settings.canvasHeight);
+          }
+        }
+
         message.success("已自动从草稿中读取数据");
       } else {
         // 服务端获取页面组件
