@@ -96,9 +96,9 @@ export function HomeCenter() {
           <div className="mt-10 flex flex-wrap items-center gap-5">
             <button
               className="group relative inline-flex items-center justify-center rounded-xl bg-emerald-500 px-8 py-4 text-sm font-bold text-white transition-all hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-500/30 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-              onClick={() => navigate("/editor")}
+              onClick={() => navigate("/templates")}
             >
-              <span className="mr-2">进入编辑器</span>
+              <span className="mr-2">进入模板选择</span>
               <svg
                 className="w-4 h-4 transition-transform group-hover:translate-x-1"
                 fill="none"
@@ -167,7 +167,7 @@ export function HomeCenter() {
       </div>
 
       <div className="mt-24 grid gap-6 md:grid-cols-3">
-        {features.map((feature, index) => (
+        {features.map((feature) => (
           <article
             key={feature.title}
             className="group relative rounded-2xl border border-white/10 bg-[#0A0C14]/80 p-8 transition-all hover:-translate-y-1 hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/10"
