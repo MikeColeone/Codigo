@@ -4,7 +4,7 @@ import {
   CreditCardOutlined,
   EditOutlined,
   ExpandOutlined,
-  FontColorsOutlined,
+  // FontColorsOutlined,
   FontSizeOutlined,
   FormOutlined,
   FundViewOutlined,
@@ -59,11 +59,11 @@ const basicComponents = [
     name: "分割组件",
     icon: <MinusOutlined />,
   },
-  {
-    type: "richText",
-    name: "富文本组件",
-    icon: <FontColorsOutlined />,
-  },
+  // {
+  //   type: "richText",
+  //   name: "富文本组件",
+  //   icon: <FontColorsOutlined />,
+  // },
   {
     type: "empty",
     name: "空状态组件",
