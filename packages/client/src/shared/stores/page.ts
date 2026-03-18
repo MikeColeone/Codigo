@@ -1,6 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
 export type DeviceType = "mobile" | "pc";
+export type CodeFramework = "react" | "vue";
 
 interface IStorePage {
   title: string;
@@ -9,6 +10,7 @@ interface IStorePage {
   deviceType: DeviceType;
   canvasWidth: number;
   canvasHeight: number;
+  codeFramework: CodeFramework;
 }
 
 export function createStorePage() {
@@ -19,6 +21,7 @@ export function createStorePage() {
     deviceType: "mobile",
     canvasWidth: 380,
     canvasHeight: 700,
+    codeFramework: "react",
   });
 }
 

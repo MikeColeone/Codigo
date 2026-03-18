@@ -1,6 +1,6 @@
 import { action } from "mobx";
 import { createStorePage } from "@/shared/stores";
-import type { TStorePage, DeviceType } from "@/shared/stores";
+import type { TStorePage, DeviceType, CodeFramework } from "@/shared/stores";
 
 const storePage = createStorePage();
 
@@ -29,6 +29,10 @@ export function useStorePage() {
     storePage.canvasHeight = height;
   });
 
+  const setCodeFramework = action((framework: CodeFramework) => {
+    storePage.codeFramework = framework;
+  });
+
   /**
    * 更新页面信息
    * @param page - 部分页面信息
@@ -45,6 +49,7 @@ export function useStorePage() {
     setPageTitle,
     setDeviceType,
     setCanvasSize,
+    setCodeFramework,
     store: storePage,
   };
 }

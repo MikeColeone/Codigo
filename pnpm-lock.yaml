@@ -164,6 +164,8 @@ importers:
         specifier: ^7.2.4
         version: 7.3.1(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)
 
+  packages/plugin-system: {}
+
   packages/release:
     dependencies:
       '@ant-design/nextjs-registry':
@@ -209,6 +211,14 @@ importers:
       typescript:
         specifier: ^5
         version: 5.9.3
+
+  packages/render-react: {}
+
+  packages/render-vue: {}
+
+  packages/runtime-core: {}
+
+  packages/schema: {}
 
   packages/server:
     dependencies:
@@ -346,6 +356,8 @@ importers:
       unbuild:
         specifier: ^2.0.0
         version: 2.0.0(typescript@5.9.3)
+
+  packages/utils: {}
 
 packages:
 

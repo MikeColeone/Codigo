@@ -1,6 +1,10 @@
 import { ulid } from "ulid";
 import { action, computed, toJS } from "mobx";
-import type { TComponentPropsUnion, TComponentTypes } from "@codigo/share";
+import type {
+  TBasicComponentConfig,
+  TComponentPropsUnion,
+  TComponentTypes,
+} from "@codigo/share";
 import { calcValueByString } from "@codigo/share";
 import { createStoreComponents } from "@/shared/stores";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -11,6 +15,23 @@ import { getLowCodePage } from "@/modules/editor/api/low-code";
 import { useStorePage } from ".";
 
 const storeComponents = createStoreComponents();
+const codeSupportedTypes: TComponentTypes[] = [
+  "video",
+  "swiper",
+  "qrcode",
+  "card",
+  "list",
+  "image",
+  "titleText",
+  "split",
+  "richText",
+  "input",
+  "textArea",
+  "radio",
+  "checkbox",
+  "empty",
+  "alert",
+];
 
 // 撤销前进的插件
 const sotreComponentsUndoer = trackUndo(
@@ -235,6 +256,43 @@ export function useStoreComponents() {
     storeComponents.sortableCompConfig = value.sortableCompConfig;
   });
 
+  const replaceByCode = action(
+    (
+      components: Array<{
+        id?: string;
+        type: string;
+        props?: Record<string, unknown>;
+        styles?: TBasicComponentConfig["styles"];
+      }>
+    ) => {
+      const nextCompConfigs: Record<string, TComponentPropsUnion> = {};
+      const nextSortableCompConfig: string[] = [];
+      const currentId = storeComponents.currentCompConfig;
+
+      for (const item of components) {
+        if (!codeSupportedTypes.includes(item.type as TComponentTypes)) continue;
+
+        const nextId = item.id || ulid();
+        const nextComponent = {
+          id: nextId,
+          type: item.type as TComponentTypes,
+          props: (item.props ?? {}) as TComponentPropsUnion["props"],
+          styles: item.styles,
+        } as TComponentPropsUnion;
+
+        nextCompConfigs[nextId] = nextComponent;
+        nextSortableCompConfig.push(nextId);
+      }
+
+      storeComponents.compConfigs = nextCompConfigs;
+      storeComponents.sortableCompConfig = nextSortableCompConfig;
+      storeComponents.currentCompConfig =
+        currentId && nextCompConfigs[currentId]
+          ? currentId
+          : (nextSortableCompConfig[0] ?? null);
+    }
+  );
+
   // 获取当前组件在数组中的索引的 computed property
   const getCurrentComponentIndex = computed(() => {
     // 返回storeComponents.sortableCompConfig中当前组件配置的id所在的位置
@@ -260,6 +318,7 @@ export function useStoreComponents() {
       deviceType: pageStore.deviceType,
       canvasWidth: pageStore.canvasWidth,
       canvasHeight: pageStore.canvasHeight,
+      codeFramework: pageStore.codeFramework,
     });
 
     localStorage.setItem("compConfig", compConfig);
@@ -297,10 +356,14 @@ export function useStoreComponents() {
         // Restore page settings
         if (pageSettings) {
           const settings = JSON.parse(pageSettings);
-          const { setDeviceType, setCanvasSize } = useStorePage();
+          const { setDeviceType, setCanvasSize, setCodeFramework } =
+            useStorePage();
           if (settings.deviceType) setDeviceType(settings.deviceType);
           if (settings.canvasWidth && settings.canvasHeight) {
             setCanvasSize(settings.canvasWidth, settings.canvasHeight);
+          }
+          if (settings.codeFramework) {
+            setCodeFramework(settings.codeFramework);
           }
         }
 
@@ -353,6 +416,7 @@ export function useStoreComponents() {
 
   return {
     _replace,
+    replaceByCode,
     push,
     getComponentById,
     isCurrentComponent,

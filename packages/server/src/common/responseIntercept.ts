@@ -17,7 +17,6 @@ export class ResponseIntercept implements NestInterceptor {
       map((data) => {
         return {
           code: 0,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           data,
         };
       }),

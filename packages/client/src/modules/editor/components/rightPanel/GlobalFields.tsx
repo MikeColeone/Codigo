@@ -9,7 +9,7 @@ const GlobalFields: FC<{ store: TStorePage }> = observer(({ store }) => {
   const { updatePage } = useStorePage();
 
   // 当输入框的值发生改变时同步更新 store 的变量
-  function handleValuesChange(changedValues: Record<keyof TStorePage, string>) {
+  function handleValuesChange(changedValues: Partial<TStorePage>) {
     updatePage(changedValues);
   }
 
