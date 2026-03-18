@@ -9,6 +9,7 @@ import LoginOrRegister from "@/modules/auth/loginOrRegister";
 import Flow from "@/modules/flow/flow";
 import Report from "@/modules/report/reportDesigner";
 import DevDoc from "@/modules/devDocument/DevDoc";
+import TemplateSelect from "@/modules/home/TemplateSelect";
 
 export const router = createHashRouter([
   {
@@ -18,6 +19,10 @@ export const router = createHashRouter([
   {
     path: "/doc",
     element: <DevDoc />,
+  },
+  {
+    path: "/templates",
+    element: <TemplateSelect />,
   },
   {
     path: "/login",
