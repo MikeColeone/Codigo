@@ -16,11 +16,9 @@ import {
   BarChartOutlined,
   TableOutlined,
 } from "@ant-design/icons";
-import { Divider, Collapse } from "antd";
+import { Collapse } from "antd";
 import type { FC, ReactNode } from "react";
-import { useStoreComponents } from "@/shared/hooks";
-
-const { Panel } = Collapse;
+import { useStoreComponents, useStorePermission } from "@/shared/hooks";
 
 // 基础组件配置数组
 const basicComponents = [
@@ -126,13 +124,20 @@ interface ComponentProps {
 // 公共样式组件
 const EditorComponent: FC<ComponentProps> = ({ icon, name, type }) => {
   const store = useStoreComponents();
+  const { can } = useStorePermission();
+  const allowInsert = can("edit_structure");
   // 将要展示的组件类型告诉 store
   function handleClick() {
+    if (!allowInsert) return;
     // @ts-ignore
     store.push(type);
   }
 
   function handleDragStart(e: React.DragEvent) {
+    if (!allowInsert) {
+      e.preventDefault();
+      return;
+    }
     e.dataTransfer.setData("componentType", type);
     e.dataTransfer.effectAllowed = "copy";
   }
@@ -140,9 +145,13 @@ const EditorComponent: FC<ComponentProps> = ({ icon, name, type }) => {
   return (
     <div
       onClick={handleClick}
-      draggable
+      draggable={allowInsert}
       onDragStart={handleDragStart}
-      className="group relative flex flex-col items-center justify-center gap-2 rounded-xl border border-white/5 bg-white/5 p-4 text-xs text-gray-400 cursor-grab select-none transition-all hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] hover:-translate-y-1 active:cursor-grabbing"
+      className={`group relative flex flex-col items-center justify-center gap-2 rounded-xl border border-white/5 bg-white/5 p-4 text-xs text-gray-400 select-none transition-all ${
+        allowInsert
+          ? "cursor-grab hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] hover:-translate-y-1 active:cursor-grabbing"
+          : "cursor-not-allowed opacity-45"
+      }`}
     >
       <div className="text-xl text-emerald-500/70 group-hover:text-emerald-400 transition-colors pointer-events-none">
         {icon}

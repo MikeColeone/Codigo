@@ -13,6 +13,7 @@ import { message } from "antd";
 import type { TStoreComponents } from "@/shared/stores";
 import { getLowCodePage } from "@/modules/editor/api/low-code";
 import { useStorePage } from ".";
+import { useStorePermission } from "./useStorePermission";
 
 const storeComponents = createStoreComponents();
 const codeSupportedTypes: TComponentTypes[] = [
@@ -39,10 +40,12 @@ const sotreComponentsUndoer = trackUndo(
   (value) => {
     const { _replace } = useStoreComponents();
     _replace(value);
-  }
+  },
 );
 
 export function useStoreComponents() {
+  const { ensurePermission, addOperationLog } = useStorePermission();
+
   // 默认选中的组件
   const setCurrentComponent = action((id: string) => {
     storeComponents.currentCompConfig = id;
@@ -50,6 +53,7 @@ export function useStoreComponents() {
 
   // 定义添加组件的函数
   const push = action((type: TComponentTypes) => {
+    if (!ensurePermission("edit_structure", "当前角色不能新增组件")) return;
     if (!storeComponents.compConfigs) {
       storeComponents.compConfigs = {};
     }
@@ -64,6 +68,7 @@ export function useStoreComponents() {
     storeComponents.sortableCompConfig.push(comp.id);
 
     setCurrentComponent(comp.id);
+    addOperationLog("add_component", type);
   });
 
   // 定义根据id获取组件配置的函数
@@ -86,6 +91,7 @@ export function useStoreComponents() {
   // 定义根据props更新当前组件的函数
   const updateCurrentComponent = action(
     (compConfig: TComponentPropsUnion["props"]) => {
+      if (!ensurePermission("edit_content", "当前角色不能修改组件内容")) return;
       // 遍历传入的compConfig对象，更新当前组件配置的props属性
       const curCompConfig = getCurrentComponentConfig.get();
       if (!curCompConfig) return;
@@ -95,11 +101,13 @@ export function useStoreComponents() {
         // @ts-expect-error ignore type
         curCompConfig.props[key] = calcValueByString(value);
       }
-    }
+      addOperationLog("update_component", curCompConfig.type);
+    },
   );
 
   // 定义更新当前组件样式的函数
   const updateCurrentComponentStyles = action((styles: Record<string, any>) => {
+    if (!ensurePermission("edit_content", "当前角色不能修改组件样式")) return;
     const curCompConfig = getCurrentComponentConfig.get();
     if (!curCompConfig) return;
 
@@ -111,6 +119,7 @@ export function useStoreComponents() {
       // @ts-expect-error ignore type
       curCompConfig.styles[key] = calcValueByString(value);
     }
+    addOperationLog("update_style", curCompConfig.type);
   });
 
   // 定义带有数组参数的更新当前组件配置的函数
@@ -122,6 +131,7 @@ export function useStoreComponents() {
   }) => void;
   const updateCurrentCompConfigWithArray: TUpdateCurrentCompConfigWithArray =
     action(({ key, index, field, value }) => {
+      if (!ensurePermission("edit_content", "当前角色不能修改组件内容")) return;
       // 获取当前组件配置
       const curCompConfig = getCurrentComponentConfig.get();
       if (!curCompConfig) return;
@@ -129,6 +139,7 @@ export function useStoreComponents() {
       // 更新当前组件配置的props属性
       // @ts-expect-error typescript无法正确推断可选类型
       curCompConfig.props[key][index][field] = value;
+      addOperationLog("update_component", curCompConfig.type);
     });
 
   // 定义展开或者折叠组件列表的函数
@@ -138,35 +149,42 @@ export function useStoreComponents() {
 
   // 定义撤销操作的函数
   const undo = action(() => {
+    if (!ensurePermission("edit_content", "当前角色不能撤销操作")) return;
     // 判断有无上一步
-    if (!sotreComponentsUndoer.canUndo) {
+    if (!sotreComponentsUndoer.hasUndo) {
       message.warning("没有可撤销的操作");
       return;
     }
     // 执行撤销操作
     sotreComponentsUndoer.undo();
+    addOperationLog("undo", "画布");
   });
 
   // 定义重做操作的函数
   const redo = action(() => {
+    if (!ensurePermission("edit_content", "当前角色不能重做操作")) return;
     //  判断有无下一步
-    if (!sotreComponentsUndoer.canRedo) {
+    if (!sotreComponentsUndoer.hasRedo) {
       message.warning("没有可重做的操作");
       return;
     }
     // 执行重做操作
     sotreComponentsUndoer.redo();
+    addOperationLog("redo", "画布");
   });
 
   // 定义移动组件的函数
   const moveComponent: (pos: { oldIndex: number; newIndex: number }) => void =
     action(({ oldIndex, newIndex }) => {
+      if (!ensurePermission("edit_structure", "当前角色不能调整组件顺序"))
+        return;
       // arrayMove根据两个索引子排序数组，返回排序后的数组
       storeComponents.sortableCompConfig = arrayMove(
         storeComponents.sortableCompConfig,
         oldIndex,
-        newIndex
+        newIndex,
       );
+      addOperationLog("move_component", `${oldIndex + 1} -> ${newIndex + 1}`);
     });
 
   // 定义向上移动组件的函数
@@ -214,6 +232,7 @@ export function useStoreComponents() {
 
   // 定义粘贴组件的函数
   const pasteCopyedComponent = action(() => {
+    if (!ensurePermission("edit_structure", "当前角色不能粘贴组件")) return;
     // 如果不存在复制的组件配置，则返回
     if (!storeComponents.copyedCompConig) return;
 
@@ -229,10 +248,12 @@ export function useStoreComponents() {
     storeComponents.sortableCompConfig.push(comp.id);
     // 设置当前组件配置为新添加的组件配置
     setCurrentComponent(comp.id);
+    addOperationLog("add_component", "粘贴组件");
   });
 
   // 定义删除当前组件的函数
   const removeCurrentComponent = action(() => {
+    if (!ensurePermission("edit_structure", "当前角色不能删除组件")) return;
     // 获取当前组件配置的id在storeComponents.sortableCompConfig中的索引
     const curCompConfig = getCurrentComponentConfig.get();
     if (!curCompConfig) return;
@@ -247,6 +268,7 @@ export function useStoreComponents() {
     const rollbackIndex = index - 1 > 0 ? index - 1 : 0;
     storeComponents.currentCompConfig =
       storeComponents.sortableCompConfig[rollbackIndex] || null;
+    addOperationLog("remove_component", curCompConfig.type);
   });
 
   // 定义替换组件配置的函数
@@ -263,14 +285,17 @@ export function useStoreComponents() {
         type: string;
         props?: Record<string, unknown>;
         styles?: TBasicComponentConfig["styles"];
-      }>
+      }>,
     ) => {
+      if (!ensurePermission("edit_structure", "当前角色不能覆盖组件结构"))
+        return;
       const nextCompConfigs: Record<string, TComponentPropsUnion> = {};
       const nextSortableCompConfig: string[] = [];
       const currentId = storeComponents.currentCompConfig;
 
       for (const item of components) {
-        if (!codeSupportedTypes.includes(item.type as TComponentTypes)) continue;
+        if (!codeSupportedTypes.includes(item.type as TComponentTypes))
+          continue;
 
         const nextId = item.id || ulid();
         const nextComponent = {
@@ -290,26 +315,31 @@ export function useStoreComponents() {
         currentId && nextCompConfigs[currentId]
           ? currentId
           : (nextSortableCompConfig[0] ?? null);
-    }
+      addOperationLog(
+        "ai_replace",
+        `共 ${nextSortableCompConfig.length} 个组件`,
+      );
+    },
   );
 
   // 获取当前组件在数组中的索引的 computed property
   const getCurrentComponentIndex = computed(() => {
     // 返回storeComponents.sortableCompConfig中当前组件配置的id所在的位置
     return storeComponents.sortableCompConfig.indexOf(
-      getCurrentComponentConfig.get()!.id
+      getCurrentComponentConfig.get()!.id,
     );
   });
 
   // 定义将组件存储到本地存储的函数
   const storeInLocalStorage = action(() => {
+    if (!ensurePermission("save_draft", "当前角色不能保存草稿")) return;
     // 将组件配置、可排序组件配置、当前组件配置和存储时间保存到本地存储
     const compConfig = JSON.stringify(toJS(storeComponents.compConfigs));
     const sortableCompConfig = JSON.stringify(
-      toJS(storeComponents.sortableCompConfig)
+      toJS(storeComponents.sortableCompConfig),
     );
     const currentCompConfig = JSON.stringify(
-      toJS(storeComponents.currentCompConfig)
+      toJS(storeComponents.currentCompConfig),
     );
 
     // Get current page store state
@@ -329,6 +359,7 @@ export function useStoreComponents() {
     localStorage.setItem("store_time", String(Date.now()));
 
     message.success("保存成功");
+    addOperationLog("save_draft", "本地草稿");
   });
 
   // 定义从本地存储中读取组件的函数
@@ -400,7 +431,7 @@ export function useStoreComponents() {
         return acc;
       }, {});
     storeComponents.sortableCompConfig = Object.keys(
-      storeComponents.compConfigs || {}
+      storeComponents.compConfigs || {},
     );
     // 设置当前组件配置为可排序组件配置的第一个组件配置
     storeComponents.currentCompConfig = storeComponents.sortableCompConfig[0];
@@ -432,9 +463,9 @@ export function useStoreComponents() {
     // 导出重做操作的函数
     redo,
     // 导出是否有上一步
-    hasUndo: sotreComponentsUndoer.canUndo,
+    hasUndo: sotreComponentsUndoer.hasUndo,
     // 导出是否有下一步
-    hasRedo: sotreComponentsUndoer.canRedo,
+    hasRedo: sotreComponentsUndoer.hasRedo,
     moveComponent,
     moveUpComponent,
     moveDownComponent,

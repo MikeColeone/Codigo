@@ -5,12 +5,13 @@ import { CSS } from "@dnd-kit/utilities";
 interface PropsType {
   id: string;
   children: ReactNode;
+  disabled?: boolean;
 }
 
-const SortableItem: FC<PropsType> = ({ id, children }) => {
+const SortableItem: FC<PropsType> = ({ id, children, disabled = false }) => {
   // 使用 useSortable 钩子，获取排序项的相关属性、事件监听器和节点引用
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id });
+    useSortable({ id, disabled });
 
   // 定义样式对象，包含过渡和变换效果
   const style = {

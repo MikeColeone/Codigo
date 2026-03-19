@@ -7,15 +7,19 @@ import {
   useState,
   useEffect,
   useImperativeHandle,
-  Ref,
   createRef,
 } from "react";
 import { getComponentByType } from "@codigo/share";
 import type {
   TBasicComponentConfig,
   TComponentPropsUnion,
+  TComponentTypes,
 } from "@codigo/share";
-import { useStoreComponents, useComponentKeyPress } from "@/shared/hooks";
+import {
+  useStoreComponents,
+  useComponentKeyPress,
+  useStorePermission,
+} from "@/shared/hooks";
 import type { TStoreComponents } from "@/shared/stores";
 import SortableContainer from "@/modules/editor/components/dragSortable/SortableContainer";
 import SortableItem from "@/modules/editor/components/dragSortable/SortableItem";
@@ -68,8 +72,7 @@ const ComponentWrapper: FC<ComponentWrapperProps> = ({
   // 设置选中的组件样式和鼠标hover的样式
   const classNames = useMemo(() => {
     return ClassNames({
-      "absolute left-0 top-0 w-full h-full z-[999] transition-all duration-200":
-        true,
+      "absolute left-0 top-0 w-full h-full z-[999] transition-all duration-200": true,
       "hover:border-[2px] hover:border-emerald-400 hover:shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]":
         !isCurrentComponent && !isDragable,
       "border-[2px] border-emerald-500 shadow-[inset_0_0_20px_rgba(16,185,129,0.2)]":
@@ -120,6 +123,8 @@ const EditorChooiseToolbar: FC<{
     removeCurrentComponent,
     getCurrentComponentConfig,
   } = useStoreComponents();
+  const { can } = useStorePermission();
+  const canEditStructure = can("edit_structure");
   const [currentComponentRect, setCurrentComponentRect] =
     useState<ClientRect>();
 
@@ -131,8 +136,7 @@ const EditorChooiseToolbar: FC<{
   const classNames = useMemo(() => {
     return ClassNames({
       hidden: hidden || localHidden,
-      "absolute bg-emerald-600/90 backdrop-blur-md px-3 py-1.5 flex items-center text-xs font-medium text-white gap-2 rounded-r-lg shadow-lg shadow-emerald-500/20 border-l-2 border-emerald-400 z-[1000] transition-all duration-300":
-        true,
+      "absolute bg-emerald-600/90 backdrop-blur-md px-3 py-1.5 flex items-center text-xs font-medium text-white gap-2 rounded-r-lg shadow-lg shadow-emerald-500/20 border-l-2 border-emerald-400 z-[1000] transition-all duration-300": true,
     });
   }, [hidden, localHidden]);
 
@@ -142,7 +146,7 @@ const EditorChooiseToolbar: FC<{
   const componentName = useMemo(() => {
     return (
       components.find(
-        (item) => item.type === getCurrentComponentConfig.get()?.type
+        (item) => item.type === getCurrentComponentConfig.get()?.type,
       )?.name ?? "组件名称"
     );
   }, [getCurrentComponentConfig.get()]);
@@ -196,7 +200,7 @@ const EditorChooiseToolbar: FC<{
         threshold: 0.9,
         // 将根元素设置为canvas容器元素
         root: oCanvasContainer,
-      }
+      },
     );
 
     // 如果当前组件和canvas容器元素都存在，则将当前组件添加到观察列表中
@@ -252,26 +256,27 @@ const EditorChooiseToolbar: FC<{
         <span className="mr-1">{componentName}</span>
         <div className="w-px h-3 bg-white/30 mx-1"></div>
 
-        {/* 删除按钮 */}
-        <EditorChooiseToolbarIconContainer
-          onClick={() => handleOnClick(removeCurrentComponent)}
-        >
-          <DeleteOutlined />
-        </EditorChooiseToolbarIconContainer>
-
-        {/* 向上按钮 */}
-        <EditorChooiseToolbarIconContainer
-          onClick={() => handleOnClick(moveUpComponent)}
-        >
-          <UpOutlined />
-        </EditorChooiseToolbarIconContainer>
-
-        {/* 向下按钮 */}
-        <EditorChooiseToolbarIconContainer
-          onClick={() => handleOnClick(moveDownComponent)}
-        >
-          <DownOutlined />
-        </EditorChooiseToolbarIconContainer>
+        {canEditStructure ? (
+          <>
+            <EditorChooiseToolbarIconContainer
+              onClick={() => handleOnClick(removeCurrentComponent)}
+            >
+              <DeleteOutlined />
+            </EditorChooiseToolbarIconContainer>
+            <EditorChooiseToolbarIconContainer
+              onClick={() => handleOnClick(moveUpComponent)}
+            >
+              <UpOutlined />
+            </EditorChooiseToolbarIconContainer>
+            <EditorChooiseToolbarIconContainer
+              onClick={() => handleOnClick(moveDownComponent)}
+            >
+              <DownOutlined />
+            </EditorChooiseToolbarIconContainer>
+          </>
+        ) : (
+          <span className="text-[11px] text-white/80">只读</span>
+        )}
       </div>
     )
   );
@@ -286,9 +291,11 @@ const EditorCanvas: FC<{
     getComponentById,
     isCurrentComponent,
     setCurrentComponent,
-    getCurrentComponentConfig,
     moveComponent,
+    push,
   } = useStoreComponents();
+  const { can } = useStorePermission();
+  const canEditStructure = can("edit_structure");
 
   // 控制是否有拖拽
   const [isDragable, setIsDragable] = useState(false);
@@ -304,6 +311,7 @@ const EditorCanvas: FC<{
 
   // 拖拽结束 要移动的和被替换的元素下标索引，传入移动组件的函数
   function handleDragEnd(oldIndex: number, newIndex: number) {
+    if (!canEditStructure) return;
     moveComponent({ oldIndex, newIndex });
     setIsDragable(false);
     toolbarRef.current?.setRefrash(true);
@@ -311,6 +319,7 @@ const EditorCanvas: FC<{
 
   // 拖拽开始，设置当前选中的为默认组件
   function handleDragStart(event: DragStartEvent) {
+    if (!canEditStructure) return;
     setCurrentComponent(event.active.id.toString());
     setIsDragable(true);
   }
@@ -323,11 +332,10 @@ const EditorCanvas: FC<{
 
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
+    if (!canEditStructure) return;
     const type = e.dataTransfer.getData("componentType");
     if (type) {
-      // @ts-ignore
-      const { push } = useStoreComponents();
-      push(type);
+      push(type as TComponentTypes);
     }
   }
 
@@ -355,21 +363,21 @@ const EditorCanvas: FC<{
         onDragStart={handleDragStart}
       >
         {store.sortableCompConfig.map((item) => (
-          <SortableItem key={item} id={item}>
+          <SortableItem key={item} id={item} disabled={!canEditStructure}>
             <ComponentWrapper
               isDragable={isDragable}
               onClick={() =>
                 handleComponentClick(
-                  getComponentById(item) as TComponentPropsUnion
+                  getComponentById(item) as TComponentPropsUnion,
                 )
               }
               isCurrentComponent={isCurrentComponent(
-                getComponentById(item) as TComponentPropsUnion
+                getComponentById(item) as TComponentPropsUnion,
               )}
               id={item}
             >
               {generateComponent(
-                getComponentById(item) as TBasicComponentConfig
+                getComponentById(item) as TBasicComponentConfig,
               )}
             </ComponentWrapper>
           </SortableItem>

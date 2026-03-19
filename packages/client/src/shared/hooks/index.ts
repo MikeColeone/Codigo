@@ -4,3 +4,4 @@ export * from "./useSendCode";
 export * from "./useStoreComponents";
 export * from "./useStorePage";
 export * from "./useComponentKeypress";
+export * from "./useStorePermission";

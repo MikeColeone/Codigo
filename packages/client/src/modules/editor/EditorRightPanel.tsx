@@ -4,11 +4,13 @@ import {
   SettingOutlined,
   CodeOutlined,
   RobotOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import ComponentFields from "./components/rightPanel/ComponentFields";
 import GlobalFields from "./components/rightPanel/GlobalFields";
 import CodeSyncPanel from "./components/rightPanel/CodeSyncPanel";
 import AIChatPanel from "./components/rightPanel/AIChatPanel";
+import PermissionPanel from "./components/rightPanel/PermissionPanel";
 import { useStoreComponents, useStorePage } from "@/shared/hooks";
 
 export default function EditorRightPanel() {
@@ -57,6 +59,16 @@ export default function EditorRightPanel() {
         </>
       ),
       children: <AIChatPanel />,
+    },
+    {
+      key: "permission",
+      label: (
+        <>
+          <TeamOutlined />
+          <span>协作权限</span>
+        </>
+      ),
+      children: <PermissionPanel />,
     },
   ];
 
