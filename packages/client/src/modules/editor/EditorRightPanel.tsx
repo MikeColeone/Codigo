@@ -1,11 +1,14 @@
-import { Tabs } from "antd";
+import { useState } from "react";
+import { Button, Tabs } from "antd";
 import {
   AppstoreOutlined,
   SettingOutlined,
   CodeOutlined,
   RobotOutlined,
   TeamOutlined,
+  LineChartOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import ComponentFields from "./components/rightPanel/ComponentFields";
 import GlobalFields from "./components/rightPanel/GlobalFields";
 import CodeSyncPanel from "./components/rightPanel/CodeSyncPanel";
@@ -14,8 +17,10 @@ import PermissionPanel from "./components/rightPanel/PermissionPanel";
 import { useStoreComponents, useStorePage } from "@/shared/hooks";
 
 export default function EditorRightPanel() {
+  const navigate = useNavigate();
   const { store: storePage } = useStorePage();
   const { store: storeComps } = useStoreComponents();
+  const [activeKey, setActiveKey] = useState("components-fields");
 
   const items = [
     {
@@ -72,5 +77,25 @@ export default function EditorRightPanel() {
     },
   ];
 
-  return <Tabs defaultActiveKey="components-fields" items={items} />;
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-2">
+        <Button
+          icon={<RobotOutlined />}
+          onClick={() => setActiveKey("ai-chat")}
+          className="flex items-center justify-center"
+        >
+          AI编辑
+        </Button>
+        <Button
+          icon={<LineChartOutlined />}
+          onClick={() => navigate("/dataCount")}
+          className="flex items-center justify-center"
+        >
+          后台数据
+        </Button>
+      </div>
+      <Tabs activeKey={activeKey} onChange={setActiveKey} items={items} />
+    </div>
+  );
 }
