@@ -2,6 +2,7 @@ export * from "@codigo/runtime-core";
 
 export function renderCode(schemaText: string) {
   return `import React from "react";
+import { LowCodeRenderer } from "./LowCodeRenderer";
 
 const pageSchema = ${schemaText};
 

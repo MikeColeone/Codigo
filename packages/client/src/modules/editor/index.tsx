@@ -5,6 +5,7 @@ import { observer } from "mobx-react-lite";
 import EditorLeftPanel from "./components/leftPanel";
 import EditorRightPanel from "./components/rightPanel";
 import EditorCanvas from "./components/canvas";
+import { SandboxCanvas } from "./components/canvas/SandboxCanvas";
 
 import { useStoreComponents, useStorePage } from "@/shared/hooks";
 import { getLowCodePage } from "@/modules/editor/api/low-code";
@@ -72,30 +73,36 @@ const Editor = observer(() => {
         {/* Canvas Glow Effect */}
         <div className="absolute w-[400px] h-[720px] bg-emerald-500/5 blur-3xl rounded-full pointer-events-none"></div>
 
-        <div
-          ref={canvasContainerRef}
-          className={`editor-canvas-container relative z-10 bg-white text-left overflow-y-auto overflow-x-hidden shadow-2xl transition-all duration-300 ${
-            storePage.deviceType === "mobile"
-              ? "rounded-[30px] border-[8px] border-slate-800"
-              : "rounded-lg border border-slate-200"
-          }`}
-          style={{
-            width: storePage.canvasWidth,
-            height: storePage.canvasHeight,
-          }}
-        >
-          {/* Mobile Status Bar Simulation */}
-          {storePage.deviceType === "mobile" && (
-            <div className="sticky top-0 z-50 h-6 bg-black/90 text-white text-[10px] flex items-center justify-between px-4 font-mono">
-              <span>9:41</span>
-              <div className="flex gap-1">
-                <div className="w-3 h-3 bg-white/20 rounded-full"></div>
-                <div className="w-3 h-3 bg-white/20 rounded-full"></div>
+        {storePage.editorMode === "code" ? (
+          <div className="w-full h-full rounded-lg border border-slate-200 overflow-hidden shadow-2xl relative z-10 bg-white">
+            <SandboxCanvas />
+          </div>
+        ) : (
+          <div
+            ref={canvasContainerRef}
+            className={`editor-canvas-container relative z-10 bg-white text-left overflow-y-auto overflow-x-hidden shadow-2xl transition-all duration-300 ${
+              storePage.deviceType === "mobile"
+                ? "rounded-[30px] border-[8px] border-slate-800"
+                : "rounded-lg border border-slate-200"
+            }`}
+            style={{
+              width: storePage.canvasWidth,
+              height: storePage.canvasHeight,
+            }}
+          >
+            {/* Mobile Status Bar Simulation */}
+            {storePage.deviceType === "mobile" && (
+              <div className="sticky top-0 z-50 h-6 bg-black/90 text-white text-[10px] flex items-center justify-between px-4 font-mono">
+                <span>9:41</span>
+                <div className="flex gap-1">
+                  <div className="w-3 h-3 bg-white/20 rounded-full"></div>
+                  <div className="w-3 h-3 bg-white/20 rounded-full"></div>
+                </div>
               </div>
-            </div>
-          )}
-          <EditorCanvas store={storeComps} onRef={canvasRef} />
-        </div>
+            )}
+            <EditorCanvas store={storeComps} onRef={canvasRef} />
+          </div>
+        )}
       </div>
 
       {/* 右侧编辑组件 */}

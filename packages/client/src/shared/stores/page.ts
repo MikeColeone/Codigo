@@ -1,7 +1,8 @@
-﻿import { makeAutoObservable } from "mobx";
+import { makeAutoObservable } from "mobx";
 
 export type DeviceType = "mobile" | "pc";
 export type CodeFramework = "react" | "vue";
+export type EditorMode = "visual" | "code";
 
 interface IStorePage {
   title: string;
@@ -11,6 +12,7 @@ interface IStorePage {
   canvasWidth: number;
   canvasHeight: number;
   codeFramework: CodeFramework;
+  editorMode: EditorMode;
 }
 
 export function createStorePage() {
@@ -22,6 +24,7 @@ export function createStorePage() {
     canvasWidth: 380,
     canvasHeight: 700,
     codeFramework: "react",
+    editorMode: "visual",
   });
 }
 

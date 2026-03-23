@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react-lite";
 import { Button, Input, Segmented, Typography } from "antd";
 import { toJS } from "mobx";
@@ -63,6 +63,7 @@ function extractSchemaText(source: string) {
 function renderCode(framework: CodeFramework, schemaText: string) {
   if (framework === "vue") {
     return `<script setup lang="ts">
+import LowCodeRenderer from "./LowCodeRenderer.vue";
 const pageSchema = ${schemaText};
 </script>
 
@@ -79,6 +80,7 @@ const pageSchema = ${schemaText};
   }
 
   return `import React from "react";
+import { LowCodeRenderer } from "./LowCodeRenderer";
 
 const pageSchema = ${schemaText};
 
@@ -170,6 +172,9 @@ export default observer(function CodeSyncPanel() {
 
   return (
     <div className="space-y-3">
+      <div className="text-xs text-emerald-600 bg-emerald-50 p-2 rounded border border-emerald-100 mb-2">
+        已进入源码沙箱模式，请在左侧主区域直接编辑并运行代码。
+      </div>
       <Segmented
         block
         value={pageStore.codeFramework}
@@ -203,15 +208,3 @@ export default observer(function CodeSyncPanel() {
     </div>
   );
 });
-
-
-
-
-
-
-
-
-
-
-
-

@@ -2,6 +2,7 @@ export * from "@codigo/runtime-core";
 
 export function renderCode(schemaText: string) {
   return `<script setup lang="ts">
+import LowCodeRenderer from "./LowCodeRenderer.vue";
 const pageSchema = ${schemaText};
 </script>
 

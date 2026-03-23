@@ -40,7 +40,7 @@ export function HomeHeader() {
         <div className="flex items-center gap-4">
           <button
             className="text-sm font-medium text-slate-500 transition hover:text-slate-900"
-            onClick={() => navigate("/login_or_register")}
+            onClick={() => navigate("/login")}
           >
             登录
           </button>
@@ -55,15 +55,3 @@ export function HomeHeader() {
     </nav>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-

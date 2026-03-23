@@ -1,6 +1,6 @@
-﻿import { action } from "mobx";
+import { action } from "mobx";
 import { createStorePage } from "@/shared/stores";
-import type { TStorePage, DeviceType, CodeFramework } from "@/shared/stores";
+import type { TStorePage, DeviceType, CodeFramework, EditorMode } from "@/shared/stores";
 import { useStorePermission } from "./useStorePermission";
 
 const storePage = createStorePage();
@@ -44,6 +44,10 @@ export function useStorePage() {
     addOperationLog("update_page", "源码框架");
   });
 
+  const setEditorMode = action((mode: EditorMode) => {
+    storePage.editorMode = mode;
+  });
+
   /**
    * 更新页面信息
    * @param page - 部分页面信息
@@ -63,6 +67,7 @@ export function useStorePage() {
     setDeviceType,
     setCanvasSize,
     setCodeFramework,
+    setEditorMode,
     store: storePage,
   };
 }

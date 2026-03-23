@@ -18,7 +18,7 @@ import { useStoreComponents, useStorePage } from "@/shared/hooks";
 
 export default function EditorRightPanel() {
   const navigate = useNavigate();
-  const { store: storePage } = useStorePage();
+  const { store: storePage, setEditorMode } = useStorePage();
   const { store: storeComps } = useStoreComponents();
   const [activeKey, setActiveKey] = useState("components-fields");
 
@@ -77,12 +77,21 @@ export default function EditorRightPanel() {
     },
   ];
 
+  const handleTabChange = (key: string) => {
+    setActiveKey(key);
+    if (key === "code-sync") {
+      setEditorMode("code");
+    } else {
+      setEditorMode("visual");
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-2">
         <Button
           icon={<RobotOutlined />}
-          onClick={() => setActiveKey("ai-chat")}
+          onClick={() => handleTabChange("ai-chat")}
           className="flex items-center justify-center"
         >
           AI编辑
@@ -95,7 +104,7 @@ export default function EditorRightPanel() {
           后台数据
         </Button>
       </div>
-      <Tabs activeKey={activeKey} onChange={setActiveKey} items={items} />
+      <Tabs activeKey={activeKey} onChange={handleTabChange} items={items} />
     </div>
   );
 }
