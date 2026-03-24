@@ -1,8 +1,14 @@
 import { makeAutoObservable } from "mobx";
+import type {
+  PageWorkspaceIDEConfigResponse,
+  PageWorkspaceResponse,
+  PageWorkspaceRuntimeResponse,
+  PageWorkspaceSessionResponse,
+} from "@codigo/schema";
 
 export type DeviceType = "mobile" | "pc";
 export type CodeFramework = "react" | "vue";
-export type EditorMode = "visual" | "code";
+export type EditorMode = "visual" | "code" | "webide";
 
 export type EChartsThemeSetting = "codigoTheme" | "";
 
@@ -16,6 +22,10 @@ interface IStorePage {
   codeFramework: CodeFramework;
   editorMode: EditorMode;
   chartTheme: EChartsThemeSetting;
+  workspace: PageWorkspaceResponse | null;
+  workspaceSession: PageWorkspaceSessionResponse | null;
+  workspaceRuntime: PageWorkspaceRuntimeResponse | null;
+  workspaceIDEConfig: PageWorkspaceIDEConfigResponse | null;
 }
 
 export function createStorePage() {
@@ -29,6 +39,10 @@ export function createStorePage() {
     codeFramework: "react",
     editorMode: "visual",
     chartTheme: "codigoTheme",
+    workspace: null,
+    workspaceSession: null,
+    workspaceRuntime: null,
+    workspaceIDEConfig: null,
   });
 }
 

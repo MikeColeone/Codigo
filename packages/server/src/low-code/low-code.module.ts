@@ -13,7 +13,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SecretTool } from '../utils/SecretTool';
 import { CollaborationGateway } from './collaboration.gateway';
 import { CollaborationController } from './collaboration.controller';
+import { OpenSumiConfigService } from './opensumi-config.service';
+import { WorkspaceExplorerService } from './workspace-explorer.service';
 import { WorkspaceService } from './workspace.service';
+import { WorkspaceRuntimeService } from './workspace-runtime.service';
+import { WorkspaceSessionService } from './workspace-session.service';
 
 @Module({
   imports: [
@@ -32,7 +36,11 @@ import { WorkspaceService } from './workspace.service';
     SecretTool,
     LowCodeService,
     CollaborationGateway,
+    OpenSumiConfigService,
+    WorkspaceExplorerService,
     WorkspaceService,
+    WorkspaceRuntimeService,
+    WorkspaceSessionService,
   ],
 })
 export class LowCodeModule {}

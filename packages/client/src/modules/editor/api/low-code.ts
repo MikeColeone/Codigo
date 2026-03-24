@@ -1,4 +1,10 @@
 import type {
+  PageWorkspaceExplorerResponse,
+  PageWorkspaceFileResponse,
+  PageWorkspaceIDEConfigResponse,
+  PageWorkspaceResponse,
+  PageWorkspaceRuntimeResponse,
+  PageWorkspaceSessionResponse,
   PostReleaseRequest,
   getQuestionDataByIdRequest,
 } from "@codigo/materials-react";
@@ -37,4 +43,98 @@ export async function getPageVersions(id: number) {
 
 export async function getPageVersionDetail(id: number, versionId: string) {
   return request(`/pages/${id}/versions/${versionId}`, { method: "GET" });
+}
+
+export async function getPageWorkspace(id: number) {
+  return request<{ data: PageWorkspaceResponse }>(`/pages/${id}/workspace`, {
+    method: "GET",
+  });
+}
+
+export async function syncPageWorkspace(id: number) {
+  return request<{ data: PageWorkspaceResponse }>(`/pages/${id}/workspace`, {
+    method: "POST",
+  });
+}
+
+export async function getPageWorkspaceSession(id: number) {
+  return request<{ data: PageWorkspaceSessionResponse }>(
+    `/pages/${id}/workspace/session`,
+    {
+      method: "GET",
+    },
+  );
+}
+
+export async function startPageWorkspaceSession(id: number) {
+  return request<{ data: PageWorkspaceSessionResponse }>(
+    `/pages/${id}/workspace/session`,
+    {
+      method: "POST",
+    },
+  );
+}
+
+export async function getPageWorkspaceRuntime(id: number) {
+  return request<{ data: PageWorkspaceRuntimeResponse }>(
+    `/pages/${id}/workspace/runtime`,
+    {
+      method: "GET",
+    },
+  );
+}
+
+export async function startPageWorkspaceRuntime(id: number) {
+  return request<{ data: PageWorkspaceRuntimeResponse }>(
+    `/pages/${id}/workspace/runtime`,
+    {
+      method: "POST",
+    },
+  );
+}
+
+export async function stopPageWorkspaceRuntime(id: number) {
+  return request<{ data: PageWorkspaceRuntimeResponse | null }>(
+    `/pages/${id}/workspace/runtime`,
+    {
+      method: "DELETE",
+    },
+  );
+}
+
+export async function getPageWorkspaceIDEConfig(id: number) {
+  return request<{ data: PageWorkspaceIDEConfigResponse }>(
+    `/pages/${id}/workspace/ide-config`,
+    {
+      method: "GET",
+    },
+  );
+}
+
+export async function startPageWorkspaceIDEConfig(id: number) {
+  return request<{ data: PageWorkspaceIDEConfigResponse }>(
+    `/pages/${id}/workspace/ide-config`,
+    {
+      method: "POST",
+    },
+  );
+}
+
+export async function getPageWorkspaceExplorer(id: number) {
+  return request<{ data: PageWorkspaceExplorerResponse }>(
+    `/pages/${id}/workspace/explorer`,
+    {
+      method: "GET",
+    },
+  );
+}
+
+export async function getPageWorkspaceFile(id: number, path: string) {
+  return request<{ data: PageWorkspaceFileResponse }>(
+    `/pages/${id}/workspace/file`,
+    {
+      method: "GET",
+      params: { path },
+    },
+  );
 }

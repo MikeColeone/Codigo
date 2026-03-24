@@ -70,7 +70,7 @@ export default observer(function CodeSyncPanel() {
   return (
     <div className="space-y-3">
       <div className="text-xs text-emerald-600 bg-emerald-50 p-2 rounded border border-emerald-100 mb-2">
-        已进入源码沙箱模式，请在左侧主区域直接编辑并运行代码。
+        当前是源码沙箱模式，适合做 DSL 到代码的即时同步。真实文件树与终端请切换到 WebIDE 标签。
       </div>
       <Segmented
         block

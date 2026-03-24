@@ -1,5 +1,6 @@
 import {
   BorderOutlined,
+  SearchOutlined,
   CheckCircleOutlined,
   CheckSquareOutlined,
   CreditCardOutlined,
@@ -20,11 +21,11 @@ import {
   LineChartOutlined,
   PieChartOutlined,
 } from "@ant-design/icons";
-import { Collapse } from "antd";
+import { Collapse, Empty, Input } from "antd";
 import type { FC, ReactNode } from "react";
+import { useMemo, useState } from "react";
 import { useStoreComponents, useStorePermission } from "@/shared/hooks";
 
-// 基础组件配置数组
 const basicComponents = [
   {
     type: "button",
@@ -83,7 +84,6 @@ const basicComponents = [
   },
 ];
 
-// 表单组件配置数组
 const formComponents = [
   {
     type: "input",
@@ -107,7 +107,6 @@ const formComponents = [
   },
 ];
 
-// 报表组件配置数组
 const reportComponents = [
   {
     type: "statistic",
@@ -136,7 +135,6 @@ const reportComponents = [
   },
 ];
 
-// 导出所有组件配置，用于其他地方引用
 export const components = [
   ...basicComponents,
   ...formComponents,
@@ -149,15 +147,13 @@ interface ComponentProps {
   type: string;
 }
 
-// 公共样式组件
 const EditorComponent: FC<ComponentProps> = ({ icon, name, type }) => {
   const store = useStoreComponents();
   const { can } = useStorePermission();
   const allowInsert = can("edit_structure");
-  // 将要展示的组件类型告诉 store
+
   function handleClick() {
     if (!allowInsert) return;
-    // @ts-ignore
     store.push(type);
   }
 
@@ -175,66 +171,124 @@ const EditorComponent: FC<ComponentProps> = ({ icon, name, type }) => {
       onClick={handleClick}
       draggable={allowInsert}
       onDragStart={handleDragStart}
-      className={`group relative flex flex-col items-center justify-center gap-2 rounded-xl border border-white/5 bg-white/5 p-4 text-xs text-gray-400 select-none transition-all ${
+      className={`group relative overflow-hidden rounded-2xl border p-4 text-left select-none transition-all ${
         allowInsert
-          ? "cursor-grab hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] hover:-translate-y-1 active:cursor-grabbing"
-          : "cursor-not-allowed opacity-45"
+          ? "cursor-grab border-slate-200/80 bg-white hover:-translate-y-1 hover:border-emerald-300 hover:bg-emerald-50/80 hover:shadow-[0_20px_35px_-28px_rgba(16,185,129,0.85)] active:cursor-grabbing"
+          : "cursor-not-allowed border-slate-100 bg-slate-50 opacity-55"
       }`}
     >
-      <div className="text-xl text-emerald-500/70 group-hover:text-emerald-400 transition-colors pointer-events-none">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500/60 to-emerald-500/0 opacity-0 transition-opacity group-hover:opacity-100" />
+      <div className="pointer-events-none mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/10 text-lg text-emerald-600 transition-colors group-hover:bg-emerald-500 group-hover:text-white">
         {icon}
       </div>
-      <span className="font-medium pointer-events-none">{name}</span>
+      <div className="pointer-events-none space-y-1">
+        <div className="text-sm font-semibold text-slate-900">{name}</div>
+        <div className="text-[11px] text-slate-400">
+          {allowInsert ? "点击添加或拖入画布" : "当前角色无编辑权限"}
+        </div>
+      </div>
     </div>
   );
 };
 
-// 不同组件列表
 export default function ComponentList() {
-  const items = [
+  const [keyword, setKeyword] = useState("");
+  const normalizedKeyword = keyword.trim().toLowerCase();
+
+  const sections = [
     {
       key: "basic",
       label: "基础组件",
-      children: (
-        <div className="grid grid-cols-2 gap-3">
-          {basicComponents.map((item, index) => (
-            <EditorComponent {...item} key={index} />
-          ))}
-        </div>
-      ),
+      items: basicComponents,
     },
     {
       key: "form",
       label: "表单组件",
-      children: (
-        <div className="grid grid-cols-2 gap-3">
-          {formComponents.map((item, index) => (
-            <EditorComponent {...item} key={index} />
-          ))}
-        </div>
-      ),
+      items: formComponents,
     },
     {
       key: "report",
       label: "报表组件",
-      children: (
-        <div className="grid grid-cols-2 gap-3">
-          {reportComponents.map((item, index) => (
-            <EditorComponent {...item} key={index} />
-          ))}
-        </div>
-      ),
+      items: reportComponents,
     },
   ];
 
+  const filteredSections = useMemo(
+    () =>
+      sections
+        .map((section) => ({
+          ...section,
+          items: normalizedKeyword
+            ? section.items.filter((item) =>
+                `${item.name} ${item.type}`
+                  .toLowerCase()
+                  .includes(normalizedKeyword),
+              )
+            : section.items,
+        }))
+        .filter((section) => section.items.length > 0),
+    [normalizedKeyword],
+  );
+
+  const totalCount = filteredSections.reduce(
+    (count, section) => count + section.items.length,
+    0,
+  );
+
+  const collapseItems = filteredSections.map((section) => ({
+    key: section.key,
+    label: (
+      <div className="flex items-center justify-between pr-2">
+        <span className="font-medium text-slate-700">{section.label}</span>
+        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-400">
+          {section.items.length}
+        </span>
+      </div>
+    ),
+    children: (
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+        {section.items.map((item) => (
+          <EditorComponent {...item} key={item.type} />
+        ))}
+      </div>
+    ),
+  }));
+
   return (
-    <div className="component-list">
-      <Collapse
-        defaultActiveKey={["basic", "form", "report"]}
-        ghost
-        items={items}
-        expandIconPosition="end"
-      />
+    <div className="flex h-full flex-col">
+      <div className="px-3 pb-3">
+        <Input
+          value={keyword}
+          onChange={(event) => setKeyword(event.target.value)}
+          placeholder="搜索组件名称或类型"
+          prefix={<SearchOutlined className="text-slate-400" />}
+          allowClear
+          className="!rounded-2xl !border-slate-200 !bg-slate-50/80"
+        />
+        <div className="mt-3 flex items-center justify-between text-xs text-slate-400">
+          <span>当前可用 {totalCount} 个组件</span>
+          <span>支持点击与拖拽</span>
+        </div>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4 scrollbar-thin scrollbar-thumb-slate-200/60 hover:scrollbar-thumb-slate-300 scrollbar-track-transparent">
+        {collapseItems.length ? (
+          <Collapse
+            defaultActiveKey={filteredSections.map((section) => section.key)}
+            ghost
+            items={collapseItems}
+            expandIconPosition="end"
+            className="[&_.ant-collapse-item]:mb-3 [&_.ant-collapse-item]:rounded-2xl [&_.ant-collapse-item]:border [&_.ant-collapse-item]:border-slate-100 [&_.ant-collapse-item]:bg-slate-50/60 [&_.ant-collapse-header]:!items-center [&_.ant-collapse-header]:!px-4 [&_.ant-collapse-header]:!py-3 [&_.ant-collapse-content-box]:!px-4 [&_.ant-collapse-content-box]:!pb-4 [&_.ant-collapse-content-box]:!pt-1"
+          />
+        ) : (
+          <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50/70 py-12">
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="没有匹配的组件"
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

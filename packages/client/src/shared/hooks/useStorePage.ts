@@ -8,6 +8,12 @@ import type {
 } from "@/shared/stores";
 import { useStorePermission } from "./useStorePermission";
 import { setDefaultEChartsTheme } from "@codigo/materials-react";
+import type {
+  PageWorkspaceIDEConfigResponse,
+  PageWorkspaceResponse,
+  PageWorkspaceRuntimeResponse,
+  PageWorkspaceSessionResponse,
+} from "@codigo/schema";
 
 const storePage = createStorePage();
 
@@ -56,6 +62,28 @@ export function useStorePage() {
     storePage.editorMode = mode;
   });
 
+  const setWorkspace = action((workspace: PageWorkspaceResponse | null) => {
+    storePage.workspace = workspace;
+  });
+
+  const setWorkspaceSession = action(
+    (workspaceSession: PageWorkspaceSessionResponse | null) => {
+      storePage.workspaceSession = workspaceSession;
+    },
+  );
+
+  const setWorkspaceRuntime = action(
+    (workspaceRuntime: PageWorkspaceRuntimeResponse | null) => {
+      storePage.workspaceRuntime = workspaceRuntime;
+    },
+  );
+
+  const setWorkspaceIDEConfig = action(
+    (workspaceIDEConfig: PageWorkspaceIDEConfigResponse | null) => {
+      storePage.workspaceIDEConfig = workspaceIDEConfig;
+    },
+  );
+
   /**
    * 更新页面信息
    * @param page - 部分页面信息
@@ -80,6 +108,10 @@ export function useStorePage() {
     setCanvasSize,
     setCodeFramework,
     setEditorMode,
+    setWorkspace,
+    setWorkspaceSession,
+    setWorkspaceRuntime,
+    setWorkspaceIDEConfig,
     store: storePage,
   };
 }

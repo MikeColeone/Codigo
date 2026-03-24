@@ -1,4 +1,4 @@
-﻿import axios from "axios";
+import axios from "axios";
 import type { AxiosRequestConfig } from "axios";
 import { storeAuth } from "../hooks/useStoreAuth";
 import { message } from "antd";
@@ -31,11 +31,11 @@ request.interceptors.response.use(
   }
 );
 
-export default async function makeRequest(
+export default async function makeRequest<T = any>(
   url: string,
   options?: AxiosRequestConfig
-) {
-  return (await request({ url, ...options })).data;
+): Promise<T> {
+  return (await request({ url, ...options })).data as T;
 }
 
 

@@ -1,18 +1,25 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
   Post,
+  Query,
   Put,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import type {
-  PostReleaseRequest,
-  PostQuestionDataRequest,
+  PageWorkspaceIDEConfigResponse,
+  PageWorkspaceExplorerResponse,
+  PageWorkspaceFileResponse,
   PageWorkspaceResponse,
+  PageWorkspaceRuntimeResponse,
+  PageWorkspaceSessionResponse,
+  PostQuestionDataRequest,
+  PostReleaseRequest,
 } from '@codigo/schema';
 import {
   GetUserAgent,
@@ -22,6 +29,10 @@ import {
 import type { TCurrentUser } from '../utils/GetUserMessageTool';
 import { SecretTool } from '../utils/SecretTool';
 import { LowCodeService } from './low-code.service';
+import { OpenSumiConfigService } from './opensumi-config.service';
+import { WorkspaceExplorerService } from './workspace-explorer.service';
+import { WorkspaceRuntimeService } from './workspace-runtime.service';
+import { WorkspaceSessionService } from './workspace-session.service';
 import { WorkspaceService } from './workspace.service';
 
 @Controller('pages')
@@ -29,7 +40,11 @@ export class PagesController {
   constructor(
     private readonly secretTool: SecretTool,
     private readonly lowCodeService: LowCodeService,
+    private readonly openSumiConfigService: OpenSumiConfigService,
+    private readonly workspaceExplorerService: WorkspaceExplorerService,
     private readonly workspaceService: WorkspaceService,
+    private readonly workspaceRuntimeService: WorkspaceRuntimeService,
+    private readonly workspaceSessionService: WorkspaceSessionService,
   ) {}
 
   @Put('me')
@@ -83,6 +98,85 @@ export class PagesController {
     @getUserMess() user: TCurrentUser,
   ): Promise<PageWorkspaceResponse> {
     return this.workspaceService.syncPageWorkspace(id, user);
+  }
+
+  @Get(':id/workspace/session')
+  @UseGuards(AuthGuard('jwt'))
+  getPageWorkspaceSession(
+    @Param('id', ParseIntPipe) id: number,
+    @getUserMess() user: TCurrentUser,
+  ): Promise<PageWorkspaceSessionResponse> {
+    return this.workspaceSessionService.getPageWorkspaceSession(id, user);
+  }
+
+  @Post(':id/workspace/session')
+  @UseGuards(AuthGuard('jwt'))
+  startPageWorkspaceSession(
+    @Param('id', ParseIntPipe) id: number,
+    @getUserMess() user: TCurrentUser,
+  ): Promise<PageWorkspaceSessionResponse> {
+    return this.workspaceSessionService.startPageWorkspaceSession(id, user);
+  }
+
+  @Get(':id/workspace/runtime')
+  @UseGuards(AuthGuard('jwt'))
+  getPageWorkspaceRuntime(
+    @Param('id', ParseIntPipe) id: number,
+    @getUserMess() user: TCurrentUser,
+  ): Promise<PageWorkspaceRuntimeResponse> {
+    return this.workspaceRuntimeService.getPageWorkspaceRuntime(id, user);
+  }
+
+  @Post(':id/workspace/runtime')
+  @UseGuards(AuthGuard('jwt'))
+  startPageWorkspaceRuntime(
+    @Param('id', ParseIntPipe) id: number,
+    @getUserMess() user: TCurrentUser,
+  ): Promise<PageWorkspaceRuntimeResponse> {
+    return this.workspaceRuntimeService.startPageWorkspaceRuntime(id, user);
+  }
+
+  @Delete(':id/workspace/runtime')
+  @UseGuards(AuthGuard('jwt'))
+  stopPageWorkspaceRuntime(@Param('id', ParseIntPipe) id: number) {
+    return this.workspaceRuntimeService.stopPageWorkspaceRuntime(id);
+  }
+
+  @Get(':id/workspace/ide-config')
+  @UseGuards(AuthGuard('jwt'))
+  getPageWorkspaceIDEConfig(
+    @Param('id', ParseIntPipe) id: number,
+    @getUserMess() user: TCurrentUser,
+  ): Promise<PageWorkspaceIDEConfigResponse> {
+    return this.openSumiConfigService.getPageWorkspaceIDEConfig(id, user);
+  }
+
+  @Post(':id/workspace/ide-config')
+  @UseGuards(AuthGuard('jwt'))
+  startPageWorkspaceIDEConfig(
+    @Param('id', ParseIntPipe) id: number,
+    @getUserMess() user: TCurrentUser,
+  ): Promise<PageWorkspaceIDEConfigResponse> {
+    return this.openSumiConfigService.startPageWorkspaceIDEConfig(id, user);
+  }
+
+  @Get(':id/workspace/explorer')
+  @UseGuards(AuthGuard('jwt'))
+  getPageWorkspaceExplorer(
+    @Param('id', ParseIntPipe) id: number,
+    @getUserMess() user: TCurrentUser,
+  ): Promise<PageWorkspaceExplorerResponse> {
+    return this.workspaceExplorerService.getPageWorkspaceExplorer(id, user);
+  }
+
+  @Get(':id/workspace/file')
+  @UseGuards(AuthGuard('jwt'))
+  getPageWorkspaceFile(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('path') path: string,
+    @getUserMess() user: TCurrentUser,
+  ): Promise<PageWorkspaceFileResponse> {
+    return this.workspaceExplorerService.getPageWorkspaceFile(id, user, path);
   }
 
   @Get(':id/submissions/me')

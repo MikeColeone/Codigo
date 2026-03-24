@@ -1,5 +1,12 @@
-﻿import { CheckOutlined, EditOutlined } from "@ant-design/icons";
-import { Input, Space, Menu, Dropdown } from "antd";
+import {
+  ApartmentOutlined,
+  CheckOutlined,
+  EditOutlined,
+  HomeOutlined,
+  LineChartOutlined,
+} from "@ant-design/icons";
+import { Dropdown, Input, Space } from "antd";
+import type { MenuProps } from "antd";
 import { useState } from "react";
 import type { ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,44 +18,52 @@ export default function Left(props: { title: string }) {
   const [isEditState, setIsEditState] = useState(false);
   const navigate = useNavigate();
 
-  // 确认按钮方法
   function handleEdit(event: ChangeEvent<HTMLInputElement>) {
     setPageTitle(event.target.value);
   }
 
-  // 标题的样式和按钮点击方法
   const publicProps = {
-    className:
-      "cursor-pointer ml-2 text-slate-400 hover:text-emerald-500 transition-colors",
+    className: "cursor-pointer text-slate-400 hover:text-emerald-500 transition-colors",
     onClick: () => setIsEditState(!isEditState),
   };
 
-  const menu = (
-    <Menu
-      onClick={({ key }) => {
-        if (key === 'page') navigate('/editor');
-        if (key === 'flow') navigate('/flow');
-        if (key === 'report') navigate('/report');
-      }}
-      items={[
-        { label: '页面搭建', key: 'page' },
-        { label: '流程设计', key: 'flow' },
-        { label: '报表设计', key: 'report' },
-      ]}
-    />
-  );
+  const menuItems: MenuProps["items"] = [
+    {
+      key: "home",
+      icon: <HomeOutlined />,
+      label: "返回首页",
+      onClick: () => navigate("/"),
+    },
+    {
+      key: "page",
+      icon: <EditOutlined />,
+      label: "页面搭建",
+      onClick: () => navigate("/editor"),
+    },
+    {
+      key: "flow",
+      icon: <ApartmentOutlined />,
+      label: "流程设计",
+      onClick: () => navigate("/flow"),
+    },
+    {
+      key: "data",
+      icon: <LineChartOutlined />,
+      label: "后台数据",
+      onClick: () => navigate("/dataCount"),
+    },
+  ];
 
-  // 判断是否展示编辑还是显示状态
   if (isEditState) {
     return (
-      <Space>
+      <Space size={10}>
         <Input
           value={props.title}
           onChange={handleEdit}
-          className="w-48 !bg-white/5 !border-slate-200 !text-slate-900 focus:!border-emerald-500"
+          className="w-64 !rounded-xl !border-slate-200 !bg-white !text-slate-900 focus:!border-emerald-500"
         />
         <div
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all cursor-pointer"
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all cursor-pointer"
           onClick={() => setIsEditState(false)}
         >
           <CheckOutlined />
@@ -57,17 +72,25 @@ export default function Left(props: { title: string }) {
     );
   } else {
     return (
-      <div className="flex items-center group gap-4">
-        <Dropdown overlay={menu} trigger={['click']}>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)] cursor-pointer hover:shadow-emerald-500/20 transition-all">
+      <div className="flex items-center gap-4">
+        <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
+          <button className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 shadow-[0_10px_30px_-18px_rgba(16,185,129,0.85)] transition-all hover:-translate-y-0.5 hover:bg-emerald-500 hover:text-white">
             <span className="font-mono text-lg font-bold">C</span>
-          </div>
+          </button>
         </Dropdown>
-        <div className="flex items-center">
-          <h1 className="text-lg font-bold text-slate-900 tracking-tight">
-            {props.title}
-          </h1>
-          <EditOutlined {...publicProps} />
+        <div className="min-w-0">
+          <div className="mb-1 flex items-center gap-2">
+            <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700">
+              编辑工作台
+            </span>
+            <span className="text-xs text-slate-400">Studio</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <h1 className="truncate text-lg font-semibold tracking-tight text-slate-900">
+              {props.title}
+            </h1>
+            <EditOutlined {...publicProps} />
+          </div>
         </div>
       </div>
     );
