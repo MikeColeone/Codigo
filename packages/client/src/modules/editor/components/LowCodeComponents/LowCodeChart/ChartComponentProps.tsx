@@ -33,20 +33,45 @@ export default function ChartComponentProps(_props: ChartPropsUnion) {
       <FormPropLabel
         name="xAxisKey"
         prop={props.xAxisKey}
-        label="X轴/名称 字段名："
+        label="类目字段名（bar/line）："
       >
         <Input />
       </FormPropLabel>
       <FormPropLabel
         name="yAxisKey"
         prop={props.yAxisKey}
-        label="Y轴/值 字段名："
+        label="数值字段名（bar/line）："
+      >
+        <Input />
+      </FormPropLabel>
+      <FormPropLabel
+        name="nameKey"
+        prop={props.nameKey}
+        label="名称字段名（pie）："
+      >
+        <Input />
+      </FormPropLabel>
+      <FormPropLabel
+        name="valueKey"
+        prop={props.valueKey}
+        label="数值字段名（pie）："
       >
         <Input />
       </FormPropLabel>
       <FormPropLabel name="dataText" prop={props.dataText} label="数据 JSON：">
         <Input.TextArea
           autoSize={{ minRows: 6, maxRows: 12 }}
+          className="font-mono text-xs"
+        />
+      </FormPropLabel>
+      <FormPropLabel
+        name="optionText"
+        prop={props.optionText}
+        label="ECharts option JSON（高级）："
+      >
+        <Input.TextArea
+          placeholder='例如：{"tooltip":{"formatter":"{b}: {c}"}}'
+          autoSize={{ minRows: 8, maxRows: 16 }}
           className="font-mono text-xs"
         />
       </FormPropLabel>

@@ -6,6 +6,7 @@ import type {
 export interface IChartComponentProps {
   title: string;
   dataText: string;
+  optionText?: string;
   xAxisKey: string;
   yAxisKey: string;
   nameKey: string;
@@ -33,10 +34,15 @@ export type TChartComponentConfigResult =
   TransformedComponentConfig<IChartComponentProps>;
 
 const defaultData = [
-  { name: "A", value: 40 },
-  { name: "B", value: 20 },
-  { name: "C", value: 30 },
+  { name: "华东", value: 32840, orders: 1240, yoy: 0.18 },
+  { name: "华南", value: 24120, orders: 980, yoy: 0.12 },
+  { name: "华北", value: 19560, orders: 760, yoy: 0.09 },
+  { name: "西南", value: 16280, orders: 640, yoy: 0.15 },
+  { name: "东北", value: 11450, orders: 430, yoy: 0.06 },
+  { name: "西北", value: 8920, orders: 310, yoy: 0.08 },
 ];
+
+const defaultDataText = JSON.stringify(defaultData, null, 2);
 
 export const chartComponentDefaultConfig: TChartComponentConfigResult = {
   title: {
@@ -45,8 +51,13 @@ export const chartComponentDefaultConfig: TChartComponentConfigResult = {
     isHidden: false,
   },
   dataText: {
-    value: JSON.stringify(defaultData),
-    defaultValue: JSON.stringify(defaultData),
+    value: defaultDataText,
+    defaultValue: defaultDataText,
+    isHidden: false,
+  },
+  optionText: {
+    value: "",
+    defaultValue: "",
     isHidden: false,
   },
   xAxisKey: {

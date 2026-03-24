@@ -3,6 +3,7 @@ import ReactECharts from "echarts-for-react";
 import { getDefaultValueByConfig } from "..";
 import { chartComponentDefaultConfig, type IChartComponentProps } from "./type";
 import { getDefaultEChartsTheme } from "../../utils/echartsTheme";
+import { deepMerge } from "../../utils/deepMerge";
 
 function parseJsonText<T>(text: string, fallback: T): T {
   try {
@@ -21,11 +22,32 @@ export default function PieChartComponent(_props: IChartComponentProps) {
     };
   }, [_props]);
 
-  const ds = useMemo(() => {
-    return parseJsonText<Record<string, unknown>[]>(props.dataText, []);
-  }, [props.dataText]);
+  const defaultDs = useMemo(() => {
+    return parseJsonText<Record<string, unknown>[]>(
+      getDefaultValueByConfig(chartComponentDefaultConfig).dataText,
+      [],
+    );
+  }, []);
 
-  const option = useMemo(() => {
+  const ds = useMemo(() => {
+    return parseJsonText<Record<string, unknown>[]>(props.dataText, defaultDs);
+  }, [props.dataText, defaultDs]);
+
+  const userOption = useMemo(() => {
+    const text = props.optionText?.trim();
+    if (!text) return {};
+    const parsed = parseJsonText<unknown>(text, {});
+    if (
+      typeof parsed !== "object" ||
+      parsed === null ||
+      Array.isArray(parsed)
+    ) {
+      return {};
+    }
+    return parsed as Record<string, unknown>;
+  }, [props.optionText]);
+
+  const baseOption = useMemo(() => {
     return {
       title: {
         text: props.title,
@@ -50,6 +72,10 @@ export default function PieChartComponent(_props: IChartComponentProps) {
       ],
     };
   }, [props, ds]);
+
+  const option = useMemo(() => {
+    return deepMerge(baseOption, userOption);
+  }, [baseOption, userOption]);
 
   return (
     <div
