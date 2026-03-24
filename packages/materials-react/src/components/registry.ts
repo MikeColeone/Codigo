@@ -22,8 +22,10 @@ import {
   PieChartComponent as LowCodePieChart,
 } from ".";
 import { registerComponent } from "@codigo/plugin-system";
+import { initBuiltinEChartsThemes } from "../utils/echartsTheme";
 
 export function initBuiltinComponents() {
+  initBuiltinEChartsThemes();
   registerComponent({
     type: "button",
     name: "Button",

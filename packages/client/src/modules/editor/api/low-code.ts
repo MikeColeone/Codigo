@@ -5,38 +5,28 @@
 import request from "@/shared/utils/request";
 
 export async function postRelease(data: PostReleaseRequest) {
-  return request("/low_code/release", {
+  return request("/pages/me", {
     data,
-    method: "POST",
+    method: "PUT",
   });
 }
 
 export async function getLowCodePage() {
-  return request("/low_code/release_with_user");
+  return request("/pages/me", { method: "GET" });
 }
 
 export async function getQuestionComponents() {
-  return request("/low_code/question_components");
+  return request("/pages/me/analytics/components", { method: "GET" });
 }
 
 export async function getQuestionData() {
-  return request("/low_code/question_data");
+  return request("/pages/me/analytics/submissions", { method: "GET" });
 }
 
 export async function getQuestionDataByTypeRequest(
   data: getQuestionDataByIdRequest,
 ) {
-  return request("/low_code/get_question_data_by_id", { data, method: "POST" });
+  return request(`/pages/me/analytics/components/${data.id}/submissions`, {
+    method: "GET",
+  });
 }
-
-
-
-
-
-
-
-
-
-
-
-

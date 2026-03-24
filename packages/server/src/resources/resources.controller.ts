@@ -8,6 +8,8 @@
   Delete,
   Query,
   Get,
+  Param,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ResourcesService } from './resources.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -34,6 +36,17 @@ export class ResourcesController {
     return this.resourcesService.upload(file, body.type, user.id);
   }
 
+  @Post()
+  @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadResource(
+    @UploadedFile() file: Express.Multer.File,
+    @getUserMess() user: TCurrentUser,
+    @Body() body: ResourcesRequest,
+  ) {
+    return this.resourcesService.upload(file, body.type, user.id);
+  }
+
   // 删除资源控制器
   @Delete()
   @UseGuards(AuthGuard('jwt'))
@@ -42,6 +55,15 @@ export class ResourcesController {
     @Query() params: DeleteResourcesRequest,
   ) {
     return this.resourcesService.deleteResource(params.id, user.id);
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
+  async deleteResourceById(
+    @getUserMess() user: TCurrentUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.resourcesService.deleteResource(id, user.id);
   }
 
   // 资源获取的控制器

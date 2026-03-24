@@ -8,25 +8,25 @@ import type {
 
 // 图形验证码接口
 export async function getCaptcha(data: { type: string }) {
-  return request("/user/captcha", {
-    data,
-    method: "Post",
+  return request("/auth/captcha", {
+    params: data,
+    method: "GET",
   });
 }
 
 // 手机验证码接口
 export async function sendCode(data: SendCodeRequest) {
-  return request("/user/send_code", {
+  return request("/auth/sms-codes", {
     data,
-    method: "Post",
+    method: "POST",
   });
 }
 
 // 注册接口
 export async function getRegister(data: RegisterRequest) {
-  return request("/user/register", {
+  return request("/users", {
     data,
-    method: "Post",
+    method: "POST",
   });
 }
 
@@ -34,7 +34,7 @@ export async function getRegister(data: RegisterRequest) {
  * 账号密码登录
  */
 export async function getLoginWithPassword(data: LoginWithPasswordRequest) {
-  return request("/user/password_login", {
+  return request("/auth/tokens/password", {
     data,
     method: "POST",
   });
@@ -44,20 +44,8 @@ export async function getLoginWithPassword(data: LoginWithPasswordRequest) {
  * 验证码登录
  */
 export async function getLoginWithPhone(data: LoginWithPhoneRequest) {
-  return request("/user/phone_login", {
+  return request("/auth/tokens/phone", {
     data,
     method: "POST",
   });
 }
-
-
-
-
-
-
-
-
-
-
-
-

@@ -2,7 +2,7 @@
 import request from "@/shared/utils/request";
 
 export async function uploadFile(formData: FormData) {
-  return request("/resources/upload", {
+  return request("/resources", {
     data: formData,
     method: "POST",
     headers: {
@@ -20,20 +20,7 @@ export async function getResources(type: UploadType) {
 
 // 资源删除的接口
 export async function deleteResource(id: number) {
-  return request("/resources", {
-    params: { id },
+  return request(`/resources/${id}`, {
     method: "DELETE",
   });
 }
-
-
-
-
-
-
-
-
-
-
-
-

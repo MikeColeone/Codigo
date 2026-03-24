@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import { getDefaultValueByConfig } from "..";
 import { chartComponentDefaultConfig, type IChartComponentProps } from "./type";
+import { getDefaultEChartsTheme } from "../../utils/echartsTheme";
 
 function parseJsonText<T>(text: string, fallback: T): T {
   try {
@@ -12,8 +13,12 @@ function parseJsonText<T>(text: string, fallback: T): T {
 }
 
 export default function PieChartComponent(_props: IChartComponentProps) {
+  const echartsTheme = _props.echartsTheme ?? getDefaultEChartsTheme();
   const props = useMemo(() => {
-    return { ...getDefaultValueByConfig(chartComponentDefaultConfig), ..._props };
+    return {
+      ...getDefaultValueByConfig(chartComponentDefaultConfig),
+      ..._props,
+    };
   }, [_props]);
 
   const ds = useMemo(() => {
@@ -30,7 +35,6 @@ export default function PieChartComponent(_props: IChartComponentProps) {
       },
       tooltip: { trigger: "item" },
       legend: { bottom: 10 },
-      color: ["#2563eb", "#16a34a", "#d97706", "#7c3aed", "#0891b2", "#dc2626"],
       series: [
         {
           type: "pie",
@@ -48,8 +52,19 @@ export default function PieChartComponent(_props: IChartComponentProps) {
   }, [props, ds]);
 
   return (
-    <div style={{ width: "100%", height: "100%", minHeight: "300px", backgroundColor: "#fff" }}>
-      <ReactECharts option={option} style={{ height: "100%", width: "100%" }} />
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        minHeight: "300px",
+        backgroundColor: "#fff",
+      }}
+    >
+      <ReactECharts
+        option={option}
+        theme={echartsTheme}
+        style={{ height: "100%", width: "100%" }}
+      />
     </div>
   );
 }

@@ -1,4 +1,9 @@
 ﻿import { useNavigate } from "react-router-dom";
+import { observer } from "mobx-react-lite";
+import { Avatar, Dropdown } from "antd";
+import type { MenuProps } from "antd";
+import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
+import { useStoreAuth } from "@/shared/hooks/useStoreAuth";
 
 const menus = [
   { label: "模板案例", path: "/templates" },
@@ -6,8 +11,20 @@ const menus = [
   { label: "开发文档", path: "/doc" },
 ];
 
-export function HomeHeader() {
+export const HomeHeader = observer(() => {
   const navigate = useNavigate();
+  const { isLogin, logout } = useStoreAuth();
+
+  const userMenuItems: MenuProps["items"] = [
+    {
+      key: "logout",
+      icon: <LogoutOutlined />,
+      label: "退出登录",
+      onClick: () => {
+        logout();
+      },
+    },
+  ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur-md">
@@ -38,12 +55,24 @@ export function HomeHeader() {
         </div>
 
         <div className="flex items-center gap-4">
-          <button
-            className="text-sm font-medium text-slate-500 transition hover:text-slate-900"
-            onClick={() => navigate("/login")}
-          >
-            登录
-          </button>
+          {isLogin.get() ? (
+            <Dropdown
+              menu={{ items: userMenuItems }}
+              placement="bottomRight"
+              arrow
+            >
+              <div className="cursor-pointer transition-transform hover:scale-105">
+                <Avatar icon={<UserOutlined />} className="bg-emerald-500" />
+              </div>
+            </Dropdown>
+          ) : (
+            <button
+              className="text-sm font-medium text-slate-500 transition hover:text-slate-900"
+              onClick={() => navigate("/login")}
+            >
+              登录
+            </button>
+          )}
           <button
             className="rounded-lg bg-emerald-500 px-5 py-2 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600 hover:shadow-emerald-500/30 hover:-translate-y-0.5"
             onClick={() => navigate("/editor")}
@@ -54,4 +83,4 @@ export function HomeHeader() {
       </div>
     </nav>
   );
-}
+});

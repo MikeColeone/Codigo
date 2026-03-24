@@ -88,7 +88,7 @@ export default function ComponentRender({ data, id }: ComponentRenderType) {
   useRequest(
     async () => {
       const _f = await fetch(
-        `http://8.134.163.0:5000/api/low_code/is_question_data_posted?page_id=${data.id}`,
+        `http://8.134.163.0:5000/api/pages/${data.id}/submissions/me`,
       );
       return _f.json() as Promise<{ data: boolean }>;
     },
@@ -126,14 +126,13 @@ export default function ComponentRender({ data, id }: ComponentRenderType) {
 
       // �ύ�ʾ�����
       const _f = await fetch(
-        `http://8.134.163.0:5000/api/low_code/question_data?id=${data.id}`,
+        `http://8.134.163.0:5000/api/pages/${data.id}/submissions`,
         {
           headers: {
             "Content-Type": "application/json",
           },
           method: "POST",
           body: JSON.stringify({
-            page_id: id,
             props: localData.components
               .filter((comp) => usingInputType.includes(comp.type))
               .map((comp) => {

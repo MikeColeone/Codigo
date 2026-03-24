@@ -188,6 +188,27 @@ export class LowCodeService {
     };
   }
 
+  async getMyReleaseData(user: TCurrentUser) {
+    const lowCode = await this.PageCodeRepository.findOneBy({
+      account_id: user.id,
+    });
+    if (!lowCode) return null;
+
+    const components: (Component | null)[] = [];
+    const componentIds = lowCode.components;
+    for (const componentId of componentIds) {
+      const component = await this.ComponentRepository.findOneBy({
+        id: Number(componentId),
+      });
+      components.push(component);
+    }
+    return {
+      components,
+      componentIds,
+      ...objectOmit(lowCode, ['components']),
+    };
+  }
+
   /**
    * 发布页面是否提交过问卷服务层
    */

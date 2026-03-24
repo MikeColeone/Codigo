@@ -2,6 +2,7 @@ import type { TBasicComponentConfig as IComponent } from "@codigo/materials-reac
 import { useRequest } from "ahooks";
 import { useEffect, useMemo, useState } from "react";
 import ReactECharts from "echarts-for-react";
+import { getDefaultEChartsTheme } from "@codigo/materials-react";
 import { getQuestionDataByTypeRequest } from "@/modules/editor/api/low-code";
 import { useStorePage } from "@/shared/hooks/useStorePage";
 interface DataSourceProps {
@@ -19,7 +20,7 @@ export default function DataSource({ currentSelected }: DataSourceProps) {
   // 用于判断点击的组件是否为输入类型组件
   const isMore = useMemo(
     () => ["radio", "checkbox"].includes(currentSelected?.type ?? ""),
-    [currentSelected]
+    [currentSelected],
   );
 
   // 请求点击的某个组件信息
@@ -37,10 +38,10 @@ export default function DataSource({ currentSelected }: DataSourceProps) {
             data[0].options.map((item: any) => ({
               id: item.id,
               value: item.value,
-            }))
+            })),
           );
       },
-    }
+    },
   );
 
   // 当查看不同问卷组件展示不同组件信息
@@ -70,7 +71,7 @@ export default function DataSource({ currentSelected }: DataSourceProps) {
   // 不同非输入类型组件展示的标题
   const itemTitle = useMemo(
     () => currentSelected?.options.title ?? "默认展示的标题",
-    [currentSelected]
+    [currentSelected],
   );
 
   // 将currentData数组中的每个元素的每个属性作为key，统计出现次数
@@ -237,8 +238,14 @@ export default function DataSource({ currentSelected }: DataSourceProps) {
     <>
       {isMore ? (
         <div>
-          <ReactECharts option={getPieOptions()} />
-          <ReactECharts option={getTopOptions()} />
+          <ReactECharts
+            option={getPieOptions()}
+            theme={getDefaultEChartsTheme()}
+          />
+          <ReactECharts
+            option={getTopOptions()}
+            theme={getDefaultEChartsTheme()}
+          />
         </div>
       ) : (
         generatorTexts()
@@ -246,15 +253,3 @@ export default function DataSource({ currentSelected }: DataSourceProps) {
     </>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-

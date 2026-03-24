@@ -1,9 +1,17 @@
 import { action } from "mobx";
 import { createStorePage } from "@/shared/stores";
-import type { TStorePage, DeviceType, CodeFramework, EditorMode } from "@/shared/stores";
+import type {
+  TStorePage,
+  DeviceType,
+  CodeFramework,
+  EditorMode,
+} from "@/shared/stores";
 import { useStorePermission } from "./useStorePermission";
+import { setDefaultEChartsTheme } from "@codigo/materials-react";
 
 const storePage = createStorePage();
+
+setDefaultEChartsTheme(storePage.chartTheme || undefined);
 
 export function useStorePage() {
   const { ensurePermission, addOperationLog } = useStorePermission();
@@ -58,6 +66,10 @@ export function useStorePage() {
     for (const [key, value] of Object.entries(page))
       // @ts-ignore
       storePage[key as keyof TStorePage] = value;
+
+    if (Object.prototype.hasOwnProperty.call(page, "chartTheme")) {
+      setDefaultEChartsTheme(storePage.chartTheme || undefined);
+    }
     addOperationLog("update_page", "页面信息");
   });
 
@@ -71,15 +83,3 @@ export function useStorePage() {
     store: storePage,
   };
 }
-
-
-
-
-
-
-
-
-
-
-
-

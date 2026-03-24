@@ -4,6 +4,8 @@ export type DeviceType = "mobile" | "pc";
 export type CodeFramework = "react" | "vue";
 export type EditorMode = "visual" | "code";
 
+export type EChartsThemeSetting = "codigoTheme" | "";
+
 interface IStorePage {
   title: string;
   description: string;
@@ -13,6 +15,7 @@ interface IStorePage {
   canvasHeight: number;
   codeFramework: CodeFramework;
   editorMode: EditorMode;
+  chartTheme: EChartsThemeSetting;
 }
 
 export function createStorePage() {
@@ -25,19 +28,8 @@ export function createStorePage() {
     canvasHeight: 700,
     codeFramework: "react",
     editorMode: "visual",
+    chartTheme: "codigoTheme",
   });
 }
 
 export type TStorePage = ReturnType<typeof createStorePage>;
-
-
-
-
-
-
-
-
-
-
-
-

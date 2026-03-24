@@ -11,6 +11,7 @@ export interface IChartComponentProps {
   nameKey: string;
   valueKey: string;
   color: string;
+  echartsTheme?: string;
 }
 
 export type TBarChartComponentConfig = TBasicComponentConfig<

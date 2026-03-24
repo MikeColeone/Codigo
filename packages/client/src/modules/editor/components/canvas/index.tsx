@@ -21,13 +21,17 @@ import type { TBasicComponentConfig as TComponentPropsUnion } from "@codigo/sche
 import {
   useComponentKeyPress,
   useStoreComponents,
+  useStorePage,
   useStorePermission,
 } from "@/shared/hooks";
 import type { TStoreComponents } from "@/shared/stores";
 import { components } from "../leftPanel/ComponentList";
 import { DeleteOutlined } from "@ant-design/icons";
 
-export function generateComponent(conf: TBasicComponentConfig) {
+export function generateComponent(
+  conf: TBasicComponentConfig,
+  echartsTheme?: string,
+) {
   const Component = getComponentByType(conf.type);
 
   return (
@@ -46,7 +50,11 @@ export function generateComponent(conf: TBasicComponentConfig) {
         overflow: "hidden",
       }}
     >
-      <Component {...toJS(conf.props)} key={conf.id} />
+      <Component
+        {...toJS(conf.props)}
+        echartsTheme={echartsTheme}
+        key={conf.id}
+      />
     </div>
   );
 }
@@ -273,6 +281,7 @@ const EditorCanvas: FC<{
     push,
   } = useStoreComponents();
   const { can } = useStorePermission();
+  const { store: storePage } = useStorePage();
   const canEditStructure = can("edit_structure");
 
   const [isDragable, setIsDragable] = useState(false);
@@ -396,7 +405,7 @@ const EditorCanvas: FC<{
               position: "absolute",
             }}
           >
-            {generateComponent(component)}
+            {generateComponent(component, storePage.chartTheme || undefined)}
           </ComponentWrapper>
         );
       })}

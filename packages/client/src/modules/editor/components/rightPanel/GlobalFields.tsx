@@ -1,9 +1,10 @@
-﻿import { Form, Input } from "antd";
+﻿import { Form, Input, Select } from "antd";
 import { observer } from "mobx-react-lite";
 import type { FC } from "react";
 
 import { useStorePage } from "@/shared/hooks";
 import type { TStorePage } from "@/shared/stores";
+import { getBuiltinEChartsThemeOptions } from "@codigo/materials-react";
 
 const GlobalFields: FC<{ store: TStorePage }> = observer(({ store }) => {
   const { updatePage } = useStorePage();
@@ -30,20 +31,15 @@ const GlobalFields: FC<{ store: TStorePage }> = observer(({ store }) => {
       <Form.Item label="页面关键字（以,分割):" name="tdk">
         <Input />
       </Form.Item>
+
+      <Form.Item label="图表主题:" name="chartTheme">
+        <Select
+          options={getBuiltinEChartsThemeOptions() as any}
+          placeholder="选择图表主题"
+        />
+      </Form.Item>
     </Form>
   );
 });
 
 export default GlobalFields;
-
-
-
-
-
-
-
-
-
-
-
-
