@@ -4,9 +4,9 @@ interface FunnelTooltipParams {
   value: number;
   percent: number;
 }
-interface ECharts {
-  registerTheme: (name: string, theme: Record<string, unknown>) => void;
-}
+// interface ECharts {
+//   registerTheme: (name: string, theme: Record<string, unknown>) => void;
+// }
 
 interface TooltipSize {
   contentSize: number[];
@@ -395,15 +395,3 @@ const codigoTheme = {
 registerTheme("codigoTheme", codigoTheme);
 
 export default codigoTheme;
-
-
-
-
-
-
-
-
-
-
-
-

@@ -106,60 +106,11 @@ const Editor = observer(() => {
                 {pageId ? `Page #${pageId}` : "未绑定页面 ID"}
               </span>
             </div>
-            <h2 className="text-xl font-semibold tracking-tight text-slate-900">
-              让设计、结构与代码在一个界面里协同工作
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              当前模式为 {modeLabel}
-              ，画布尺寸实时联动，右侧属性面板支持细节微调。
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl border border-white/70 bg-white/75 px-4 py-3 text-right shadow-[0_18px_36px_-32px_rgba(15,23,42,0.55)] backdrop-blur-xl">
-              <div className="text-xs text-slate-400">画布组件数</div>
-              <div className="mt-1 text-lg font-semibold text-slate-900">
-                {storeComps.sortableCompConfig.length}
-              </div>
-            </div>
-            <div className="rounded-2xl border border-white/70 bg-white/75 px-4 py-3 text-right shadow-[0_18px_36px_-32px_rgba(15,23,42,0.55)] backdrop-blur-xl">
-              <div className="text-xs text-slate-400">当前设备</div>
-              <div className="mt-1 text-lg font-semibold text-slate-900">
-                {storePage.deviceType === "mobile" ? "移动端" : "桌面端"}
-              </div>
-            </div>
-            <div className="rounded-2xl border border-white/70 bg-white/75 px-4 py-3 text-left shadow-[0_18px_36px_-32px_rgba(15,23,42,0.55)] backdrop-blur-xl">
-              <div className="text-xs text-slate-400">选中组件</div>
-              <div className="mt-1 max-w-[160px] truncate text-sm font-semibold text-slate-900">
-                {selectedComponent?.type || "未选中"}
-              </div>
-            </div>
           </div>
         </div>
 
         <div className="relative z-10 flex-1 px-8 pb-8">
           <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[30px] border border-white/70 bg-white/40 shadow-[0_30px_80px_-52px_rgba(15,23,42,0.65)] backdrop-blur-xl">
-            <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-4">
-              <div className="flex items-center gap-3">
-                <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-700">
-                  {modeLabel}
-                </span>
-                <span className="text-sm text-slate-500">
-                  {storePage.canvasWidth} × {storePage.canvasHeight}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-slate-500">
-                <span className="rounded-full bg-slate-100 px-3 py-1">
-                  {scrolling ? "滚动中" : "已就绪"}
-                </span>
-                <span className="rounded-full bg-slate-100 px-3 py-1">
-                  {storePage.deviceType === "mobile"
-                    ? "移动预览框"
-                    : "桌面预览框"}
-                </span>
-              </div>
-            </div>
-
             <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden p-8">
               <div className="absolute left-1/2 top-1/2 h-[640px] w-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/8 blur-[120px] pointer-events-none" />
 

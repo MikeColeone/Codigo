@@ -159,9 +159,6 @@ const ComponentFields: FC<{ store: TStoreComponents }> = observer(
           <div className="text-base font-semibold text-slate-900">
             {config.type}
           </div>
-          <div className="mt-1 text-sm leading-6 text-slate-500">
-            当前组件已选中，可在下方配置内容、布局与间距，快速完成精细化调整。
-          </div>
         </div>
 
         <Collapse

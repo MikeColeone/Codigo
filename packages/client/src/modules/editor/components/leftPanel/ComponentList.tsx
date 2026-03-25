@@ -266,10 +266,6 @@ export default function ComponentList() {
           allowClear
           className="!rounded-2xl !border-slate-200 !bg-slate-50/80"
         />
-        <div className="mt-3 flex items-center justify-between text-xs text-slate-400">
-          <span>当前可用 {totalCount} 个组件</span>
-          <span>支持点击与拖拽</span>
-        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4 scrollbar-thin scrollbar-thumb-slate-200/60 hover:scrollbar-thumb-slate-300 scrollbar-track-transparent">

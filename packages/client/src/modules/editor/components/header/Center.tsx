@@ -40,12 +40,6 @@ const Center = observer(() => {
   } = useStoreComponents();
   const { can, ensurePermission, addOperationLog } = useStorePermission();
   const [historyOpen, setHistoryOpen] = useState(false);
-  const modeLabel =
-    store.editorMode === "code"
-      ? "源码模式"
-      : store.editorMode === "webide"
-        ? "WebIDE"
-        : "可视化";
 
   const { run, loading } = useRequest(
     async (values: PostReleaseRequest) => postRelease(values),
@@ -119,9 +113,6 @@ const Center = observer(() => {
         <div className="hidden h-7 w-px bg-slate-200 xl:block" />
 
         <div className="hidden items-center gap-2 xl:flex">
-          <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700">
-            {modeLabel}
-          </span>
           {store.deviceType === "pc" && (
             <Space size="small">
               <InputNumber

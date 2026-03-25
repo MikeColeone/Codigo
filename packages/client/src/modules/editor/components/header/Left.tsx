@@ -23,7 +23,8 @@ export default function Left(props: { title: string }) {
   }
 
   const publicProps = {
-    className: "cursor-pointer text-slate-400 hover:text-emerald-500 transition-colors",
+    className:
+      "cursor-pointer text-slate-400 hover:text-emerald-500 transition-colors",
     onClick: () => setIsEditState(!isEditState),
   };
 
@@ -79,12 +80,6 @@ export default function Left(props: { title: string }) {
           </button>
         </Dropdown>
         <div className="min-w-0">
-          <div className="mb-1 flex items-center gap-2">
-            <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700">
-              编辑工作台
-            </span>
-            <span className="text-xs text-slate-400">Studio</span>
-          </div>
           <div className="flex items-center gap-2">
             <h1 className="truncate text-lg font-semibold tracking-tight text-slate-900">
               {props.title}
@@ -96,15 +91,3 @@ export default function Left(props: { title: string }) {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-

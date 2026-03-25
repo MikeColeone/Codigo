@@ -28,8 +28,14 @@ const rolePermissionMap: Record<PermissionRole, PermissionAction[]> = {
     "save_draft",
   ],
   editor: ["view", "comment", "edit_content", "edit_structure", "save_draft"],
-  commenter: ["view", "comment"],
-  viewer: ["view"],
+  commenter: [
+    "view",
+    "comment",
+    "edit_content",
+    "edit_structure",
+    "save_draft",
+  ],
+  viewer: ["view", "comment", "edit_content", "edit_structure", "save_draft"],
 };
 
 const eventLabelMap: Record<string, string> = {

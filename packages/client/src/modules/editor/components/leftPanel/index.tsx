@@ -24,10 +24,6 @@ export default function EdiotLeftPanel() {
           </span>
           <span className="text-xs text-slate-500">Drag & Drop</span>
         </div>
-        <h3 className="text-base font-semibold text-slate-900">组件资源库</h3>
-        <p className="mt-1 text-sm leading-6 text-slate-500">
-          从左侧选择组件并拖入画布，快速搭建更有层次感的页面结构。
-        </p>
       </div>
 
       <div className="min-h-0 flex-1 rounded-3xl border border-slate-200/70 bg-white/80 p-1 shadow-[0_20px_40px_-34px_rgba(15,23,42,0.5)] backdrop-blur-xl">

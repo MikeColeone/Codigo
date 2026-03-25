@@ -69,9 +69,6 @@ export const StudioLayout = observer(() => {
 
         <main className="relative z-10 flex flex-1 overflow-hidden">
           <aside className="z-20 flex h-full w-[88px] shrink-0 flex-col items-center border-r border-slate-200/80 bg-white/78 px-3 py-5 shadow-[12px_0_40px_-36px_rgba(15,23,42,0.45)] backdrop-blur-xl">
-            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500 text-lg font-bold text-white shadow-[0_18px_32px_-18px_rgba(16,185,129,0.8)]">
-              C
-            </div>
             <div className="flex w-full flex-col gap-3">
               {navItems.map((item) => {
                 const active = location.pathname === item.key;
@@ -89,7 +86,9 @@ export const StudioLayout = observer(() => {
                       <span className="text-[18px] leading-none">
                         {item.icon}
                       </span>
-                      <span className="text-[11px] font-medium">{item.label}</span>
+                      <span className="text-[11px] font-medium">
+                        {item.label}
+                      </span>
                     </button>
                   </Tooltip>
                 );
