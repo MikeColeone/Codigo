@@ -10,6 +10,7 @@ const TerserJSPlugin = require('terser-webpack-plugin');
 const tsConfigPath = path.join(__dirname, './tsconfig.json');
 const dir = path.resolve('.');
 const port = 8081;
+const opensumiJsonRpcDir = path.dirname(require.resolve('@opensumi/vscode-jsonrpc/package.json'));
 
 const isDevelopment =
   process.env['NODE_ENV'] === undefined ||
@@ -85,6 +86,19 @@ module.exports = {
             },
           },
         ],
+      },
+      {
+        test: /\.js$/,
+        include: [opensumiJsonRpcDir],
+        loader: 'ts-loader',
+        options: {
+          happyPackMode: true,
+          transpileOnly: true,
+          compilerOptions: {
+            allowJs: true,
+            target: 'es2017',
+          },
+        },
       },
       {
         test: /\.png$/,

@@ -26,15 +26,15 @@ const Editor = observer(() => {
   const { store: storePage } = useStorePage();
   const { initCollaboration, cleanupCollaboration } = useStorePermission();
   const { store: storeAuth } = useStoreAuth();
-  const selectedComponent = storeComps.currentCompConfig
-    ? storeComps.compConfigs[storeComps.currentCompConfig]
-    : null;
-  const modeLabel =
-    storePage.editorMode === "code"
-      ? "源码编辑"
-      : storePage.editorMode === "webide"
-        ? "WebIDE"
-        : "可视化编辑";
+  // const selectedComponent = storeComps.currentCompConfig
+  //   ? storeComps.compConfigs[storeComps.currentCompConfig]
+  //   : null;
+  // const modeLabel =
+  //   storePage.editorMode === "code"
+  //     ? "源码编辑"
+  //     : storePage.editorMode === "webide"
+  //       ? "WebIDE"
+  //       : "可视化编辑";
 
   const canvasRef = createRef<any>();
   const canvasContainerRef = useRef<HTMLDivElement>(null);

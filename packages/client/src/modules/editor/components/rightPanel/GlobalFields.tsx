@@ -2,7 +2,6 @@ import {
   BgColorsOutlined,
   FileTextOutlined,
   GlobalOutlined,
-  InfoCircleOutlined,
 } from "@ant-design/icons";
 import { Form, Input, Select } from "antd";
 import { observer } from "mobx-react-lite";

@@ -4,6 +4,7 @@ const { ProgressPlugin } = require('webpack');
 
 const tsConfigPath = path.join(__dirname, './tsconfig.json');
 const distDir = path.join(__dirname, './dist');
+const opensumiJsonRpcDir = path.dirname(require.resolve('@opensumi/vscode-jsonrpc/package.json'));
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -33,7 +34,7 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        loader: 'ts-loader',
+        loader: require.resolve('ts-loader'),
         options: {
           configFile: tsConfigPath,
           happyPackMode: true,
@@ -43,10 +44,23 @@ module.exports = {
           },
         },
       },
+      {
+        test: /\.js$/,
+        include: [opensumiJsonRpcDir],
+        loader: require.resolve('ts-loader'),
+        options: {
+          happyPackMode: true,
+          transpileOnly: true,
+          compilerOptions: {
+            allowJs: true,
+            target: 'es2017',
+          },
+        },
+      },
     ],
   },
   resolveLoader: {
-    modules: [path.join(__dirname, '../node_modules')],
+    modules: [path.join(__dirname, '../../node_modules'), path.join(__dirname, '../node_modules')],
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
     moduleExtensions: ['-loader'],

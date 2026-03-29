@@ -7,12 +7,10 @@ import {
   roleLabelMap,
 } from "@/shared/stores/permission";
 import type {
-  Collaborator,
   PermissionAction,
   PermissionRole,
 } from "@/shared/stores/permission";
 import { io, Socket } from "socket.io-client";
-import { useEffect } from "react";
 import request from "@/shared/utils/request";
 
 const storePermission = createStorePermission();
@@ -126,7 +124,10 @@ export function useStorePermission() {
 
             if (type === "add" || type === "update") {
               store.compConfigs[data.id] = data;
-              if (!data.parentId && !store.sortableCompConfig.includes(data.id)) {
+              if (
+                !data.parentId &&
+                !store.sortableCompConfig.includes(data.id)
+              ) {
                 store.sortableCompConfig.push(data.id);
               }
               if (data.parentId && store.compConfigs[data.parentId]) {

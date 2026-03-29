@@ -1,5 +1,5 @@
 ﻿import { useState } from "react";
-import { ConfigProvider, theme } from "antd";
+import { ConfigProvider } from "antd";
 import Register from "./components/register/Register";
 import Login from "./components/login/Login";
 import { ParticleBackground } from "./components/background/ParticleBackground";
@@ -57,15 +57,3 @@ export default function LoginOrRegister() {
     </ConfigProvider>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-

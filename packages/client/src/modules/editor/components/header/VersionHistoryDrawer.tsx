@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { Drawer, List, Typography, Tag, Button, Modal, message } from "antd";
+import { Drawer, List, Tag, Button, Modal, message } from "antd";
 import { HistoryOutlined } from "@ant-design/icons";
 import { useRequest } from "ahooks";
 import { observer } from "mobx-react-lite";
@@ -7,7 +6,6 @@ import { useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
 import { getPageVersions, getPageVersionDetail } from "../../api/low-code";
 import { useStoreComponents, useStorePermission } from "@/shared/hooks";
-import type { GetPageVersionsResponse } from "@codigo/schema";
 
 interface Props {
   open: boolean;
@@ -20,7 +18,11 @@ export const VersionHistoryDrawer = observer(({ open, onClose }: Props) => {
   const { initPageData } = useStoreComponents();
   const { can, ensurePermission } = useStorePermission();
 
-  const { data: versions, loading, run: fetchVersions } = useRequest(
+  const {
+    data: versions,
+    loading,
+    run: fetchVersions,
+  } = useRequest(
     async () => {
       if (!pageId) return [];
       const res = await getPageVersions(pageId);
@@ -29,12 +31,12 @@ export const VersionHistoryDrawer = observer(({ open, onClose }: Props) => {
     {
       ready: open && !!pageId,
       refreshDeps: [open, pageId],
-    }
+    },
   );
 
   const handleApplyVersion = async (versionId: string) => {
     if (!ensurePermission("edit_content", "当前角色没有编辑权限")) return;
-    
+
     Modal.confirm({
       title: "确认应用此版本？",
       content: "应用后将覆盖当前画布内容，你可以稍后再次保存为一个新版本。",

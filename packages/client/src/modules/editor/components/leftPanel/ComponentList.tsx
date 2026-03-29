@@ -171,8 +171,13 @@ const EditorComponent: FC<ComponentProps> = ({ icon, name, type }) => {
     if (current) {
       const meta = getComponentContainerMeta(current.type);
       if (meta.isContainer) {
-        const slotName = store.getAvailableSlots(current.type)[0]?.name ?? "default";
-        store.push(type, { left: 24, top: 24 }, { parentId: current.id, slot: slotName });
+        const slotName =
+          store.getAvailableSlots(current.type)[0]?.name ?? "default";
+        store.push(
+          type,
+          { left: 24, top: 24 },
+          { parentId: current.id, slot: slotName },
+        );
         return;
       }
     }
@@ -250,11 +255,6 @@ export default function ComponentList() {
         }))
         .filter((section) => section.items.length > 0),
     [normalizedKeyword],
-  );
-
-  const totalCount = filteredSections.reduce(
-    (count, section) => count + section.items.length,
-    0,
   );
 
   const collapseItems = filteredSections.map((section) => ({

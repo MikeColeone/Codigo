@@ -1,6 +1,5 @@
 ﻿import { ColorPicker, Input, Segmented } from "antd";
 import { useMemo } from "react";
-import type { ColorFactory } from "antd/es/color-picker/color";
 
 import type {
   IQrcodeComponentProps,
