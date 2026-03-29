@@ -15,6 +15,7 @@ export class TextMessageTool {
     phone: string,
     randomCode: number,
   ): Promise<{ code?: number; [key: string]: unknown }> {
+    console.log(phone, randomCode);
     const url = new URL('https://jmsms.market.alicloudapi.com/sms/send');
 
     url.searchParams.append('mobile', phone);
@@ -28,6 +29,7 @@ export class TextMessageTool {
       },
     });
 
+    console.log(response);
     return (await response.json()) as { code?: number; [key: string]: unknown };
   }
 }

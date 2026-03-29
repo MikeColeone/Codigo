@@ -19,7 +19,7 @@ export class AbnormalFilter implements ExceptionFilter {
     const timestamp = new Date().toISOString();
 
     if (!(exception instanceof HttpException)) {
-      const message = '服务器内部异�?;
+      const message = '服务器内部异常';
       return {
         code: Code.ServerError,
         data: null,

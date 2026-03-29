@@ -28,24 +28,12 @@ request.interceptors.response.use(
     if (code === "ERR_BAD_REQUEST") {
       message.warning(response?.data?.msg ?? "出现未知错误");
     }
-  }
+  },
 );
 
 export default async function makeRequest<T = any>(
   url: string,
-  options?: AxiosRequestConfig
+  options?: AxiosRequestConfig,
 ): Promise<T> {
-  return (await request({ url, ...options })).data as T;
+  return (await request({ url, ...options }))?.data as T;
 }
-
-
-
-
-
-
-
-
-
-
-
-

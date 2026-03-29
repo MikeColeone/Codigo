@@ -35,8 +35,8 @@ export class UserController {
   }
 
   /**
-   * 图形验证码接�?
-   * @param body 请求体，包含验证码类�?
+   * 图形验证码接口
+   * @param body 请求体，包含验证码类型
    * @param ip 用户 IP 地址
    * @param agent 用户代理信息
    * @returns
@@ -53,30 +53,6 @@ export class UserController {
   }
 
   /**
-   * 发送短信验证码接口
-   * @param body 请求体，包含手机号、图形验证码和验证码类型
-   * @param agent 用户代理信息
-   * @param ip 用户 IP 地址
-   * @returns 发送结�?
-   */
-  @Post('send_code')
-  async sendCode(
-    @Body() body: SendCodeDto,
-    @GetUserAgent() agent: string,
-    @GetUserIP() ip: string,
-  ) {
-    const { phone, captcha, type } = body;
-    const key = this.secrectTool.getSecret(ip + agent);
-    return this.userService.sendCode(
-      phone,
-      captcha,
-      type,
-      key,
-      this.randomTool.randomCode(),
-    );
-  }
-
-  /**
    * 注册接口
    * @param body 请求体，包含注册信息
    * @returns 注册结果
@@ -88,7 +64,7 @@ export class UserController {
   }
 
   /**
-   * 账号密码登录控制�?
+   * 账号密码登录控制器
    */
   @Post('password_login')
   passwordLogin(@Body() body: PasswordLoginDto) {
@@ -97,13 +73,11 @@ export class UserController {
 
   /**
    * 手机验证码登录控制器
-   * @param body 请求体，包含手机号和验证�?
-   * @return 登录结果，包�?JWT token 或错误信�?
+   * @param body 请求体，包含手机号和验证码
+   * @return 登录结果，包含 JWT token 或错误信息
    */
   @Post('phone_login')
   phoneLogin(@Body() body: PhoneLoginDto) {
     return this.userService.phoneLogin(body);
   }
-
-  // to-do: 微信扫码登录接口
 }

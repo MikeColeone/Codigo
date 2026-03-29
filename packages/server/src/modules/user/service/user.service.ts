@@ -34,7 +34,7 @@ export class UserService {
 
   async getCaptcha(key: string, type: string) {
     const svgCaptcha = await this.captchaTool.generateCaptcha();
-    this.redis.set(`${type}:captcha:${key}`, svgCaptcha.text, 60);
+    await this.redis.set(`${type}:captcha:${key}`, svgCaptcha.text, 60);
     return { data: svgCaptcha.data, text: svgCaptcha.text };
   }
 
@@ -45,15 +45,6 @@ export class UserService {
     key: string,
     randomCode: number,
   ) {
-    // 60秒内不能重复获取
-    if (await this.redis.exists(`${type}:code:${phone}`)) {
-      const dateRdis = dayjs(
-        Number((await this.redis.get(`${type}:code:${phone}`))!.split('_')[0]),
-      );
-      if (dayjs(Date.now()).diff(dateRdis, 'second') <= 60) {
-        throw new BadRequestException('60秒内请勿重复获取验证码');
-      }
-    }
     // 是否有获取图形验证码
     if (!(await this.redis.exists(`${type}:captcha:${key}`)))
       throw new BadRequestException('请先获取图形验证码');
@@ -63,19 +54,29 @@ export class UserService {
     if (!(captcha.toLowerCase() === captchaRedis!.toLowerCase()))
       throw new BadRequestException('图形验证码不正确');
 
+    // 60秒内不能重复获取
+    if (await this.redis.exists(`${type}:code:${phone}`)) {
+      const dateRdis = dayjs(
+        Number((await this.redis.get(`${type}:code:${phone}`))!.split('_')[0]),
+      );
+      if (dayjs(Date.now()).diff(dateRdis, 'second') <= 60) {
+        throw new BadRequestException('60秒内请勿重复获取验证码');
+      }
+    }
+
     // 发送短信验证码
     const codeRes = await this.textMessageTool.sendTextMessage(
       phone,
       randomCode,
     );
 
-    this.redis.del(`${type}:captcha:${key}`);
+    await this.redis.del(`${type}:captcha:${key}`);
 
     if (codeRes.code === 200) {
       const randomCodeTime = `${Date.now()}_${randomCode}`;
-      this.redis.set(`${type}:code:${phone}`, randomCodeTime, 60);
+      await this.redis.set(`${type}:code:${phone}`, randomCodeTime, 60);
     } else {
-      this.redis.del(`${type}:code:${phone}`);
+      await this.redis.del(`${type}:code:${phone}`);
       throw new BadRequestException('发送失败请重试');
     }
   }
