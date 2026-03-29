@@ -46,18 +46,16 @@ export function useStoreAuth() {
     }
   });
 
-  const updateLocalUserInfo = action(
-    (updates: Partial<IUser>) => {
-      if (storeAuth.details) {
-        runInAction(() => {
-          storeAuth.details = {
-            ...storeAuth.details,
-            ...updates,
-          } as IUser;
-        });
-      }
-    },
-  );
+  const updateLocalUserInfo = action((updates: Partial<IUser>) => {
+    if (storeAuth.details) {
+      runInAction(() => {
+        storeAuth.details = {
+          ...storeAuth.details,
+          ...updates,
+        } as IUser;
+      });
+    }
+  });
 
   return {
     login,
