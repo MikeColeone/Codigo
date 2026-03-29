@@ -2,6 +2,7 @@ import type {
   ILowCode,
   IComponent,
   IComponentData,
+  IPageSchema,
   IPageVersion,
   SyncSchemaItem,
 } from "..";
@@ -9,13 +10,19 @@ import type {
 export type PostReleaseRequest = Omit<
   ILowCode,
   "id" | "account_id" | "components"
-> & { components: Omit<IComponent, "account_id" | "page_id">[] };
+> & {
+  components?: Omit<IComponent, "account_id" | "page_id">[];
+  schema_version?: number;
+  schema?: IPageSchema;
+};
 
 export type PostQuestionDataRequest = Pick<IComponentData, "page_id" | "props">;
 
 export type GetReleaseDataResponse = Omit<ILowCode, "components"> & {
   componentIds: string[];
   components: IComponent[];
+  schema_version?: number;
+  schema?: IPageSchema;
 };
 
 export type getQuestionDataByIdRequest = Pick<IComponent, "id">;

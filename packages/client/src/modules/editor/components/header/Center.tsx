@@ -10,7 +10,6 @@ import {
   HistoryOutlined,
 } from "@ant-design/icons";
 import type {
-  TBasicComponentConfig as IComponent,
   PostReleaseRequest,
 } from "@codigo/materials-react";
 import { useRequest } from "ahooks";
@@ -30,8 +29,7 @@ const Center = observer(() => {
   const nav = useNavigate();
   const { store, setDeviceType, setCanvasSize } = useStorePage();
   const {
-    store: storeComponents,
-    getComponentById,
+    serializeSchema,
     storeInLocalStorage,
     undo,
     redo,
@@ -62,17 +60,11 @@ const Center = observer(() => {
 
   function handleGoRelease() {
     if (!ensurePermission("publish", "当前角色没有发布权限")) return;
-    const components = storeComponents.sortableCompConfig
-      .map((comp) => getComponentById(comp))
-      .map((comp) => ({
-        type: comp.type,
-        options: comp.props,
-      })) as IComponent[];
-
     run({
-      components,
       desc: store.description,
       page_name: store.title,
+      schema: serializeSchema(),
+      schema_version: 2,
       tdk: store.tdk,
     });
     addOperationLog("publish", store.title);

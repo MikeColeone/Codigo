@@ -1,4 +1,5 @@
 import {
+  LayoutOutlined,
   BorderOutlined,
   SearchOutlined,
   CheckCircleOutlined,
@@ -23,6 +24,7 @@ import {
 } from "@ant-design/icons";
 import { Collapse, Empty, Input } from "antd";
 import type { TComponentTypes } from "@codigo/schema";
+import { getComponentContainerMeta } from "@codigo/materials-react";
 import type { FC, ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { useStoreComponents, useStorePermission } from "@/shared/hooks";
@@ -34,6 +36,16 @@ interface ComponentProps {
 }
 
 const basicComponents: ComponentProps[] = [
+  {
+    type: "container",
+    name: "容器组件",
+    icon: <LayoutOutlined />,
+  },
+  {
+    type: "twoColumn",
+    name: "双栏布局组件",
+    icon: <LayoutOutlined />,
+  },
   {
     type: "button",
     name: "按钮组件",
@@ -155,6 +167,15 @@ const EditorComponent: FC<ComponentProps> = ({ icon, name, type }) => {
 
   function handleClick() {
     if (!allowInsert) return;
+    const current = store.getCurrentComponentConfig.get();
+    if (current) {
+      const meta = getComponentContainerMeta(current.type);
+      if (meta.isContainer) {
+        const slotName = store.getAvailableSlots(current.type)[0]?.name ?? "default";
+        store.push(type, { left: 24, top: 24 }, { parentId: current.id, slot: slotName });
+        return;
+      }
+    }
     store.push(type);
   }
 

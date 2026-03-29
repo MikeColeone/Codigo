@@ -5,9 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { CaretLeftOutlined } from "@ant-design/icons";
 import { generateComponent } from "@/modules/editor/components/canvas";
 import { useStoreComponents, useStorePage } from "@/shared/hooks";
+import type { ComponentNode } from "@codigo/schema";
 
 const PreviewCanvas = observer(() => {
-  const { store, getComponentById, loadPageData } = useStoreComponents();
+  const { store, getComponentTree, loadPageData } = useStoreComponents();
 
   // 从本地或者服务端读取组件信息
   useEffect(() => {
@@ -18,23 +19,24 @@ const PreviewCanvas = observer(() => {
     <div
       className="relative"
       style={{
-        minHeight: `${Math.max(700, store.sortableCompConfig.length * 220)}px`,
+        minHeight: `${Math.max(700, Object.keys(store.compConfigs).length * 220)}px`,
       }}
     >
-      {store.sortableCompConfig.map((id) => {
-        const conf = getComponentById(id);
-        if (!conf) return null;
-
+      {getComponentTree.get().map(function renderTreeNode(node: ComponentNode) {
+        const renderedChildren =
+          node.children?.map((child) => renderTreeNode(child)) ?? [];
         return (
           <div
-            key={id}
+            key={node.id}
             className="absolute"
             style={{
-              left: conf.styles?.left as string | number | undefined,
-              top: conf.styles?.top as string | number | undefined,
+              left: node.styles?.left as string | number | undefined,
+              top: node.styles?.top as string | number | undefined,
             }}
           >
-            {generateComponent(conf)}
+            <div className="relative">
+              {generateComponent(node, undefined, renderedChildren)}
+            </div>
           </div>
         );
       })}

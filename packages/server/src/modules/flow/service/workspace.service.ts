@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { existsSync } from 'node:fs';
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
-import type { PageWorkspaceResponse, SyncSchemaItem } from '@codigo/schema';
+import { buildComponentTree, type PageWorkspaceResponse, type SyncSchemaItem } from '@codigo/schema';
 import { Repository } from 'typeorm';
 import { Component, Page } from 'src/modules/flow/entity/low-code.entity';
 import { PageCollaborator } from 'src/modules/flow/entity/page-collaborator.entity';
@@ -99,22 +99,28 @@ export class WorkspaceService {
   }
 
   private async buildPageSchema(page: Page): Promise<SyncSchemaItem[]> {
-    const components = await Promise.all(
-      page.components.map((componentId) =>
-        this.componentRepository.findOneBy({
-          id: Number(componentId),
-          page_id: page.id,
-        }),
-      ),
-    );
+    const flatComponents = await this.componentRepository.find({
+      where: {
+        page_id: page.id,
+      },
+      order: {
+        id: 'ASC',
+      },
+    });
 
-    return components
-      .filter((component): component is Component => component !== null)
-      .map((component) => ({
-        id: String(component.id),
+    return buildComponentTree(
+      flatComponents.map((component) => ({
+        id: component.node_id,
         type: component.type,
+        name: component.name,
         props: component.options ?? {},
-      }));
+        styles: component.styles,
+        slot: component.slot ?? undefined,
+        meta: component.meta,
+        parentId: component.parent_node_id,
+      })),
+      page.components,
+    );
   }
 
   private buildWorkspaceMetadata(

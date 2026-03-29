@@ -126,13 +126,22 @@ export function useStorePermission() {
 
             if (type === "add" || type === "update") {
               store.compConfigs[data.id] = data;
-              if (!store.sortableCompConfig.includes(data.id)) {
+              if (!data.parentId && !store.sortableCompConfig.includes(data.id)) {
                 store.sortableCompConfig.push(data.id);
               }
+              if (data.parentId && store.compConfigs[data.parentId]) {
+                const parent = store.compConfigs[data.parentId];
+                if (!parent.childIds.includes(data.id)) {
+                  parent.childIds.push(data.id);
+                }
+              }
             } else if (type === "remove") {
-              delete store.compConfigs[data.id];
+              const ids = data.subtreeIds ?? [data.id];
+              ids.forEach((targetId: string) => {
+                delete store.compConfigs[targetId];
+              });
               store.sortableCompConfig = store.sortableCompConfig.filter(
-                (id) => id !== data.id,
+                (id) => !ids.includes(id),
               );
               if (store.currentCompConfig === data.id) {
                 store.currentCompConfig = null;

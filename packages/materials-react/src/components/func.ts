@@ -3,11 +3,19 @@ import type {
   TBasicComponentConfig,
   TransformedComponentConfig,
 } from "@codigo/schema";
-import { getComponentPlugin } from "@codigo/plugin-system";
+import { getComponentPlugin, type IComponentSlotDefinition } from "@codigo/plugin-system";
 
 // 获取组件的入口
 export function getComponentByType(type: TBasicComponentConfig["type"]) {
   return getComponentPlugin(type)?.render;
+}
+
+export function getComponentContainerMeta(type: TBasicComponentConfig["type"]) {
+  const plugin = getComponentPlugin(type);
+  return {
+    isContainer: Boolean(plugin?.isContainer),
+    slots: (plugin?.slots ?? []) as IComponentSlotDefinition[],
+  };
 }
 
 // 将组件配置属性的深层对象，转成一维，直接拿到defaultValue值作为配置属性值

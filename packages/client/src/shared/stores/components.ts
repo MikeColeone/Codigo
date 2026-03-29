@@ -1,11 +1,14 @@
-﻿import type { TBasicComponentConfig as TComponentPropsUnion } from "@codigo/schema";
+import type {
+  ComponentNode,
+  ComponentNodeRecord,
+} from "@codigo/schema";
 import { makeAutoObservable } from "mobx";
 
 interface IStoreComponents {
-  compConfigs: Record<string, TComponentPropsUnion>; // 所有组件属性信息
-  sortableCompConfig: string[]; // 所有组件的排序
-  currentCompConfig: string | null; // 当前选中的组件
-  copyedCompConig: TComponentPropsUnion | null; // 复制组件
+  compConfigs: Record<string, ComponentNodeRecord>;
+  sortableCompConfig: string[];
+  currentCompConfig: string | null;
+  copyedCompConig: ComponentNode | null;
   itemsExpandIndex: number;
 }
 
@@ -20,7 +23,6 @@ export function createStoreComponents() {
 }
 
 export type TStoreComponents = ReturnType<typeof createStoreComponents>;
-
 
 
 

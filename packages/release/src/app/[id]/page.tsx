@@ -1,5 +1,5 @@
 import ComponentRender from "../../components/ComponentRender";
-import type { GetReleaseDataResponse } from "@codigo/share";
+import type { GetReleaseDataResponse } from "@codigo/schema";
 
 async function getData(id: string) {
   // 请求后端接口获取发布页面组件

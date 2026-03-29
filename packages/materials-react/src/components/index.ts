@@ -1,4 +1,6 @@
 export * from "./func";
+export * from "./LowCodeContainer";
+export * from "./LowCodeTwoColumn";
 export * from "./Button";
 export * from "./LowCodeVideo";
 export * from "./LowCodeImage";

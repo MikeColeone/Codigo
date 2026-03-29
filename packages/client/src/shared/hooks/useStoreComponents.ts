@@ -1,8 +1,17 @@
 import { ulid } from "ulid";
 import { action, computed, toJS } from "mobx";
-import type { TBasicComponentConfig, TComponentTypes } from "@codigo/schema";
-import type { TBasicComponentConfig as TComponentPropsUnion } from "@codigo/schema";
-import { calcValueByString } from "@codigo/materials-react";
+import type {
+  ComponentNode,
+  ComponentNodeRecord,
+  IPageSchema,
+  TBasicComponentConfig,
+  TComponentTypes,
+} from "@codigo/schema";
+import {
+  calcValueByString,
+  flattenComponentTree,
+  getComponentContainerMeta,
+} from "@codigo/materials-react";
 import { createStoreComponents } from "@/shared/stores";
 import { arrayMove } from "@dnd-kit/sortable";
 import { trackUndo } from "mobx-shallow-undo";
@@ -13,6 +22,8 @@ import { useStorePermission } from "./useStorePermission";
 
 const storeComponents = createStoreComponents();
 const codeSupportedTypes: TComponentTypes[] = [
+  "container",
+  "twoColumn",
   "button",
   "video",
   "swiper",
@@ -37,9 +48,23 @@ const layoutGapX = 380;
 const layoutGapY = 200;
 const layoutStartX = 32;
 const layoutStartY = 24;
+const schemaStorageKey = "pageSchema";
+
+type CodeSyncNode = {
+  id?: string;
+  type: string;
+  props?: Record<string, any>;
+  styles?: TBasicComponentConfig["styles"];
+  slot?: string;
+  children?: CodeSyncNode[];
+};
 
 function getDefaultWidthByType(type: TComponentTypes): string {
   switch (type) {
+    case "twoColumn":
+      return "960px";
+    case "container":
+      return "720px";
     case "table":
     case "card":
     case "list":
@@ -70,10 +95,10 @@ function getDefaultPosition(index: number) {
 }
 
 function normalizeLayout(
-  compConfigs: Record<string, TComponentPropsUnion>,
-  order: string[],
+  compConfigs: Record<string, ComponentNodeRecord>,
+  ids: string[],
 ) {
-  order.forEach((id, index) => {
+  ids.forEach((id, index) => {
     const comp = compConfigs[id];
     if (!comp) return;
     const nextStyles = { ...(comp.styles ?? {}) };
@@ -90,7 +115,134 @@ function normalizeLayout(
         : (nextStyles.width ?? getDefaultWidthByType(comp.type));
 
     comp.styles = nextStyles;
+    normalizeLayout(compConfigs, comp.childIds);
   });
+}
+
+function createRecordFromNode(
+  node: ComponentNode,
+  parentId: string | null,
+): ComponentNodeRecord {
+  return {
+    id: node.id,
+    type: node.type,
+    name: node.name,
+    props: JSON.parse(JSON.stringify(node.props ?? {})),
+    styles: node.styles ? { ...node.styles } : undefined,
+    slot: node.slot,
+    meta: node.meta ? { ...node.meta } : undefined,
+    parentId,
+    childIds: (node.children ?? []).map((child) => child.id),
+  };
+}
+
+function normalizeFromSchema(schema?: IPageSchema | null) {
+  const nextCompConfigs: Record<string, ComponentNodeRecord> = {};
+  const nextSortableCompConfig: string[] = [];
+
+  if (!schema?.components?.length) {
+    return { compConfigs: nextCompConfigs, sortableCompConfig: nextSortableCompConfig };
+  }
+
+  const flatNodes = flattenComponentTree(schema.components);
+  for (const flatNode of flatNodes) {
+    const { parentId = null, ...node } = flatNode;
+    nextCompConfigs[node.id] = createRecordFromNode(
+      node as ComponentNode,
+      parentId,
+    );
+  }
+
+  for (const node of schema.components) {
+    nextSortableCompConfig.push(node.id);
+  }
+
+  normalizeLayout(nextCompConfigs, nextSortableCompConfig);
+  return {
+    compConfigs: nextCompConfigs,
+    sortableCompConfig: nextSortableCompConfig,
+  };
+}
+
+function sanitizeCodeSyncNodes(nodes: CodeSyncNode[]): ComponentNode[] {
+  return nodes
+    .filter((item) => codeSupportedTypes.includes(item.type as TComponentTypes))
+    .map((item) => ({
+      id: item.id || ulid(),
+      type: item.type as TComponentTypes,
+      props: item.props ?? {},
+      styles: item.styles,
+      slot: item.slot,
+      children: sanitizeCodeSyncNodes(item.children ?? []),
+    }));
+}
+
+function normalizeFromFlatComponents(components: CodeSyncNode[]) {
+  return normalizeFromSchema({
+    version: 2,
+    components: sanitizeCodeSyncNodes(components),
+  });
+}
+
+function serializeStore(store: TStoreComponents): IPageSchema {
+  return {
+    version: 2,
+    components: store.sortableCompConfig
+      .map((id) => buildTreeNode(store.compConfigs, id))
+      .filter(Boolean) as ComponentNode[],
+  };
+}
+
+function gatherSubtreeIds(
+  compConfigs: Record<string, ComponentNodeRecord>,
+  id: string,
+): string[] {
+  const current = compConfigs[id];
+  if (!current) return [];
+  return [id, ...current.childIds.flatMap((childId) => gatherSubtreeIds(compConfigs, childId))];
+}
+
+function duplicateTreeNode(node: ComponentNode): ComponentNode {
+  return {
+    ...node,
+    id: ulid(),
+    props: JSON.parse(JSON.stringify(node.props ?? {})),
+    styles: node.styles ? { ...node.styles } : undefined,
+    meta: node.meta ? { ...node.meta } : undefined,
+    children: (node.children ?? []).map((child) => duplicateTreeNode(child)),
+  };
+}
+
+function offsetNodePosition(node: ComponentNode, delta = 24) {
+  const left = Number.parseInt(String(node.styles?.left ?? "0"), 10);
+  const top = Number.parseInt(String(node.styles?.top ?? "0"), 10);
+  node.styles = {
+    ...(node.styles ?? {}),
+    position: "absolute",
+    left: `${Number.isNaN(left) ? delta : left + delta}px`,
+    top: `${Number.isNaN(top) ? delta : top + delta}px`,
+    width: node.styles?.width ?? getDefaultWidthByType(node.type),
+  };
+}
+
+function buildTreeNode(
+  compConfigs: Record<string, ComponentNodeRecord>,
+  id: string,
+): ComponentNode | null {
+  const current = compConfigs[id];
+  if (!current) return null;
+  return {
+    id: current.id,
+    type: current.type,
+    name: current.name,
+    props: JSON.parse(JSON.stringify(current.props ?? {})),
+    styles: current.styles ? { ...current.styles } : undefined,
+    slot: current.slot,
+    meta: current.meta ? { ...current.meta } : undefined,
+    children: current.childIds
+      .map((childId) => buildTreeNode(compConfigs, childId))
+      .filter(Boolean) as ComponentNode[],
+  };
 }
 
 // 撤销前进的插件
@@ -105,23 +257,276 @@ const sotreComponentsUndoer = trackUndo(
 export function useStoreComponents() {
   const { ensurePermission, addOperationLog } = useStorePermission();
 
-  // 默认选中的组件
   const setCurrentComponent = action((id: string) => {
     storeComponents.currentCompConfig = id;
   });
 
-  // 定义添加组件的函数
-  const push = action(
-    (type: TComponentTypes, position?: { left: number; top: number }) => {
-      if (!ensurePermission("edit_structure", "当前角色不能新增组件")) return;
-      if (!storeComponents.compConfigs) {
-        storeComponents.compConfigs = {};
+  const getSiblingIds = (id: string) => {
+    const current = storeComponents.compConfigs[id];
+    if (!current) return storeComponents.sortableCompConfig;
+    const siblings = current.parentId
+      ? (storeComponents.compConfigs[current.parentId]?.childIds ?? [])
+      : storeComponents.sortableCompConfig;
+    return siblings.filter((siblingId) => {
+      const sibling = storeComponents.compConfigs[siblingId];
+      if (!sibling) return false;
+      return (sibling.slot ?? "default") === (current.slot ?? "default");
+    });
+  };
+
+  const insertIntoOrderedIds = action(
+    (
+      ids: string[],
+      nodeId: string,
+      targetIndex?: number,
+    ) => {
+      const nextIds = ids.filter((item) => item !== nodeId);
+      const insertAt =
+        typeof targetIndex === "number"
+          ? Math.max(0, Math.min(targetIndex, nextIds.length))
+          : nextIds.length;
+      nextIds.splice(insertAt, 0, nodeId);
+      return nextIds;
+    },
+  );
+
+  const insertChildIdBySlot = action(
+    (
+      parentId: string,
+      nodeId: string,
+      slot: string,
+      targetIndex?: number,
+    ) => {
+      const parent = storeComponents.compConfigs[parentId];
+      if (!parent) return;
+      const childIds = parent.childIds.filter((item) => item !== nodeId);
+      const slotSiblingIds = childIds.filter((childId) => {
+        const child = storeComponents.compConfigs[childId];
+        return child && (child.slot ?? "default") === slot;
+      });
+      const nextSlotIds = insertIntoOrderedIds(slotSiblingIds, nodeId, targetIndex);
+
+      if (!slotSiblingIds.length) {
+        parent.childIds = [...childIds, nodeId];
+        return;
       }
 
+      const firstIndex = childIds.findIndex((item) => item === slotSiblingIds[0]);
+      const lastIndex = childIds.findIndex(
+        (item) => item === slotSiblingIds[slotSiblingIds.length - 1],
+      );
+      const before = childIds.slice(0, firstIndex);
+      const after = childIds.slice(lastIndex + 1);
+      const middle = childIds
+        .slice(firstIndex, lastIndex + 1)
+        .filter((item) => {
+          const child = storeComponents.compConfigs[item];
+          return child && (child.slot ?? "default") !== slot;
+        });
+      parent.childIds = [...before, ...nextSlotIds, ...middle, ...after];
+    },
+  );
+
+  const syncSchema = (keepCurrentId?: string | null) => {
+    normalizeLayout(storeComponents.compConfigs, storeComponents.sortableCompConfig);
+    if (
+      keepCurrentId &&
+      !storeComponents.compConfigs[keepCurrentId] &&
+      storeComponents.currentCompConfig === keepCurrentId
+    ) {
+      storeComponents.currentCompConfig = storeComponents.sortableCompConfig[0] ?? null;
+    }
+  };
+
+  const getComponentTree = computed(() => {
+    return serializeStore(storeComponents).components;
+  });
+
+  const insertNodeTree = action(
+    (
+      node: ComponentNode,
+      args?: {
+        parentId?: string | null;
+        slot?: string | null;
+        index?: number;
+      },
+    ) => {
+      const parentId = args?.parentId ?? null;
+      const targetIndex = args?.index;
+      const flatNodes = flattenComponentTree([node], parentId);
+
+      for (const flatNode of flatNodes) {
+        const { parentId: nextParentId = null, ...recordNode } = flatNode;
+        storeComponents.compConfigs[recordNode.id] = createRecordFromNode(
+          recordNode as ComponentNode,
+          nextParentId,
+        );
+      }
+
+      if (parentId) {
+        insertChildIdBySlot(parentId, node.id, args?.slot ?? "default", targetIndex);
+      } else {
+        storeComponents.sortableCompConfig = insertIntoOrderedIds(
+          storeComponents.sortableCompConfig,
+          node.id,
+          targetIndex,
+        );
+      }
+
+      const current = storeComponents.compConfigs[node.id];
+      if (current) {
+        current.parentId = parentId;
+        current.slot = args?.slot ?? current.slot ?? undefined;
+      }
+
+      syncSchema();
+    },
+  );
+
+  const getAvailableSlots = action((type: string) => {
+    const { slots } = getComponentContainerMeta(type as TComponentTypes);
+    return slots.length ? slots : [{ name: "default", title: "默认区域", multiple: true }];
+  });
+
+  const insertNodeIntoContainer = action(
+    (
+      type: TComponentTypes,
+      args: {
+        parentId: string;
+        slot?: string | null;
+        position?: { left: number; top: number };
+      },
+    ) => {
+      const parent = storeComponents.compConfigs[args.parentId];
+      if (!parent) return null;
+      const siblings = parent.childIds
+        .map((childId) => storeComponents.compConfigs[childId])
+        .filter(Boolean)
+        .filter((item) => (item.slot ?? "default") === (args.slot ?? "default"));
+      const defaultPosition = getDefaultPosition(siblings.length);
+      const comp: ComponentNode = {
+        id: ulid(),
+        type,
+        props: {},
+        styles: {
+          position: "absolute",
+          left:
+            args.position?.left !== undefined
+              ? `${Math.max(0, Math.round(args.position.left))}px`
+              : defaultPosition.left,
+          top:
+            args.position?.top !== undefined
+              ? `${Math.max(0, Math.round(args.position.top))}px`
+              : defaultPosition.top,
+          width: getDefaultWidthByType(type),
+        },
+        slot: args.slot ?? "default",
+        children: [],
+      };
+
+      insertNodeTree(comp, {
+        parentId: args.parentId,
+        slot: comp.slot,
+      });
+      setCurrentComponent(comp.id);
+      return comp.id;
+    },
+  );
+
+  const moveExistingNode = action(
+    (args: {
+      nodeId: string;
+      targetParentId?: string | null;
+      targetSlot?: string | null;
+      targetIndex?: number;
+    }) => {
+      const node = storeComponents.compConfigs[args.nodeId];
+      if (!node) return;
+      const subtreeIds = gatherSubtreeIds(storeComponents.compConfigs, args.nodeId);
+      if (args.targetParentId && subtreeIds.includes(args.targetParentId)) {
+        message.warning("不能把组件移动到自己的子节点下");
+        return;
+      }
+      const prevParentId = node.parentId;
+      const prevSlot = node.slot ?? "default";
+      const nextParentId = args.targetParentId ?? null;
+      const nextSlot = args.targetSlot ?? (nextParentId ? "default" : null);
+
+      if (prevParentId) {
+        const prevParent = storeComponents.compConfigs[prevParentId];
+        if (prevParent) {
+          prevParent.childIds = prevParent.childIds.filter((id) => id !== args.nodeId);
+        }
+      } else {
+        storeComponents.sortableCompConfig = storeComponents.sortableCompConfig.filter(
+          (id) => id !== args.nodeId,
+        );
+      }
+
+      if (nextParentId) {
+        insertChildIdBySlot(nextParentId, args.nodeId, nextSlot ?? "default", args.targetIndex);
+      } else {
+        storeComponents.sortableCompConfig = insertIntoOrderedIds(
+          storeComponents.sortableCompConfig,
+          args.nodeId,
+          args.targetIndex,
+        );
+      }
+
+      node.parentId = nextParentId;
+      node.slot = nextSlot ?? undefined;
+      syncSchema(args.nodeId);
+
+      const { store: storePermission, broadcastComponentUpdate } =
+        useStorePermission();
+      broadcastComponentUpdate(
+        Number(new URLSearchParams(window.location.hash.split("?")[1]).get("id")),
+        Number(storePermission.currentUserId),
+        "replace_all",
+        {
+          compConfigs: storeComponents.compConfigs,
+          sortableCompConfig: storeComponents.sortableCompConfig,
+        },
+      );
+
+      addOperationLog(
+        "move_component",
+        `${args.nodeId}:${prevParentId ?? "root"}/${prevSlot} -> ${nextParentId ?? "root"}/${nextSlot ?? "root"}`,
+      );
+    },
+  );
+
+  const push = action(
+    (
+      type: TComponentTypes,
+      position?: { left: number; top: number },
+      target?: { parentId?: string | null; slot?: string | null },
+    ) => {
+      if (!ensurePermission("edit_structure", "当前角色不能新增组件")) return;
+      if (target?.parentId) {
+        const insertedId = insertNodeIntoContainer(type, {
+          parentId: target.parentId,
+          slot: target.slot,
+          position,
+        });
+        if (!insertedId) return;
+        const { store: storePermission, broadcastComponentUpdate } =
+          useStorePermission();
+        broadcastComponentUpdate(
+          Number(
+            new URLSearchParams(window.location.hash.split("?")[1]).get("id"),
+          ),
+          Number(storePermission.currentUserId),
+          "add",
+          storeComponents.compConfigs[insertedId],
+        );
+        addOperationLog("add_component", type);
+        return;
+      }
       const defaultPosition = getDefaultPosition(
         storeComponents.sortableCompConfig.length,
       );
-      const comp: TComponentPropsUnion = {
+      const comp: ComponentNode = {
         id: ulid(),
         type,
         props: {},
@@ -137,11 +542,10 @@ export function useStoreComponents() {
               : defaultPosition.top,
           width: getDefaultWidthByType(type),
         },
+        children: [],
       };
 
-      storeComponents.compConfigs[comp.id] = comp;
-      storeComponents.sortableCompConfig.push(comp.id);
-
+      insertNodeTree(comp);
       setCurrentComponent(comp.id);
 
       const { store: storePermission, broadcastComponentUpdate } =
@@ -152,42 +556,36 @@ export function useStoreComponents() {
         ),
         Number(storePermission.currentUserId),
         "add",
-        comp,
+        storeComponents.compConfigs[comp.id],
       );
 
       addOperationLog("add_component", type);
     },
   );
 
-  // 定义根据id获取组件配置的函数
   const getComponentById = action((id: string) => {
     return storeComponents.compConfigs[id];
   });
 
-  // 判断是否为当前组件
-  const isCurrentComponent = action((compConfig: TComponentPropsUnion) => {
+  const isCurrentComponent = action((compConfig: { id: string }) => {
     return getCurrentComponentConfig.get()?.id === compConfig.id;
   });
 
-  // 返回默认选中组件属性信息
   const getCurrentComponentConfig = computed(() => {
     return storeComponents.currentCompConfig
       ? storeComponents.compConfigs[storeComponents.currentCompConfig]
       : null;
   });
 
-  // 定义根据props更新当前组件的函数
   const updateCurrentComponent = action(
-    (compConfig: TComponentPropsUnion["props"]) => {
+    (compConfig: Record<string, unknown>) => {
       if (!ensurePermission("edit_content", "当前角色不能修改组件内容")) return;
-      // 遍历传入的compConfig对象，更新当前组件配置的props属性
       const curCompConfig = getCurrentComponentConfig.get();
       if (!curCompConfig) return;
+      const nextProps = curCompConfig.props as Record<string, unknown>;
 
       for (const [key, value] of Object.entries(compConfig)) {
-        // 更新当前组件配置的props属性
-        // @ts-expect-error ignore type
-        curCompConfig.props[key] = calcValueByString(value);
+        nextProps[key] = calcValueByString(value as any);
       }
 
       const { store: storePermission, broadcastComponentUpdate } =
@@ -205,7 +603,6 @@ export function useStoreComponents() {
     },
   );
 
-  // 定义更新当前组件样式的函数
   const updateCurrentComponentStyles = action((styles: Record<string, any>) => {
     if (!ensurePermission("edit_content", "当前角色不能修改组件样式")) return;
     const curCompConfig = getCurrentComponentConfig.get();
@@ -214,10 +611,10 @@ export function useStoreComponents() {
     if (!curCompConfig.styles) {
       curCompConfig.styles = {};
     }
+    const nextStyles = curCompConfig.styles as Record<string, unknown>;
 
     for (const [key, value] of Object.entries(styles)) {
-      // @ts-expect-error ignore type
-      curCompConfig.styles[key] = calcValueByString(value);
+      nextStyles[key] = calcValueByString(value);
     }
 
     const { store: storePermission, broadcastComponentUpdate } =
@@ -265,7 +662,6 @@ export function useStoreComponents() {
     },
   );
 
-  // 定义带有数组参数的更新当前组件配置的函数
   type TUpdateCurrentCompConfigWithArray = (args: {
     key: string;
     index: number;
@@ -275,17 +671,13 @@ export function useStoreComponents() {
   const updateCurrentCompConfigWithArray: TUpdateCurrentCompConfigWithArray =
     action(({ key, index, field, value }) => {
       if (!ensurePermission("edit_content", "当前角色不能修改组件内容")) return;
-      // 获取当前组件配置
       const curCompConfig = getCurrentComponentConfig.get();
       if (!curCompConfig) return;
+      const nextProps = curCompConfig.props as Record<string, unknown>;
 
-      // 如果当前组件配置的props属性中没有对应的key，则初始化为一个空数组
-      // @ts-expect-error ignore type
-      if (!curCompConfig.props[key]) curCompConfig.props[key] = [];
-
-      // 更新对应key数组中指定索引的对象的指定字段的值
-      // @ts-expect-error ignore type
-      curCompConfig.props[key][index][field] = calcValueByString(value);
+      if (!Array.isArray(nextProps[key])) nextProps[key] = [];
+      const targetArray = nextProps[key] as Array<Record<string, unknown>>;
+      targetArray[index][field] = calcValueByString(value);
 
       const { store: storePermission, broadcastComponentUpdate } =
         useStorePermission();
@@ -301,7 +693,6 @@ export function useStoreComponents() {
       addOperationLog("update_component", curCompConfig.type);
     });
 
-  // 根据 id 移除指定组件配置项
   type TRemoveComponentByIdWithArray = (args: {
     key: string;
     index: number;
@@ -309,17 +700,13 @@ export function useStoreComponents() {
   const removeComponentByIdWithArray: TRemoveComponentByIdWithArray = action(
     ({ key, index }) => {
       if (!ensurePermission("edit_content", "当前角色不能修改组件内容")) return;
-      // 获取当前组件配置
       const curCompConfig = getCurrentComponentConfig.get();
       if (!curCompConfig) return;
+      const nextProps = curCompConfig.props as Record<string, unknown>;
 
-      // 如果当前组件配置的props属性中没有对应的key，直接返回
-      // @ts-expect-error ignore type
-      if (!curCompConfig.props[key]) return;
-
-      // 移除对应key数组中指定索引的对象
-      // @ts-expect-error ignore type
-      curCompConfig.props[key].splice(index, 1);
+      if (!Array.isArray(nextProps[key])) return;
+      const targetArray = nextProps[key] as Array<Record<string, unknown>>;
+      targetArray.splice(index, 1);
 
       const { store: storePermission, broadcastComponentUpdate } =
         useStorePermission();
@@ -336,56 +723,51 @@ export function useStoreComponents() {
     },
   );
 
-  // 定义展开或者折叠组件列表的函数
   const setItemsExpandIndex = action((index: number) => {
     storeComponents.itemsExpandIndex = index;
   });
 
-  // 定义撤销操作的函数
   const undo = action(() => {
     if (!ensurePermission("edit_content", "当前角色不能撤销操作")) return;
-    // 判断有无上一步
     if (!sotreComponentsUndoer.hasUndo) {
       message.warning("没有可撤销的操作");
       return;
     }
-    // 执行撤销操作
     sotreComponentsUndoer.undo();
     addOperationLog("undo", "画布");
   });
 
-  // 定义重做操作的函数
   const redo = action(() => {
     if (!ensurePermission("edit_content", "当前角色不能重做操作")) return;
-    //  判断有无下一步
     if (!sotreComponentsUndoer.hasRedo) {
       message.warning("没有可重做的操作");
       return;
     }
-    // 执行重做操作
     sotreComponentsUndoer.redo();
     addOperationLog("redo", "画布");
   });
 
-  // 定义移动组件的函数
   const moveComponent: (pos: { oldIndex: number; newIndex: number }) => void =
     action(({ oldIndex, newIndex }) => {
       if (!ensurePermission("edit_structure", "当前角色不能调整组件顺序"))
         return;
-      // arrayMove根据两个索引子排序数组，返回排序后的数组
-      storeComponents.sortableCompConfig = arrayMove(
-        storeComponents.sortableCompConfig,
-        oldIndex,
-        newIndex,
-      );
+      const currentId = storeComponents.currentCompConfig;
+      if (!currentId) return;
+      const siblingIds = getSiblingIds(currentId);
+      const nextIds = arrayMove(siblingIds, oldIndex, newIndex);
+      const current = storeComponents.compConfigs[currentId];
+      if (current?.parentId) {
+        const parent = storeComponents.compConfigs[current.parentId];
+        if (parent) parent.childIds = nextIds;
+      } else {
+        storeComponents.sortableCompConfig = nextIds;
+      }
+      syncSchema(currentId);
       addOperationLog("move_component", `${oldIndex + 1} -> ${newIndex + 1}`);
     });
 
-  // 定义向上移动组件的函数
   const moveUpComponent = action(() => {
-    // 获取当前组件在数组中的旧索引
     const oldIndex = getCurrentComponentIndex.get();
-    // 如果当前组件不是第一个组件，则执行移动操作
     if (getCurrentComponentIndex.get() !== 0) {
       moveComponent({
         oldIndex,
@@ -396,15 +778,9 @@ export function useStoreComponents() {
     }
   });
 
-  // 定义向下移动组件的函数
   const moveDownComponent = action(() => {
-    // 获取当前组件在数组中的旧索引
     const oldIndex = getCurrentComponentIndex.get();
-    // 如果当前组件不是最后一个组件，则执行移动操作
-    if (
-      getCurrentComponentIndex.get() !==
-      storeComponents.sortableCompConfig.length - 1
-    ) {
+    if (getCurrentComponentIndex.get() !== getSiblingIds(storeComponents.currentCompConfig!).length - 1) {
       moveComponent({
         oldIndex,
         newIndex: oldIndex + 1,
@@ -414,64 +790,57 @@ export function useStoreComponents() {
     }
   });
 
-  // 定义复制当前组件的函数
   const copyCurrentComponent = action(() => {
-    // 获取当前组件配置，在复制前先转换为JS对象
     const curCompConfig = getCurrentComponentConfig.get();
     if (!curCompConfig) return;
-
-    // 复制当前组件配置，并保存到storeComponents.copyedCompConig中
-    storeComponents.copyedCompConig = toJS(curCompConfig);
+    const nodeTree = buildTreeNode(storeComponents.compConfigs, curCompConfig.id);
+    if (!nodeTree) return;
+    storeComponents.copyedCompConig = nodeTree;
   });
 
-  // 定义粘贴组件的函数
   const pasteCopyedComponent = action(() => {
     if (!ensurePermission("edit_structure", "当前角色不能粘贴组件")) return;
-    // 如果不存在复制的组件配置，则返回
     if (!storeComponents.copyedCompConig) return;
 
-    // 创建新的组件配置，深拷贝复制的对象，重新分配 id，否3则 id 跟复制前的yi'zhi
-    const comp = {
-      ...JSON.parse(JSON.stringify(storeComponents.copyedCompConig)),
-      id: ulid(),
-    };
-
-    const left = Number.parseInt(String(comp.styles?.left ?? "0"), 10);
-    const top = Number.parseInt(String(comp.styles?.top ?? "0"), 10);
-    comp.styles = {
-      ...(comp.styles ?? {}),
-      position: "absolute",
-      left: `${Number.isNaN(left) ? 24 : left + 24}px`,
-      top: `${Number.isNaN(top) ? 24 : top + 24}px`,
-      width: comp.styles?.width ?? getDefaultWidthByType(comp.type),
-    };
-
-    // 将新的组件配置添加到storeComponents.compConfigs中
-    storeComponents.compConfigs[comp.id] = comp;
-    // 将新的组件配置id添加到storeComponents.sortableCompConfig中
-    storeComponents.sortableCompConfig.push(comp.id);
-    // 设置当前组件配置为新添加的组件配置
-    setCurrentComponent(comp.id);
+    const currentId = storeComponents.currentCompConfig;
+    const current = currentId ? storeComponents.compConfigs[currentId] : null;
+    const parentId = current?.parentId ?? null;
+    const siblingIds = currentId ? getSiblingIds(currentId) : storeComponents.sortableCompConfig;
+    const insertIndex = currentId ? siblingIds.indexOf(currentId) + 1 : siblingIds.length;
+    const copiedTree = duplicateTreeNode(storeComponents.copyedCompConig);
+    offsetNodePosition(copiedTree);
+    insertNodeTree(copiedTree, {
+      parentId,
+      slot: current?.slot ?? null,
+      index: insertIndex,
+    });
+    setCurrentComponent(copiedTree.id);
     addOperationLog("add_component", "粘贴组件");
   });
 
-  // 定义删除当前组件的函数
   const removeCurrentComponent = action(() => {
     if (!ensurePermission("edit_structure", "当前角色不能删除组件")) return;
-    // 获取当前组件配置的id在storeComponents.sortableCompConfig中的索引
     const curCompConfig = getCurrentComponentConfig.get();
     if (!curCompConfig) return;
 
-    const index = getCurrentComponentIndex.get();
-    // 从storeComponents.sortableCompConfig中删除当前组件
-    storeComponents.sortableCompConfig.splice(index, 1);
-    // 从storeComponents.compConfigs中删除当前组件配置
-    delete storeComponents.compConfigs[curCompConfig.id];
+    const subtreeIds = gatherSubtreeIds(storeComponents.compConfigs, curCompConfig.id);
+    if (curCompConfig.parentId) {
+      const parent = storeComponents.compConfigs[curCompConfig.parentId];
+      if (parent) {
+        parent.childIds = parent.childIds.filter((id) => id !== curCompConfig.id);
+      }
+    } else {
+      storeComponents.sortableCompConfig = storeComponents.sortableCompConfig.filter(
+        (id) => id !== curCompConfig.id,
+      );
+    }
 
-    // 如果当前组件被删除，则将当前组件配置设置为上一个组件的配置，如果不存在则设置为第一个组件的配置
-    const rollbackIndex = index - 1 > 0 ? index - 1 : 0;
+    for (const targetId of subtreeIds) {
+      delete storeComponents.compConfigs[targetId];
+    }
+
     storeComponents.currentCompConfig =
-      storeComponents.sortableCompConfig[rollbackIndex] || null;
+      storeComponents.sortableCompConfig[0] ?? null;
 
     const { store: storePermission, broadcastComponentUpdate } =
       useStorePermission();
@@ -479,21 +848,19 @@ export function useStoreComponents() {
       Number(new URLSearchParams(window.location.hash.split("?")[1]).get("id")),
       Number(storePermission.currentUserId),
       "remove",
-      { id: curCompConfig.id },
+        { id: curCompConfig.id, subtreeIds },
     );
 
     addOperationLog("remove_component", curCompConfig.type);
   });
 
-  // 定义替换组件配置的函数
   const _replace = action((value: TStoreComponents) => {
     storeComponents.compConfigs = value.compConfigs;
     storeComponents.currentCompConfig = value.currentCompConfig;
     storeComponents.sortableCompConfig = value.sortableCompConfig;
-    normalizeLayout(
-      storeComponents.compConfigs,
-      storeComponents.sortableCompConfig,
-    );
+    storeComponents.copyedCompConig = value.copyedCompConig;
+    storeComponents.itemsExpandIndex = value.itemsExpandIndex;
+    syncSchema(value.currentCompConfig);
   });
 
   const replaceByCode = action(
@@ -501,39 +868,22 @@ export function useStoreComponents() {
       components: Array<{
         id?: string;
         type: string;
-        props?: Record<string, unknown>;
+        props?: Record<string, any>;
         styles?: TBasicComponentConfig["styles"];
+        slot?: string;
+        children?: CodeSyncNode[];
       }>,
     ) => {
       if (!ensurePermission("edit_structure", "当前角色不能覆盖组件结构"))
         return;
-      const nextCompConfigs: Record<string, TComponentPropsUnion> = {};
-      const nextSortableCompConfig: string[] = [];
       const currentId = storeComponents.currentCompConfig;
-
-      for (const item of components) {
-        if (!codeSupportedTypes.includes(item.type as TComponentTypes))
-          continue;
-
-        const nextId = item.id || ulid();
-        const nextComponent = {
-          id: nextId,
-          type: item.type as TComponentTypes,
-          props: (item.props ?? {}) as TComponentPropsUnion["props"],
-          styles: item.styles,
-        } as TComponentPropsUnion;
-
-        nextCompConfigs[nextId] = nextComponent;
-        nextSortableCompConfig.push(nextId);
-      }
-
-      normalizeLayout(nextCompConfigs, nextSortableCompConfig);
-      storeComponents.compConfigs = nextCompConfigs;
-      storeComponents.sortableCompConfig = nextSortableCompConfig;
+      const normalized = normalizeFromFlatComponents(components);
+      storeComponents.compConfigs = normalized.compConfigs;
+      storeComponents.sortableCompConfig = normalized.sortableCompConfig;
       storeComponents.currentCompConfig =
-        currentId && nextCompConfigs[currentId]
+        currentId && normalized.compConfigs[currentId]
           ? currentId
-          : (nextSortableCompConfig[0] ?? null);
+          : (normalized.sortableCompConfig[0] ?? null);
 
       const { store: storePermission, broadcastComponentUpdate } =
         useStorePermission();
@@ -544,37 +894,28 @@ export function useStoreComponents() {
         Number(storePermission.currentUserId),
         "replace_all",
         {
-          compConfigs: nextCompConfigs,
-          sortableCompConfig: nextSortableCompConfig,
+          compConfigs: normalized.compConfigs,
+          sortableCompConfig: normalized.sortableCompConfig,
         },
       );
 
       addOperationLog(
         "ai_replace",
-        `共 ${nextSortableCompConfig.length} 个组件`,
+        `共 ${Object.keys(normalized.compConfigs).length} 个组件`,
       );
     },
   );
 
-  // 获取当前组件在数组中的索引的 computed property
   const getCurrentComponentIndex = computed(() => {
-    // 返回storeComponents.sortableCompConfig中当前组件配置的id所在的位置
-    return storeComponents.sortableCompConfig.indexOf(
-      getCurrentComponentConfig.get()!.id,
-    );
+    const current = getCurrentComponentConfig.get();
+    if (!current) return -1;
+    return getSiblingIds(current.id).indexOf(current.id);
   });
 
-  // 定义将组件存储到本地存储的函数
   const storeInLocalStorage = action(() => {
     if (!ensurePermission("save_draft", "当前角色不能保存草稿")) return;
-    // 将组件配置、可排序组件配置、当前组件配置和存储时间保存到本地存储
-    const compConfig = JSON.stringify(toJS(storeComponents.compConfigs));
-    const sortableCompConfig = JSON.stringify(
-      toJS(storeComponents.sortableCompConfig),
-    );
-    const currentCompConfig = JSON.stringify(
-      toJS(storeComponents.currentCompConfig),
-    );
+    const pageSchema = JSON.stringify(serializeStore(storeComponents));
+    const currentCompConfig = JSON.stringify(toJS(storeComponents.currentCompConfig));
 
     // Get current page store state
     const { store: pageStore } = useStorePage();
@@ -585,47 +926,30 @@ export function useStoreComponents() {
       codeFramework: pageStore.codeFramework,
     });
 
-    localStorage.setItem("compConfig", compConfig);
-    localStorage.setItem("sortableCompConfig", sortableCompConfig);
+    localStorage.setItem(schemaStorageKey, pageSchema);
     localStorage.setItem("currentCompConfig", currentCompConfig);
     localStorage.setItem("pageSettings", pageSettings);
-    // 保存当前操作的时间
     localStorage.setItem("store_time", String(Date.now()));
 
     message.success("保存成功");
     addOperationLog("save_draft", "本地草稿");
   });
 
-  // 定义从服务器读取数据的函数
   const initFromServerData = action((data: any) => {
-    // 获取组件数据和页面信息，并转换为组件配置对象
-    storeComponents.compConfigs = data?.components
-      ?.map((comp: any) => {
-        return {
-          ...comp,
-          id: ulid(),
-        };
-      })
-      .reduce((acc: any, cur: any) => {
-        // 将组件配置id添加到可排序组件配置中
-        acc[cur.id] = {
-          id: cur.id,
-          type: cur.type,
-          props: cur.options ?? {},
-          styles: cur.styles ?? cur.options?.styles,
-        };
-        return acc;
-      }, {});
-    storeComponents.sortableCompConfig = Object.keys(
-      storeComponents.compConfigs || {},
-    );
-    normalizeLayout(
-      storeComponents.compConfigs,
-      storeComponents.sortableCompConfig,
-    );
-    // 设置当前组件配置为可排序组件配置的第一个组件配置
-    storeComponents.currentCompConfig = storeComponents.sortableCompConfig[0];
-    // 更新页面信息
+    const normalized = data?.schema
+      ? normalizeFromSchema(data.schema)
+      : normalizeFromFlatComponents(
+          (data?.components ?? []).map((comp: any) => ({
+            id: comp.node_id || ulid(),
+            type: comp.type,
+            props: comp.options ?? {},
+            styles: comp.styles ?? comp.options?.styles,
+            slot: comp.slot,
+          })),
+        );
+    storeComponents.compConfigs = normalized.compConfigs;
+    storeComponents.sortableCompConfig = normalized.sortableCompConfig;
+    storeComponents.currentCompConfig = normalized.sortableCompConfig[0] ?? null;
     const { updatePage } = useStorePage();
     updatePage({
       tdk: data?.tdk || "",
@@ -636,10 +960,9 @@ export function useStoreComponents() {
     message.success("已自动从服务器读取数据");
   });
 
-  // 定义从本地存储中读取组件的函数
   const loadPageData = action(
       async (fetchServerData?: () => Promise<{ data: any }>) => {
-        // 从本地存储中读取组件配置相关数据
+        const pageSchema = localStorage.getItem(schemaStorageKey);
         const compConfig = localStorage.getItem("compConfig");
         const sortableCompConfig = localStorage.getItem("sortableCompConfig");
         const currentCompConfig = localStorage.getItem("currentCompConfig");
@@ -658,22 +981,18 @@ export function useStoreComponents() {
           }
         }
 
-        // 如果存在组件配置数据，则根据存储时间判断是否可以读取数据
-        if (compConfig && compConfig !== "{}") {
+        if (pageSchema) {
           if (
             storeTime &&
             Number(storeTime) > (releaseTime ? Number(releaseTime) : 0)
           ) {
-            // 从JSON字符串转换为组件配置对象
-            storeComponents.compConfigs = JSON.parse(compConfig);
-            storeComponents.sortableCompConfig = JSON.parse(sortableCompConfig!);
-            storeComponents.currentCompConfig = JSON.parse(currentCompConfig!);
-            normalizeLayout(
-              storeComponents.compConfigs,
-              storeComponents.sortableCompConfig,
-            );
+            const normalized = normalizeFromSchema(JSON.parse(pageSchema));
+            storeComponents.compConfigs = normalized.compConfigs;
+            storeComponents.sortableCompConfig = normalized.sortableCompConfig;
+            storeComponents.currentCompConfig = currentCompConfig
+              ? JSON.parse(currentCompConfig)
+              : (normalized.sortableCompConfig[0] ?? null);
 
-            // Restore page settings
             if (pageSettings) {
               const settings = JSON.parse(pageSettings);
               const { setDeviceType, setCanvasSize, setCodeFramework } =
@@ -690,12 +1009,49 @@ export function useStoreComponents() {
             message.success("已自动从草稿中读取数据");
             return serverData;
           } else if (serverData) {
-            // 服务端获取页面组件
+            initFromServerData(serverData);
+            return serverData;
+          }
+        }
+
+        if (compConfig && compConfig !== "{}") {
+          if (
+            storeTime &&
+            Number(storeTime) > (releaseTime ? Number(releaseTime) : 0)
+          ) {
+            const legacyComponents = JSON.parse(compConfig);
+            const legacyOrder = JSON.parse(sortableCompConfig!);
+            const normalized = normalizeFromFlatComponents(
+              legacyOrder
+                .map((id: string) => legacyComponents[id])
+                .filter(Boolean),
+            );
+            storeComponents.compConfigs = normalized.compConfigs;
+            storeComponents.sortableCompConfig = normalized.sortableCompConfig;
+            storeComponents.currentCompConfig = currentCompConfig
+              ? JSON.parse(currentCompConfig)
+              : (normalized.sortableCompConfig[0] ?? null);
+
+            if (pageSettings) {
+              const settings = JSON.parse(pageSettings);
+              const { setDeviceType, setCanvasSize, setCodeFramework } =
+                useStorePage();
+              if (settings.deviceType) setDeviceType(settings.deviceType);
+              if (settings.canvasWidth && settings.canvasHeight) {
+                setCanvasSize(settings.canvasWidth, settings.canvasHeight);
+              }
+              if (settings.codeFramework) {
+                setCodeFramework(settings.codeFramework);
+              }
+            }
+
+            message.success("已自动从草稿中读取数据");
+            return serverData;
+          } else if (serverData) {
             initFromServerData(serverData);
             return serverData;
           }
         } else if (serverData) {
-          // 服务端获取页面组件
           initFromServerData(serverData);
           return serverData;
         }
@@ -708,6 +1064,8 @@ export function useStoreComponents() {
     replaceByCode,
     push,
     getComponentById,
+    getComponentTree,
+    getAvailableSlots,
     isCurrentComponent,
     getCurrentComponentConfig,
     setCurrentComponent,
@@ -732,9 +1090,13 @@ export function useStoreComponents() {
     copyCurrentComponent,
     pasteCopyedComponent,
     removeCurrentComponent,
+    moveExistingNode,
     getCurrentComponentIndex,
     storeInLocalStorage,
     loadPageData,
     initFromServerData,
+    initPageData: initFromServerData,
+    serializeSchema: () => serializeStore(storeComponents),
+    insertNodeIntoContainer,
   };
 }

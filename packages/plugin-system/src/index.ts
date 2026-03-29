@@ -1,5 +1,11 @@
 import type { TBasicComponentConfig } from "@codigo/schema";
 
+export interface IComponentSlotDefinition {
+  name: string;
+  title: string;
+  multiple?: boolean;
+}
+
 export interface IComponentPlugin<
   T extends string = string,
   P extends Record<string, any> = any,
@@ -11,6 +17,8 @@ export interface IComponentPlugin<
   defaultConfig: TBasicComponentConfig<T, P>;
   render: R;
   propsPanel?: any; // 可以是设置面板组件
+  isContainer?: boolean;
+  slots?: IComponentSlotDefinition[];
 }
 
 class ComponentRegistry {

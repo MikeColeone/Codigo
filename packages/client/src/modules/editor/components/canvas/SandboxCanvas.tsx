@@ -1,6 +1,5 @@
 import { useMemo, useEffect, useState, useRef, useCallback } from "react";
 import { observer } from "mobx-react-lite";
-import { toJS } from "mobx";
 import {
   useStoreComponents,
   useStorePage,
@@ -66,7 +65,7 @@ async function bundleSchema(
 const { Text } = Typography;
 
 export const SandboxCanvas = observer(() => {
-  const { store, getComponentById, replaceByCode } = useStoreComponents();
+  const { store, getComponentTree, replaceByCode } = useStoreComponents();
   const { store: pageStore } = useStorePage();
   const { can, ensurePermission, addOperationLog } = useStorePermission();
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -82,22 +81,8 @@ export const SandboxCanvas = observer(() => {
   const sandboxDependencyWhitelist = useMemo<string[]>(() => [], []);
 
   const schemaText = useMemo(() => {
-    const serializableComponents = store.sortableCompConfig
-      .map((id) => getComponentById(id))
-      .filter(Boolean)
-      .map((item) => {
-        return {
-          id: item.id,
-          type: item.type,
-          props: toJS(item.props || {}),
-          styles: toJS(
-            (item as { styles?: Record<string, unknown> }).styles || {},
-          ),
-        };
-      });
-
-    return JSON.stringify(serializableComponents, null, 2);
-  }, [getComponentById, store.sortableCompConfig, store.compConfigs]);
+    return JSON.stringify(getComponentTree.get(), null, 2);
+  }, [getComponentTree, store.sortableCompConfig, store.compConfigs]);
 
   const generatedCode = useMemo(() => {
     return renderCode(pageStore.codeFramework, schemaText);

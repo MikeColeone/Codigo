@@ -1,4 +1,4 @@
-﻿import type { TComponentTypes } from "@codigo/schema";
+import type { TComponentTypes } from "@codigo/schema";
 import { useNavigate } from "react-router-dom";
 
 interface TemplateComponent {
@@ -138,25 +138,29 @@ function createId(index: number): string {
 }
 
 function writeTemplateToDraft(template: TemplatePreset) {
-  const compConfigs: Record<string, Record<string, unknown>> = {};
-  const sortableCompConfig: string[] = [];
+  const components: Array<Record<string, unknown>> = [];
 
   template.components.forEach((component, index) => {
     const id = createId(index);
-    compConfigs[id] = {
+    components.push({
       id,
       type: component.type,
       props: component.props ?? {},
       styles: component.styles,
-    };
-    sortableCompConfig.push(id);
+      children: [],
+    });
   });
 
-  localStorage.setItem("compConfig", JSON.stringify(compConfigs));
-  localStorage.setItem("sortableCompConfig", JSON.stringify(sortableCompConfig));
+  localStorage.setItem(
+    "pageSchema",
+    JSON.stringify({
+      version: 2,
+      components,
+    }),
+  );
   localStorage.setItem(
     "currentCompConfig",
-    JSON.stringify(sortableCompConfig[0] ?? null),
+    JSON.stringify((components[0]?.id as string | null) ?? null),
   );
   localStorage.setItem(
     "pageSettings",
@@ -231,7 +235,6 @@ export default function TemplateSelect() {
     </div>
   );
 }
-
 
 
 

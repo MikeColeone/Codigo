@@ -15,9 +15,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { getComponentByType } from "@codigo/materials-react";
-import type { TBasicComponentConfig, TComponentTypes } from "@codigo/schema";
-import type { TBasicComponentConfig as TComponentPropsUnion } from "@codigo/schema";
+import { getComponentByType, getComponentContainerMeta } from "@codigo/materials-react";
+import type {
+  ComponentNode,
+  ComponentNodeRecord,
+  TComponentTypes,
+} from "@codigo/schema";
+import { groupChildrenBySlot } from "@codigo/schema";
 import {
   useComponentKeyPress,
   useStoreComponents,
@@ -36,14 +40,30 @@ import {
 import { Button } from "antd";
 
 export function generateComponent(
-  conf: TBasicComponentConfig,
+  conf: ComponentNode,
   echartsTheme?: string,
+  children?: ReactNode[],
 ) {
   const Component = getComponentByType(conf.type);
+  const slotNodes = groupChildrenBySlot(conf);
+  const slotEntries = Object.entries(slotNodes).map(([slotName, items]) => [
+    slotName,
+    items.map((child) => children?.find((item) => {
+      return (
+        typeof item === "object" &&
+        item !== null &&
+        "key" in item &&
+        String(item.key) === child.id
+      );
+    })),
+  ]);
+  const slots = Object.fromEntries(slotEntries);
 
   return (
     <div
+      data-render-node={conf.id}
       style={{
+        position: "relative",
         width: conf.styles?.width || "100%",
         height: conf.styles?.height || "auto",
         marginTop: conf.styles?.marginTop,
@@ -61,6 +81,8 @@ export function generateComponent(
         {...toJS(conf.props)}
         echartsTheme={echartsTheme}
         key={conf.id}
+        slots={slots}
+        editorNodeId={conf.id}
       />
     </div>
   );
@@ -77,6 +99,8 @@ const quickInsertComponents: Array<{
 
 interface ComponentWrapperProps {
   id: string;
+  parentId?: string | null;
+  slot?: string | null;
   children: ReactNode;
   isDragable: boolean;
   canDrag: boolean;
@@ -88,6 +112,8 @@ interface ComponentWrapperProps {
 
 const ComponentWrapper: FC<ComponentWrapperProps> = ({
   id,
+  parentId,
+  slot,
   children,
   isDragable,
   canDrag,
@@ -113,9 +139,11 @@ const ComponentWrapper: FC<ComponentWrapperProps> = ({
       onMouseDown={onMouseDown}
       style={style}
       data-id={id}
+      data-parent-id={parentId ?? "root"}
+      data-slot={slot ?? "root"}
     >
       <div className={classNames} />
-      <div className="pointer-events-none">{children}</div>
+      <div>{children}</div>
     </div>
   );
 };
@@ -291,7 +319,10 @@ const EditorCanvas: FC<{
 }> = observer(({ store, onRef }) => {
   const {
     getComponentById,
+    getComponentTree,
+    getAvailableSlots,
     isCurrentComponent,
+    moveExistingNode,
     setCurrentComponent,
     updateComponentPosition,
     push,
@@ -307,14 +338,98 @@ const EditorCanvas: FC<{
   const toolbarRef = createRef<any>();
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  function handleComponentClick(conf: TComponentPropsUnion) {
+  function getWrapperElements(parentId: string | null, slot: string | null) {
+    return Array.from(
+      document.querySelectorAll<HTMLElement>(".component-warpper"),
+    ).filter((element) => {
+      const nextParentId = element.dataset.parentId ?? "root";
+      const nextSlot = element.dataset.slot ?? "root";
+      return (
+        nextParentId === (parentId ?? "root") &&
+        nextSlot === (slot ?? "root")
+      );
+    });
+  }
+
+  function resolveInsertIndex(
+    parentId: string | null,
+    slot: string | null,
+    movingId: string,
+    clientX: number,
+    clientY: number,
+  ) {
+    const siblings = getWrapperElements(parentId, slot)
+      .filter((element) => element.dataset.id !== movingId)
+      .sort((left, right) => {
+        const leftRect = left.getBoundingClientRect();
+        const rightRect = right.getBoundingClientRect();
+        if (Math.abs(leftRect.top - rightRect.top) > 8) {
+          return leftRect.top - rightRect.top;
+        }
+        return leftRect.left - rightRect.left;
+      });
+
+    for (const [index, element] of siblings.entries()) {
+      const rect = element.getBoundingClientRect();
+      const centerY = rect.top + rect.height / 2;
+      const centerX = rect.left + rect.width / 2;
+      if (clientY < centerY || (Math.abs(clientY - centerY) < 8 && clientX < centerX)) {
+        return index;
+      }
+    }
+
+    return siblings.length;
+  }
+
+  function resolveMoveTarget(
+    movingId: string,
+    clientX: number,
+    clientY: number,
+  ) {
+    const targetElement = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
+    const slotZone = targetElement?.closest("[data-slot-name]") as HTMLElement | null;
+    const current = getComponentById(movingId) as ComponentNodeRecord | undefined;
+    if (!current) return null;
+
+    if (slotZone?.dataset.containerId) {
+      const targetParentId = slotZone.dataset.containerId;
+      const targetSlot = slotZone.dataset.slotName ?? "default";
+      const targetIndex = resolveInsertIndex(
+        targetParentId,
+        targetSlot,
+        movingId,
+        clientX,
+        clientY,
+      );
+      const slotRect = slotZone.getBoundingClientRect();
+      return {
+        parentId: targetParentId,
+        slot: targetSlot,
+        index: targetIndex,
+        left: clientX - slotRect.left,
+        top: clientY - slotRect.top,
+      };
+    }
+
+    const canvasRect = canvasRef.current?.getBoundingClientRect();
+    const targetIndex = resolveInsertIndex(null, null, movingId, clientX, clientY);
+    return {
+      parentId: null,
+      slot: null,
+      index: targetIndex,
+      left: canvasRect ? clientX - canvasRect.left : 0,
+      top: canvasRect ? clientY - canvasRect.top : 0,
+    };
+  }
+
+  function handleComponentClick(conf: { id: string }) {
     if (isCurrentComponent(conf)) return;
     setCurrentComponent(conf.id);
   }
 
   function handleDragComponentStart(event: ReactMouseEvent, id: string) {
     if (!canEditStructure || event.button !== 0) return;
-    const component = getComponentById(id) as TBasicComponentConfig;
+      const component = getComponentById(id) as ComponentNodeRecord;
     if (!component) return;
 
     setCurrentComponent(id);
@@ -342,11 +457,26 @@ const EditorCanvas: FC<{
     };
 
     const onMouseUp = (event: MouseEvent) => {
-      const left =
-        movingComponent.origLeft + event.clientX - movingComponent.startX;
-      const top =
-        movingComponent.origTop + event.clientY - movingComponent.startY;
-      updateComponentPosition(movingComponent.id, left, top, false);
+      const target = resolveMoveTarget(
+        movingComponent.id,
+        event.clientX,
+        event.clientY,
+      );
+      if (target) {
+        moveExistingNode({
+          nodeId: movingComponent.id,
+          targetParentId: target.parentId,
+          targetSlot: target.slot,
+          targetIndex: target.index,
+        });
+        updateComponentPosition(movingComponent.id, target.left, target.top, false);
+      } else {
+        const left =
+          movingComponent.origLeft + event.clientX - movingComponent.startX;
+        const top =
+          movingComponent.origTop + event.clientY - movingComponent.startY;
+        updateComponentPosition(movingComponent.id, left, top, false);
+      }
       setMovingComponent(null);
       setIsDragable(false);
       toolbarRef.current?.setRefrash(true);
@@ -359,7 +489,7 @@ const EditorCanvas: FC<{
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
     };
-  }, [canEditStructure, movingComponent, updateComponentPosition]);
+  }, [canEditStructure, moveExistingNode, movingComponent, updateComponentPosition]);
 
   function handleDragOver(e: React.DragEvent) {
     e.preventDefault();
@@ -371,7 +501,50 @@ const EditorCanvas: FC<{
     if (!canEditStructure) return;
     const type = e.dataTransfer.getData("componentType");
     const rect = canvasRef.current?.getBoundingClientRect();
+    const targetElement = e.target as HTMLElement | null;
+    const slotZone = targetElement?.closest("[data-slot-name]") as HTMLElement | null;
     if (type) {
+      if (slotZone) {
+        const slotRect = slotZone.getBoundingClientRect();
+        const parentId = slotZone.dataset.containerId;
+        const slot = slotZone.dataset.slotName;
+        if (parentId) {
+          push(
+            type as TComponentTypes,
+            {
+              left: e.clientX - slotRect.left,
+              top: e.clientY - slotRect.top,
+            },
+            {
+              parentId,
+              slot: slot ?? "default",
+            },
+          );
+          return;
+        }
+      }
+
+      const currentId = store.currentCompConfig;
+      const current = currentId ? getComponentById(currentId) : null;
+      if (current) {
+        const meta = getComponentContainerMeta(current.type);
+        if (meta.isContainer) {
+          const slotName = getAvailableSlots(current.type)[0]?.name ?? "default";
+          push(
+            type as TComponentTypes,
+            {
+              left: 24,
+              top: 24,
+            },
+            {
+              parentId: current.id,
+              slot: slotName,
+            },
+          );
+          return;
+        }
+      }
+
       push(type as TComponentTypes, {
         left: rect ? e.clientX - rect.left : 32,
         top: rect ? e.clientY - rect.top : 24,
@@ -474,29 +647,35 @@ const EditorCanvas: FC<{
           </div>
         </div>
       )}
-      {store.sortableCompConfig.map((item) => {
-        const component = getComponentById(item) as TBasicComponentConfig;
-        if (!component) return null;
+      {getComponentTree.get().map(function renderTreeNode(node: ComponentNode) {
+        const renderedChildren =
+          node.children?.map((child) => renderTreeNode(child)) ?? [];
         return (
           <ComponentWrapper
-            key={item}
+            key={node.id}
             isDragable={isDragable}
             canDrag={canEditStructure}
-            onMouseDown={(event) => handleDragComponentStart(event, item)}
-            onClick={() =>
-              handleComponentClick(component as TComponentPropsUnion)
-            }
-            isCurrentComponent={isCurrentComponent(
-              component as TComponentPropsUnion,
-            )}
-            id={item}
+            onMouseDown={(event) => handleDragComponentStart(event, node.id)}
+            onClick={() => handleComponentClick(node)}
+            isCurrentComponent={isCurrentComponent(node)}
+            id={node.id}
+            parentId={node.id ? (getComponentById(node.id) as ComponentNodeRecord | undefined)?.parentId ?? null : null}
+            slot={(getComponentById(node.id) as ComponentNodeRecord | undefined)?.slot ?? null}
             style={{
-              left: component.styles?.left as string | number | undefined,
-              top: component.styles?.top as string | number | undefined,
+              left: node.styles?.left as string | number | undefined,
+              top: node.styles?.top as string | number | undefined,
               position: "absolute",
             }}
           >
-            {generateComponent(component, storePage.chartTheme || undefined)}
+            <div className="relative">
+              <div>
+                {generateComponent(
+                  node,
+                  storePage.chartTheme || undefined,
+                  renderedChildren,
+                )}
+              </div>
+            </div>
           </ComponentWrapper>
         );
       })}

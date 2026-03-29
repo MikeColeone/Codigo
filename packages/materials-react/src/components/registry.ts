@@ -1,4 +1,6 @@
 import {
+  ContainerComponent as LowCodeContainer,
+  TwoColumnComponent as LowCodeTwoColumn,
   ButtonComponent as LowCodeButton,
   CardComponent as LowCodeCard,
   ImageComponent as LowCodeImage,
@@ -26,6 +28,25 @@ import { initBuiltinEChartsThemes } from "../utils/echartsTheme";
 
 export function initBuiltinComponents() {
   initBuiltinEChartsThemes();
+  registerComponent({
+    type: "container",
+    name: "Container",
+    defaultConfig: {} as any,
+    render: LowCodeContainer,
+    isContainer: true,
+    slots: [{ name: "default", title: "默认区域", multiple: true }],
+  });
+  registerComponent({
+    type: "twoColumn",
+    name: "TwoColumn",
+    defaultConfig: {} as any,
+    render: LowCodeTwoColumn,
+    isContainer: true,
+    slots: [
+      { name: "left", title: "左区域", multiple: true },
+      { name: "right", title: "右区域", multiple: true },
+    ],
+  });
   registerComponent({
     type: "button",
     name: "Button",

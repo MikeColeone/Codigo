@@ -4,7 +4,13 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import type { PostReleaseRequest } from '@codigo/schema';
+import {
+  buildComponentTree,
+  flattenComponentTree,
+  type ComponentNode,
+  type IPageSchema,
+  type PostReleaseRequest,
+} from '@codigo/schema';
 import type { TCurrentUser } from 'src/shared/helpers/current-user.helper';
 import {
   Component,
@@ -39,24 +45,80 @@ export class PageReleaseService {
     private readonly pageVersionRepository: Repository<PageVersion>,
   ) {}
 
+  private resolveReleaseSchema(body: PostReleaseRequest): IPageSchema {
+    if (body.schema?.components?.length) {
+      return {
+        version: body.schema.version ?? 2,
+        components: body.schema.components,
+      };
+    }
+
+    const components = (body.components ?? []).map((component) => ({
+      id: component.node_id ?? String(component.id),
+      type: component.type,
+      name: component.name,
+      props: component.options ?? {},
+      styles: component.styles,
+      slot: component.slot ?? undefined,
+      meta: component.meta,
+      children: [],
+    })) as ComponentNode[];
+
+    return {
+      version: body.schema_version ?? 1,
+      components,
+    };
+  }
+
+  private buildPageSchema(
+    components: Component[],
+    rootIds: string[],
+    version: number,
+  ): IPageSchema {
+    return {
+      version,
+      components: buildComponentTree(
+        components.map((component) => ({
+          id: component.node_id,
+          type: component.type,
+          name: component.name,
+          props: component.options ?? {},
+          styles: component.styles,
+          slot: component.slot ?? undefined,
+          meta: component.meta,
+          parentId: component.parent_node_id,
+        })),
+        rootIds,
+      ),
+    };
+  }
+
   async release(body: PostReleaseRequest, user: TCurrentUser) {
-    const { components, ...otherBody } = body;
+    const { schema, components, schema_version, ...otherBody } = body;
+    const resolvedSchema = this.resolveReleaseSchema(body);
+    const flattenedNodes = flattenComponentTree(resolvedSchema.components);
+    const rootIds = resolvedSchema.components.map((item) => item.id);
     let id = 0;
     const queryRunner = this.dataSource.createQueryRunner();
 
     async function insertComponents(pageId: number) {
-      const insertedComponentIds: string[] = [];
-      for (const component of components) {
+      for (const component of flattenedNodes) {
         const componentResult = await queryRunner.manager.insert(Component, {
-          ...component,
+          node_id: component.id,
+          parent_node_id: component.parentId ?? null,
+          type: component.type,
+          options: component.props ?? {},
+          styles: component.styles as Record<string, any> | undefined,
+          slot: component.slot ?? null,
+          name: component.name,
+          meta: component.meta as Record<string, any> | undefined,
           page_id: pageId,
           account_id: user.id,
         });
-        insertedComponentIds.push(componentResult.identifiers[0].id);
       }
 
       await queryRunner.manager.update(Page, pageId, {
-        components: insertedComponentIds,
+        components: rootIds,
       });
     }
 
@@ -64,11 +126,19 @@ export class PageReleaseService {
       await queryRunner.manager.update(Page, existingPage.id, {
         ...otherBody,
         components: [],
+        schema_version: schema?.version ?? schema_version ?? 2,
       });
 
       for (const component of existingPage.components) {
-        await queryRunner.manager.delete(Component, component);
+        await queryRunner.manager.delete(Component, {
+          page_id: existingPage.id,
+          node_id: component,
+        });
       }
+
+      await queryRunner.manager.delete(Component, {
+        page_id: existingPage.id,
+      });
 
       const componentDatas = await queryRunner.manager.findBy(ComponentData, {
         page_id: existingPage.id,
@@ -85,6 +155,7 @@ export class PageReleaseService {
         ...otherBody,
         account_id: user.id,
         components: [],
+        schema_version: schema?.version ?? schema_version ?? 2,
       });
       const pageId = createdPage.identifiers[0].id;
       id = pageId;
@@ -162,19 +233,27 @@ export class PageReleaseService {
     });
     if (!page) return;
 
-    const components: (Component | null)[] = [];
+    const components = await this.componentRepository.find({
+      where: {
+        page_id: page.id,
+      },
+      order: {
+        id: 'ASC',
+      },
+    });
     const componentIds = page.components;
-    for (const componentId of componentIds) {
-      const component = await this.componentRepository.findOneBy({
-        id: Number(componentId),
-      });
-      components.push(component);
-    }
-
-    return {
+    const schema = this.buildPageSchema(
       components,
       componentIds,
+      page.schema_version ?? 1,
+    );
+
+    return {
       ...objectOmit(page, ['components']),
+      components,
+      componentIds,
+      schema_version: page.schema_version ?? 1,
+      schema,
     };
   }
 
@@ -184,19 +263,27 @@ export class PageReleaseService {
     });
     if (!page) return null;
 
-    const components: (Component | null)[] = [];
+    const components = await this.componentRepository.find({
+      where: {
+        page_id: page.id,
+      },
+      order: {
+        id: 'ASC',
+      },
+    });
     const componentIds = page.components;
-    for (const componentId of componentIds) {
-      const component = await this.componentRepository.findOneBy({
-        id: Number(componentId),
-      });
-      components.push(component);
-    }
-
-    return {
+    const schema = this.buildPageSchema(
       components,
       componentIds,
+      page.schema_version ?? 1,
+    );
+
+    return {
       ...objectOmit(page, ['components']),
+      components,
+      componentIds,
+      schema_version: page.schema_version ?? 1,
+      schema,
     };
   }
 }

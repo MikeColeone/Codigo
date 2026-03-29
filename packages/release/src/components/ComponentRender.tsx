@@ -1,35 +1,45 @@
 "use client";
 
 import {
+  buildComponentTree,
+  groupChildrenBySlot,
+  type ComponentNode,
   type GetReleaseDataResponse,
-  type TBasicComponentConfig,
+  type TComponentTypes,
   getComponentByType,
   initBuiltinComponents,
 } from "@codigo/materials-react";
 import { useRequest } from "ahooks";
 import { useImmer } from "use-immer";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { message, Button } from "antd";
 
 initBuiltinComponents();
 
 const usingInputType = ["input", "textArea", "radio", "checkbox"];
 
-// �������
 function generateComponent(
-  conf: TBasicComponentConfig,
+  conf: { id: string; type: TComponentTypes; props: Record<string, any> },
   onUpdate: (value: any) => void,
+  slots?: Record<string, any[]>,
+  editorNodeId?: string,
 ) {
   const Component = getComponentByType(conf.type);
 
-  // ����������ֱ����Ⱦ
   if (!usingInputType.includes(conf.type))
-    return <Component {...conf.props} key={conf.id} />;
-  // ����������Ҫ���»ص�
-  else return <Component {...conf.props} key={conf.id} onUpdate={onUpdate} />;
+    return <Component {...conf.props} key={conf.id} slots={slots} editorNodeId={editorNodeId} />;
+  else
+    return (
+      <Component
+        {...conf.props}
+        key={conf.id}
+        onUpdate={onUpdate}
+        slots={slots}
+        editorNodeId={editorNodeId}
+      />
+    );
 }
 
-// ��ȡ�����ֵ
 function getQuestionComponentValueField(component: any) {
   switch (component.type) {
     case "input":
@@ -44,47 +54,80 @@ function getQuestionComponentValueField(component: any) {
   }
 }
 
-// �����Ⱦ����
 interface ComponentRenderType {
   id: string;
   data: GetReleaseDataResponse;
 }
 
-// �����Ⱦ���
 export default function ComponentRender({ data, id }: ComponentRenderType) {
   const [isPosted, setIsPosted] = useState(false);
-  // ��¡���ݲ����оֲ�״̬����
   const [localData, setLocalData] = useImmer(
     JSON.parse(JSON.stringify(data)) as ComponentRenderType["data"],
   );
+  const pageSchema = useMemo(() => {
+    if (localData.schema?.components?.length) {
+      return localData.schema.components;
+    }
 
-  // �������
-  function generateComponents() {
-    return localData.components
-      .map((comp) => {
-        return {
-          id: comp.id,
-          type: comp.type,
-          props: comp.options,
-        };
-      })
-      .map((comp: any) =>
-        generateComponent(comp, (value) => {
-          // ���¾ֲ����������
+    return buildComponentTree(
+      localData.components.map((component) => ({
+        id: component.node_id,
+        type: component.type,
+        name: component.name,
+        props: component.options ?? {},
+        styles: component.styles,
+        slot: component.slot ?? undefined,
+        meta: component.meta,
+        parentId: component.parent_node_id,
+      })),
+      localData.componentIds,
+    );
+  }, [localData.componentIds, localData.components, localData.schema]);
+
+  const componentValueMap = useMemo(() => {
+    return new Map(localData.components.map((component) => [component.node_id, component]));
+  }, [localData.components]);
+
+  function renderNode(node: ComponentNode) {
+    const sourceComponent = componentValueMap.get(node.id);
+    const runtimeComponent = {
+      id: node.id,
+      type: node.type,
+      props: sourceComponent?.options ?? node.props ?? {},
+    };
+    const renderedChildren = node.children?.map((child) => renderNode(child)) ?? [];
+    const groupedSlots = groupChildrenBySlot(node);
+    const slots = Object.fromEntries(
+      Object.entries(groupedSlots).map(([slotName, nodes]) => [
+        slotName,
+        nodes.map((child) =>
+          renderedChildren.find((item) => String(item.key) === child.id),
+        ),
+      ]),
+    );
+
+    return (
+      <div
+        key={node.id}
+        className="relative"
+        style={{
+          ...(node.styles ?? {}),
+        }}
+      >
+        {generateComponent(runtimeComponent, (value) => {
           setLocalData((draft) => {
-            const target = draft.components.find(
-              (item) => item.id === comp.id,
-            )!;
-            const questionComponentValueField =
-              getQuestionComponentValueField(target);
-            if (questionComponentValueField)
+            const target = draft.components.find((item) => item.node_id === node.id);
+            if (!target) return;
+            const questionComponentValueField = getQuestionComponentValueField(target);
+            if (questionComponentValueField) {
               target.options[questionComponentValueField] = value;
+            }
           });
-        }),
-      );
+        }, slots, node.id)}
+      </div>
+    );
   }
 
-  // �������Ƿ��Ѿ��ύ���ʾ�
   useRequest(
     async () => {
       const _f = await fetch(
@@ -94,7 +137,6 @@ export default function ComponentRender({ data, id }: ComponentRenderType) {
     },
     {
       onSuccess: ({ data }) => {
-        // ����Ѿ��ύ�������ٴ��ύ
         if (data) {
           setIsPosted(true);
           message.open({ content: "�����ύ���ʾ�����л���Ĳ���" });
@@ -103,11 +145,8 @@ export default function ComponentRender({ data, id }: ComponentRenderType) {
     },
   );
 
-  // �ύ�ʾ�����
   const { run, loading } = useRequest(
     async () => {
-      // ѭ���ж�ֵ�Ƿ����
-      // ���ֵ�������������ύ
       const isNotCompleted = localData.components.some((comp) => {
         const questionComponentValueField =
           getQuestionComponentValueField(comp);
@@ -121,10 +160,8 @@ export default function ComponentRender({ data, id }: ComponentRenderType) {
 
         return false;
       });
-      // ���ʾ�δ��д��������ʾ��ʾ��Ϣ
       if (isNotCompleted) return { msg: "����д�����ʾ���Ϣ", data: false };
 
-      // �ύ�ʾ�����
       const _f = await fetch(
         `http://8.134.163.0:5000/api/pages/${data.id}/submissions`,
         {
@@ -164,10 +201,8 @@ export default function ComponentRender({ data, id }: ComponentRenderType) {
     <div
       className={`${isPosted && "opacity-50 select-none pointer-events-none"}`}
     >
-      {/* �����Ⱦ */}
-      {generateComponents()}
+      {pageSchema.map((node) => renderNode(node))}
 
-      {/* �ύ�ʾ���ť */}
       {data.components.some((comp) => usingInputType.includes(comp.type)) && (
         <div className="flex items-center justify-center">
           <Button type="primary" onClick={run} loading={loading}>

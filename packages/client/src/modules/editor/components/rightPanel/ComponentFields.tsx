@@ -1,13 +1,17 @@
 import type { FC } from "react";
 import { observer } from "mobx-react-lite";
 import { toJS } from "mobx";
+import { getComponentContainerMeta } from "@codigo/materials-react";
 import {
   AppstoreOutlined,
   BorderOutlined,
   DragOutlined,
+  NodeIndexOutlined,
   ShrinkOutlined,
 } from "@ant-design/icons";
 import { getComponentPropsByType } from "@/modules/editor/components/LowCodeComponents";
+import type { ComponentNode } from "@codigo/schema";
+import type { ReactNode } from "react";
 import type { TStoreComponents } from "@/shared/stores";
 import { useStoreComponents } from "@/shared/hooks";
 import { Collapse, Empty, Form, InputNumber } from "antd";
@@ -73,7 +77,13 @@ const ComponentFields: FC<{ store: TStoreComponents }> = observer(
         </div>
       );
 
-    const { getCurrentComponentConfig, updateCurrentComponentStyles } =
+    const {
+      getComponentTree,
+      getCurrentComponentConfig,
+      getAvailableSlots,
+      setCurrentComponent,
+      updateCurrentComponentStyles,
+    } =
       useStoreComponents();
     const config = getCurrentComponentConfig.get();
 
@@ -81,6 +91,35 @@ const ComponentFields: FC<{ store: TStoreComponents }> = observer(
 
     const ComponentProps = getComponentPropsByType(config.type);
     const styles = config.styles || {};
+    const currentConfigId = config.id;
+    const containerMeta = getComponentContainerMeta(config.type);
+    const currentSlots = getAvailableSlots(config.type);
+    const childrenCount = config.childIds?.length ?? 0;
+
+    const componentTree = getComponentTree.get();
+
+    function renderTree(node: ComponentNode, depth = 0): ReactNode {
+      const isActive = node.id === currentConfigId;
+      return (
+        <div key={node.id} style={{ marginLeft: depth * 12 }}>
+          <button
+            type="button"
+            onClick={() => setCurrentComponent(node.id)}
+            className={`mb-2 flex w-full items-center justify-between rounded-2xl border px-3 py-2 text-left transition ${
+              isActive
+                ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                : "border-slate-100 bg-white text-slate-600 hover:border-slate-200 hover:bg-slate-50"
+            }`}
+          >
+            <span className="text-sm font-medium">{node.type}</span>
+            <span className="text-[11px] text-slate-400">
+              {node.slot ?? "root"}
+            </span>
+          </button>
+          {node.children?.map((child) => renderTree(child, depth + 1))}
+        </div>
+      );
+    }
 
     const handleStyleChange = (_changedValues: any, allValues: any) => {
       const formattedStyles = { ...allValues };
@@ -162,7 +201,7 @@ const ComponentFields: FC<{ store: TStoreComponents }> = observer(
         </div>
 
         <Collapse
-          defaultActiveKey={["props", "styles"]}
+          defaultActiveKey={["props", "structure", "styles"]}
           ghost
           expandIconPosition="end"
           className="[&_.ant-collapse-item]:mb-3 [&_.ant-collapse-item]:overflow-hidden [&_.ant-collapse-item]:rounded-3xl [&_.ant-collapse-item]:border [&_.ant-collapse-item]:border-slate-200/80 [&_.ant-collapse-item]:bg-white [&_.ant-collapse-header]:!items-center [&_.ant-collapse-header]:!px-5 [&_.ant-collapse-header]:!py-4 [&_.ant-collapse-content-box]:!px-5 [&_.ant-collapse-content-box]:!pb-5 [&_.ant-collapse-content-box]:!pt-1"
@@ -180,6 +219,60 @@ const ComponentFields: FC<{ store: TStoreComponents }> = observer(
           >
             <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
               <ComponentProps {...toJS(config.props)} id={config.id} />
+            </div>
+          </Panel>
+
+          <Panel
+            header={
+              <div>
+                <div className="font-semibold text-slate-900">结构与插槽</div>
+                <div className="text-xs text-slate-400">
+                  查看父子层级、插槽归属与容器能力
+                </div>
+              </div>
+            }
+            key="structure"
+          >
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+                  <div className="mb-2 text-xs text-slate-400">当前插槽</div>
+                  <div className="text-sm font-semibold text-slate-900">
+                    {config.slot ?? "root"}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+                  <div className="mb-2 text-xs text-slate-400">子节点数量</div>
+                  <div className="text-sm font-semibold text-slate-900">
+                    {childrenCount}
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  <NodeIndexOutlined className="text-emerald-600" />
+                  容器信息
+                </div>
+                <div className="space-y-2 text-sm text-slate-600">
+                  <div>类型：{containerMeta.isContainer ? "容器组件" : "普通组件"}</div>
+                  <div>
+                    可用插槽：
+                    {containerMeta.isContainer
+                      ? currentSlots.map((item) => item.name).join(" / ")
+                      : "无"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+                <div className="mb-3 text-sm font-semibold text-slate-900">
+                  组件树
+                </div>
+                <div className="space-y-1">
+                  {componentTree.map((node) => renderTree(node))}
+                </div>
+              </div>
             </div>
           </Panel>
 

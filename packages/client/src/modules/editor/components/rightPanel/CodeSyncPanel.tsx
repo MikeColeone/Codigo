@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react-lite";
 import { Button, Input, Segmented, Typography } from "antd";
-import { toJS } from "mobx";
 import { useStoreComponents, useStorePage } from "@/shared/hooks";
 import {
   parseSchemaFromCode,
@@ -12,28 +11,14 @@ import {
 const { Text } = Typography;
 
 export default observer(function CodeSyncPanel() {
-  const { store, getComponentById, replaceByCode } = useStoreComponents();
+  const { store, getComponentTree, replaceByCode } = useStoreComponents();
   const { store: pageStore, setCodeFramework } = useStorePage();
   const [code, setCode] = useState("");
   const [errorText, setErrorText] = useState("");
 
   const schemaText = useMemo(() => {
-    const serializableComponents = store.sortableCompConfig
-      .map((id) => getComponentById(id))
-      .filter(Boolean)
-      .map((item) => {
-        return {
-          id: item.id,
-          type: item.type,
-          props: toJS(item.props || {}),
-          styles: toJS(
-            (item as { styles?: Record<string, unknown> }).styles || {},
-          ),
-        };
-      });
-
-    return JSON.stringify(serializableComponents, null, 2);
-  }, [getComponentById, store.sortableCompConfig, store.compConfigs]);
+    return JSON.stringify(getComponentTree.get(), null, 2);
+  }, [getComponentTree, store.compConfigs, store.sortableCompConfig]);
 
   const generatedCode = useMemo(() => {
     return renderCode(pageStore.codeFramework, schemaText);

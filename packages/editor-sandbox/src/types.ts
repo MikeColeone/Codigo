@@ -7,6 +7,8 @@ export interface SandboxSchemaNode {
   type: TComponentTypes;
   props?: Record<string, unknown>;
   styles?: Record<string, unknown>;
+  slot?: string;
+  children?: SandboxSchemaNode[];
 }
 
 export type SandboxTarget = "iframe-ui" | "worker-logic";

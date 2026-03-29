@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { Empty } from "antd";
 import { getComponentByType } from "@codigo/materials-react";
-import type { SyncSchemaItem, TComponentTypes } from "@codigo/schema";
+import { groupChildrenBySlot, type SyncSchemaItem, type TComponentTypes } from "@codigo/schema";
 
 interface LowCodeRendererProps {
   component: SyncSchemaItem;
@@ -10,6 +10,19 @@ interface LowCodeRendererProps {
 export function LowCodeRenderer({ component }: LowCodeRendererProps) {
   const Component = getComponentByType(component.type as TComponentTypes);
   const wrapperStyle = (component.styles ?? {}) as CSSProperties;
+  const renderedChildren =
+    component.children?.map((child) => (
+      <LowCodeRenderer key={child.id ?? `${child.type}-${child.slot ?? "default"}`} component={child} />
+    )) ?? [];
+  const groupedSlots = groupChildrenBySlot(component);
+  const slots = Object.fromEntries(
+    Object.entries(groupedSlots).map(([slotName, nodes]) => [
+      slotName,
+      nodes.map((child) =>
+        renderedChildren.find((item) => String(item.key) === (child.id ?? "")),
+      ),
+    ]),
+  );
 
   if (!Component) {
     return (
@@ -23,8 +36,8 @@ export function LowCodeRenderer({ component }: LowCodeRendererProps) {
   }
 
   return (
-    <div style={wrapperStyle}>
-      <Component {...component.props} />
+    <div style={wrapperStyle} className="relative">
+      <Component {...component.props} slots={slots} editorNodeId={component.id} />
     </div>
   );
 }

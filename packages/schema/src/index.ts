@@ -5,5 +5,6 @@ export * from "./render";
 export * from "./types";
 export * from "./request";
 export * from "./components";
+export * from "./tree";
 export * from "./collaboration";
 export * from "./admin";

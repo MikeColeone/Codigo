@@ -1,5 +1,7 @@
 import type { FC } from "react";
 import {
+  ContainerComponentProps,
+  TwoColumnComponentProps,
   ButtonComponentProps,
   ImageComponentProps,
   SwiperComponentProps,
@@ -23,6 +25,8 @@ import type { TBasicComponentConfig, TComponentTypes } from "@codigo/schema";
 
 // @ts-ignore
 export const componentPropsList: Record<TComponentTypes, FC<any>> = {
+  container: ContainerComponentProps,
+  twoColumn: TwoColumnComponentProps,
   button: ButtonComponentProps,
   video: VideoComponentProps,
   image: ImageComponentProps,

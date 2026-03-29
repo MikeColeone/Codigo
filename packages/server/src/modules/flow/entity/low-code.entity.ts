@@ -17,6 +17,9 @@ export class Page implements ILowCode {
   @Column({ type: 'simple-array' })
   components: string[] = [];
 
+  @Column({ default: 1 })
+  schema_version: number = 1;
+
   @Column()
   tdk: string = '';
 
@@ -43,6 +46,24 @@ export class Component implements IComponent {
 
   @Column({ type: 'simple-json' })
   options: Record<string, any> = {};
+
+  @Column()
+  node_id: string = '';
+
+  @Column({ nullable: true })
+  parent_node_id: string | null = null;
+
+  @Column({ nullable: true })
+  slot: string | null = null;
+
+  @Column({ nullable: true })
+  name?: string;
+
+  @Column({ type: 'simple-json', nullable: true })
+  styles?: Record<string, any>;
+
+  @Column({ type: 'simple-json', nullable: true })
+  meta?: Record<string, any>;
 }
 
 @Entity({ name: 'component_data' })

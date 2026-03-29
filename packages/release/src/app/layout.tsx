@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
-import { initBuiltinComponents } from "@codigo/materials-react";
-
-initBuiltinComponents();
 
 export const metadata: Metadata = {
   title: "�ʹ��뷢��ҳ��",

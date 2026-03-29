@@ -4,6 +4,8 @@ import type { SandboxSchemaNode } from "./types";
 const schemaKey = "const pageSchema =";
 
 export const supportedComponentTypes: TComponentTypes[] = [
+  "container",
+  "twoColumn",
   "button",
   "video",
   "swiper",
@@ -62,11 +64,15 @@ export function serializeSchema(schema: SandboxSchemaNode[], space = 2) {
 }
 
 export function validateSchemaNodes(schema: SandboxSchemaNode[]) {
-  const invalidType = schema.find(
-    (item) => !supportedComponentTypes.includes(item.type as TComponentTypes),
-  );
-  if (invalidType) {
-    throw new Error(`不支持的组件类型: ${invalidType.type}`);
+  const stack = [...schema];
+  while (stack.length) {
+    const item = stack.pop()!;
+    if (!supportedComponentTypes.includes(item.type as TComponentTypes)) {
+      throw new Error(`不支持的组件类型: ${item.type}`);
+    }
+    if (item.children?.length) {
+      stack.push(...item.children);
+    }
   }
 }
 
