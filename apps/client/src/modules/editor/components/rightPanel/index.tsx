@@ -3,19 +3,17 @@ import { Tabs, Tooltip } from "antd";
 import {
   AppstoreOutlined,
   SettingOutlined,
-  CodeOutlined,
   RobotOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
 import ComponentFields from "./ComponentFields";
 import GlobalFields from "./GlobalFields";
-import CodeSyncPanel from "./CodeSyncPanel";
 import AIChatPanel from "./AIChatPanel";
 import PermissionPanel from "./PermissionPanel";
 import { useStoreComponents, useStorePage } from "@/shared/hooks";
 
 export default function EditorRightPanel() {
-  const { store: storePage, setEditorMode } = useStorePage();
+  const { store: storePage } = useStorePage();
   const { store: storeComps } = useStoreComponents();
   const [activeKey, setActiveKey] = useState("components-fields");
 
@@ -47,19 +45,6 @@ export default function EditorRightPanel() {
       children: <GlobalFields store={storePage} />,
     },
     {
-      key: "code-sync",
-      title: "源码同步",
-      description: "同步页面源码后直接进入 IDE 编辑态，统一完成源码查看与修改。",
-      label: (
-        <Tooltip title="源码同步" placement="bottom">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl transition-all">
-            <CodeOutlined className="text-lg" />
-          </div>
-        </Tooltip>
-      ),
-      children: <CodeSyncPanel />,
-    },
-    {
       key: "ai-chat",
       title: "AI 生成",
       description: "通过自然语言快速补齐页面结构、文案和交互想法。",
@@ -89,11 +74,6 @@ export default function EditorRightPanel() {
 
   const handleTabChange = (key: string) => {
     setActiveKey(key);
-    if (key === "code-sync") {
-      setEditorMode("webide");
-    } else {
-      setEditorMode("visual");
-    }
   };
 
   const activeItem = items.find((item) => item.key === activeKey) ?? items[0];

@@ -3,7 +3,7 @@ import { useRequest } from "ahooks";
 import { Alert, Empty, Spin, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useSearchParams } from "react-router-dom";
-import { getPageWorkspaceIDEConfig } from "../../api/low-code";
+import { startPageWorkspaceIDEConfig } from "../../api/low-code";
 import { useStorePage } from "@/shared/hooks";
 import { BASE_URL } from "@/shared/utils/request";
 
@@ -12,10 +12,7 @@ const { Paragraph, Text } = Typography;
 export const WebIDECanvas = observer(() => {
   const [searchParams] = useSearchParams();
   const pageId = Number(searchParams.get("id"));
-  const {
-    store: pageStore,
-    setWorkspaceIDEConfig,
-  } = useStorePage();
+  const { store: pageStore, setWorkspaceIDEConfig } = useStorePage();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [frameReady, setFrameReady] = useState(false);
   const workspace = pageStore.workspace;
@@ -27,7 +24,7 @@ export const WebIDECanvas = observer(() => {
         return null;
       }
 
-      const response = await getPageWorkspaceIDEConfig(pageId);
+      const response = await startPageWorkspaceIDEConfig(pageId);
       return response.data ?? null;
     },
     {
@@ -45,6 +42,10 @@ export const WebIDECanvas = observer(() => {
 
     void fetchIDEConfig();
   }, [fetchIDEConfig, pageId, workspace?.exists, workspaceIDEConfig]);
+
+  useEffect(() => {
+    setFrameReady(false);
+  }, [workspaceIDEConfig?.browserUrl]);
 
   const targetOrigin = useMemo(() => {
     if (!workspaceIDEConfig?.browserUrl) {
@@ -98,7 +99,7 @@ export const WebIDECanvas = observer(() => {
     return (
       <div className="flex h-full items-center justify-center bg-slate-50">
         <Empty
-          description="请先在右侧源码同步面板加载工作区"
+          description="请先点击顶部“IDE 编辑”按钮同步工作区并进入编辑态"
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       </div>
@@ -113,7 +114,7 @@ export const WebIDECanvas = observer(() => {
             type="warning"
             showIcon
             message="工作区尚未生成"
-            description="请先点击源码同步，把页面结构同步到模板工作区后再进入 IDE。"
+            description="请点击顶部“IDE 编辑”按钮，将当前页面同步到工作区后再进入 IDE。"
           />
         </div>
       </div>
@@ -125,7 +126,9 @@ export const WebIDECanvas = observer(() => {
       <div className="flex h-full items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-3">
           <Spin size="large" />
-          <Text className="text-slate-500">正在准备独立 IDE 子应用...</Text>
+          <Text className="text-slate-500">
+            正在拉起 apps/ide iframe 服务...
+          </Text>
         </div>
       </div>
     );
@@ -138,8 +141,8 @@ export const WebIDECanvas = observer(() => {
           <Alert
             type="error"
             showIcon
-            message="IDE 子应用地址不可用"
-            description="请先确认 OpenSumi 独立子应用已启动，并检查后端返回的 browserUrl 配置。"
+            message="apps/ide 服务地址不可用"
+            description="请确认 apps/ide 已启动，并检查后端返回的 browserUrl 配置是否正确。"
           />
         </div>
       </div>
@@ -151,16 +154,13 @@ export const WebIDECanvas = observer(() => {
       <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
         <div>
           <div className="text-xs uppercase tracking-[0.18em] text-emerald-700">
-            OpenSumi App
+            apps/ide iframe
           </div>
           <div className="mt-1 text-sm text-slate-600">
-            当前画布已切换为独立 IDE 子应用
+            当前画布已切换到嵌入式 WebIDE 服务
           </div>
         </div>
         <div className="text-right">
-          <Text className="block text-xs text-slate-500">
-            {frameReady ? "认证上下文已注入" : "等待子应用就绪"}
-          </Text>
           <Paragraph copyable className="!mb-0 !mt-1 max-w-[360px] text-xs">
             {workspaceIDEConfig.browserUrl}
           </Paragraph>

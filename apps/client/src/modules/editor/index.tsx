@@ -100,19 +100,6 @@ const Editor = observer(() => {
         <div className="absolute left-10 top-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-[110px] pointer-events-none" />
         <div className="absolute bottom-10 right-16 h-56 w-56 rounded-full bg-sky-400/10 blur-[140px] pointer-events-none" />
 
-        <div className="relative z-10 flex items-center justify-between px-8 pb-3 pt-6">
-          <div>
-            <div className="mb-2 flex items-center gap-2">
-              <span className="rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700 shadow-sm">
-                Workspace
-              </span>
-              <span className="text-xs text-slate-400">
-                {pageId ? `Page #${pageId}` : "未绑定页面 ID"}
-              </span>
-            </div>
-          </div>
-        </div>
-
         <div className="relative z-10 flex-1 px-8 pb-8">
           <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[30px] border border-white/70 bg-white/40 shadow-[0_30px_80px_-52px_rgba(15,23,42,0.65)] backdrop-blur-xl">
             <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden p-8">

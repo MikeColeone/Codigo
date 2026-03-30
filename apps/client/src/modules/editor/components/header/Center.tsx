@@ -1,4 +1,5 @@
 import {
+  AppstoreOutlined,
   CheckOutlined,
   CodeOutlined,
   FundViewOutlined,
@@ -12,8 +13,12 @@ import {
 import type { PostReleaseRequest } from "@codigo/materials";
 import { useRequest } from "ahooks";
 import { Button, InputNumber, Space, message } from "antd";
-import { useNavigate } from "react-router-dom";
-import { postRelease } from "@/modules/editor/api/low-code";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  postRelease,
+  startPageWorkspaceIDEConfig,
+  syncPageWorkspace,
+} from "@/modules/editor/api/low-code";
 import {
   useStoreComponents,
   useStorePage,
@@ -25,7 +30,19 @@ import { VersionHistoryDrawer } from "./VersionHistoryDrawer";
 
 const Center = observer(() => {
   const nav = useNavigate();
-  const { store, setDeviceType, setCanvasSize } = useStorePage();
+  const [searchParams] = useSearchParams();
+  const pageId = Number(searchParams.get("id"));
+  const {
+    store,
+    resetWorkspaceFiles,
+    setCanvasSize,
+    setDeviceType,
+    setEditorMode,
+    setWorkspace,
+    setWorkspaceIDEConfig,
+    setWorkspaceRuntime,
+    setWorkspaceSession,
+  } = useStorePage();
   const { serializeSchema, storeInLocalStorage, undo, redo, hasUndo, hasRedo } =
     useStoreComponents();
   const { can, ensurePermission, addOperationLog } = useStorePermission();
@@ -39,6 +56,51 @@ const Center = observer(() => {
         nav(`/release?id=${data}`);
         localStorage.setItem("release_time", String(Date.now()));
         message.success(msg);
+      },
+    },
+  );
+
+  const { run: toggleEditorMode, loading: editorSwitching } = useRequest(
+    async () => {
+      if (store.editorMode === "webide") {
+        return { mode: "visual" as const };
+      }
+
+      if (!pageId) {
+        return null;
+      }
+
+      const workspaceResponse = await syncPageWorkspace(pageId);
+      const workspace = workspaceResponse.data ?? null;
+      const ideConfigResponse = await startPageWorkspaceIDEConfig(pageId);
+
+      return {
+        mode: "webide" as const,
+        workspace,
+        workspaceIDEConfig: ideConfigResponse.data ?? null,
+      };
+    },
+    {
+      manual: true,
+      onSuccess: (payload) => {
+        if (!payload) {
+          message.warning("当前页面还未完成初始化");
+          return;
+        }
+
+        if (payload.mode === "visual") {
+          setEditorMode("visual");
+          message.success("已切换到画布编辑");
+          return;
+        }
+
+        setWorkspace(payload.workspace);
+        resetWorkspaceFiles();
+        setWorkspaceIDEConfig(payload.workspaceIDEConfig);
+        setWorkspaceRuntime(null);
+        setWorkspaceSession(null);
+        setEditorMode("webide");
+        message.success("已切换到 IDE 编辑");
       },
     },
   );
@@ -181,8 +243,31 @@ const Center = observer(() => {
         </div>
 
         <Button
+          loading={editorSwitching}
+          className={`!ml-1 !h-9 !rounded-xl !px-4 !font-medium ${
+            store.editorMode === "webide"
+              ? "!border-emerald-200 !bg-emerald-50 !text-emerald-700 hover:!border-emerald-300 hover:!bg-emerald-100"
+              : "!border-slate-200 !bg-white !text-slate-700 hover:!border-emerald-200 hover:!text-emerald-700"
+          }`}
+          onClick={() => toggleEditorMode()}
+          disabled={!pageId}
+        >
+          {store.editorMode === "webide" ? (
+            <>
+              <AppstoreOutlined />
+              画布编辑
+            </>
+          ) : (
+            <>
+              <CodeOutlined />
+              IDE 编辑
+            </>
+          )}
+        </Button>
+
+        <Button
           loading={loading}
-          className="!ml-1 !h-9 !rounded-xl !border-none !bg-emerald-500 !px-4 !font-medium !text-white shadow-[0_18px_32px_-18px_rgba(16,185,129,0.9)] hover:!bg-emerald-400"
+          className="!h-9 !rounded-xl !border-none !bg-emerald-500 !px-4 !font-medium !text-white shadow-[0_18px_32px_-18px_rgba(16,185,129,0.9)] hover:!bg-emerald-400"
           type="primary"
           onClick={handleGoRelease}
           disabled={!can("publish")}
