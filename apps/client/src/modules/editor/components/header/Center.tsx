@@ -260,7 +260,7 @@ const Center = observer(() => {
           ) : (
             <>
               <CodeOutlined />
-              IDE 编辑
+              IDE编辑
             </>
           )}
         </Button>
