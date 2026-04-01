@@ -26,6 +26,15 @@ export class Page implements ILowCode {
   @Column()
   desc: string = '';
 
+  @Column({ default: 'mobile' })
+  deviceType: 'mobile' | 'pc' = 'mobile';
+
+  @Column({ default: 380 })
+  canvasWidth: number = 380;
+
+  @Column({ default: 700 })
+  canvasHeight: number = 700;
+
   @Column({ default: false })
   lockEditing: boolean = false;
 }

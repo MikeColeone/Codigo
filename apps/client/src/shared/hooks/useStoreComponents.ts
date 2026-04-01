@@ -1003,6 +1003,9 @@ export function useStoreComponents() {
       tdk: data?.tdk || "",
       title: data?.page_name,
       description: data?.desc,
+      deviceType: data?.deviceType ?? "mobile",
+      canvasWidth: data?.canvasWidth ?? 380,
+      canvasHeight: data?.canvasHeight ?? 700,
     });
 
     message.success("已自动从服务器读取数据");

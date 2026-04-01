@@ -49,9 +49,10 @@ export default function ComponentSelect({
   ];
 
   const dataSource: DataType[] = components.map((item) => {
+    const title = (item.props as { title?: string } | undefined)?.title;
     return {
       key: Number(item.id),
-      title: item?.title ?? item.type ?? "默认展示的标题",
+      title: title ?? item.type ?? "默认展示的标题",
       type: item.type,
       component: item,
     };

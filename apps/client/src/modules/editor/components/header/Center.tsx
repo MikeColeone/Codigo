@@ -120,6 +120,9 @@ const Center = observer(() => {
       schema: serializeSchema(),
       schema_version: 2,
       tdk: store.tdk,
+      deviceType: store.deviceType,
+      canvasWidth: store.canvasWidth,
+      canvasHeight: store.canvasHeight,
     });
     addOperationLog("publish", store.title);
   }

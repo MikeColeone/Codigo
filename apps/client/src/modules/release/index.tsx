@@ -95,10 +95,12 @@ export default function Release() {
     },
   );
 
-  const schema = useMemo(
-    () => resolveSchemaFromReleasePayload(data),
-    [data],
-  );
+  const schema = useMemo(() => resolveSchemaFromReleasePayload(data), [data]);
+  const deviceType = data?.deviceType === "pc" ? "pc" : "mobile";
+  const canvasWidth =
+    Number(data?.canvasWidth) || (deviceType === "pc" ? 1024 : 380);
+  const canvasHeight =
+    Number(data?.canvasHeight) || (deviceType === "pc" ? 768 : 700);
 
   const previewUrl = useMemo(() => {
     if (typeof window === "undefined") {
@@ -153,6 +155,10 @@ export default function Release() {
           <p className="mt-4 text-center text-sm text-slate-500">
             扫码后可在当前地址打开发布页
           </p>
+          <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+            {deviceType === "mobile" ? "移动端" : "PC 端"} · 画布 {canvasWidth}{" "}
+            × {canvasHeight}
+          </div>
           {data?.page_name ? (
             <div className="mt-6 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
               <div className="font-medium text-slate-900">{data.page_name}</div>
@@ -164,7 +170,27 @@ export default function Release() {
         </section>
 
         <section className="order-1 flex w-full justify-center lg:order-2 lg:flex-1">
-          <div className="h-[700px] w-[380px] overflow-y-auto overflow-x-hidden rounded-[30px] border-[8px] border-slate-800 bg-white text-left shadow-2xl">
+          <div
+            className={`overflow-y-auto overflow-x-hidden bg-white text-left shadow-2xl ${
+              deviceType === "mobile"
+                ? "rounded-[30px] border-[8px] border-slate-800"
+                : "rounded-2xl border border-slate-200"
+            }`}
+            style={{
+              width: canvasWidth,
+              height: canvasHeight,
+              maxWidth: "100%",
+            }}
+          >
+            {deviceType === "mobile" && (
+              <div className="sticky top-0 z-50 flex h-6 items-center justify-between bg-black/90 px-4 font-mono text-[10px] text-white">
+                <span>9:41</span>
+                <div className="flex gap-1">
+                  <div className="h-3 w-3 rounded-full bg-white/20" />
+                  <div className="h-3 w-3 rounded-full bg-white/20" />
+                </div>
+              </div>
+            )}
             {content}
           </div>
         </section>
@@ -176,14 +202,3 @@ export default function Release() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-

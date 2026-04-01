@@ -69,10 +69,11 @@ export default function DataSource({ currentSelected }: DataSourceProps) {
   }
 
   // 不同非输入类型组件展示的标题
-  const itemTitle = useMemo(
-    () => currentSelected?.title ?? "默认展示的标题",
-    [currentSelected],
-  );
+  const itemTitle = useMemo(() => {
+    const title = (currentSelected?.props as { title?: string } | undefined)
+      ?.title;
+    return title ?? "默认展示的标题";
+  }, [currentSelected]);
 
   // 将currentData数组中的每个元素的每个属性作为key，统计出现次数
   const result = useMemo(() => {

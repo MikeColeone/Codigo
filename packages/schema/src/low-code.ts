@@ -14,6 +14,9 @@ export interface ILowCode {
   schema_version?: number;
   tdk: string;
   desc: string;
+  deviceType?: "mobile" | "pc";
+  canvasWidth?: number;
+  canvasHeight?: number;
   lockEditing?: boolean; // 编辑锁状态
 }
 

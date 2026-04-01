@@ -16,10 +16,11 @@ export default function ComponentDatas(props: {
   // 处理成 table 组件需要的数据格式
   const columns: ColumnsType<any> = useMemo(() => {
     return props.components.map((item) => {
+      const title = (item.props as { title?: string } | undefined)?.title;
       return {
         key: item.id,
         dataIndex: item.id,
-        title: item?.title ?? item.type ?? "默认展示的标题",
+        title: title ?? item.type ?? "默认展示的标题",
       };
     });
   }, [props.components]);
