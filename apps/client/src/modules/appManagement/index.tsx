@@ -445,13 +445,18 @@ const AppManagement = observer(() => {
             : "已发布",
         ]}
         actionText="查看已发布内容"
-        onAction={() =>
+        onAction={() => {
+          const currentPage = myPageData.page;
+          if (!currentPage) {
+            return;
+          }
+
           handleOpenPublishedPage(
-            myPageData.page.id,
-            myPageData.page.page_name || "已发布应用",
-            myPageData.page.desc || "当前对外展示的发布内容",
-          )
-        }
+            currentPage.id,
+            currentPage.page_name || "已发布应用",
+            currentPage.desc || "当前对外展示的发布内容",
+          );
+        }}
       />
     ) : (
       <Empty
