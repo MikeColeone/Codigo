@@ -3,6 +3,7 @@ import {
   AppstoreOutlined,
   CheckOutlined,
   CodeOutlined,
+  DeleteOutlined,
   FundViewOutlined,
   PlusOutlined,
   RedoOutlined,
@@ -13,7 +14,7 @@ import {
 } from "@ant-design/icons";
 import type { PostReleaseRequest } from "@codigo/materials";
 import { useRequest } from "ahooks";
-import { Button, InputNumber, Space, Switch, message } from "antd";
+import { Button, InputNumber, Popconfirm, Space, Switch, message } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   postRelease,
@@ -45,8 +46,16 @@ const Center = observer(() => {
     setWorkspaceRuntime,
     setWorkspaceSession,
   } = useStorePage();
-  const { serializeSchema, storeInLocalStorage, undo, redo, hasUndo, hasRedo } =
-    useStoreComponents();
+  const {
+    clearActivePageCanvas,
+    serializeSchema,
+    store: storeComponents,
+    storeInLocalStorage,
+    undo,
+    redo,
+    hasUndo,
+    hasRedo,
+  } = useStoreComponents();
   const { can, ensurePermission, addOperationLog } = useStorePermission();
   const [historyOpen, setHistoryOpen] = useState(false);
 
@@ -243,6 +252,31 @@ const Center = observer(() => {
           >
             <PlusOutlined /> 草稿
           </Button>
+          <Popconfirm
+            title="确定要清空当前画布吗？"
+            description="会移除当前页面中的全部组件，但不会删除页面本身"
+            onConfirm={clearActivePageCanvas}
+            okText="清空"
+            cancelText="取消"
+            disabled={
+              store.editorMode !== "visual" ||
+              !storeComponents.sortableCompConfig.length ||
+              !can("edit_structure")
+            }
+          >
+            <Button
+              danger
+              type="text"
+              className="!h-7 !rounded-lg !px-2 !text-[11px]"
+              disabled={
+                store.editorMode !== "visual" ||
+                !storeComponents.sortableCompConfig.length ||
+                !can("edit_structure")
+              }
+            >
+              <DeleteOutlined /> 清空
+            </Button>
+          </Popconfirm>
           <Button
             type="text"
             className="!h-7 !rounded-lg !px-1.5 !text-[11px] !text-slate-500 hover:!bg-slate-100 hover:!text-slate-900"

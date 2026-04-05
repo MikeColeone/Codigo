@@ -1494,6 +1494,40 @@ export function useStoreComponents() {
     addOperationLog("remove_component", curCompConfig.type);
   });
 
+  const clearActivePageCanvas = action(() => {
+    if (!ensurePermission("edit_structure", "当前角色不能清空画布")) return;
+    ensureEditorPages();
+
+    if (!storeComponents.sortableCompConfig.length) {
+      message.info("当前画布已经是空的");
+      return;
+    }
+
+    storeComponents.compConfigs = {};
+    storeComponents.sortableCompConfig = [];
+    storeComponents.currentCompConfig = null;
+    storeComponents.pages = getPages.get().map((page) =>
+      page.id === storeComponents.activePageId
+        ? {
+            ...page,
+            components: [],
+          }
+        : page,
+    );
+
+    const { store: storePermission, broadcastComponentUpdate } =
+      useStorePermission();
+    broadcastComponentUpdate(
+      Number(new URLSearchParams(window.location.hash.split("?")[1]).get("id")),
+      Number(storePermission.currentUserId),
+      "replace_all",
+      buildReplaceAllPayload(),
+    );
+
+    message.success("已清空当前画布");
+    addOperationLog("remove_component", "清空画布");
+  });
+
   const _replace = action((value: TStoreComponents) => {
     storeComponents.compConfigs = value.compConfigs;
     storeComponents.currentCompConfig = value.currentCompConfig;
@@ -1794,6 +1828,7 @@ export function useStoreComponents() {
     moveDownComponent,
     copyCurrentComponent,
     pasteCopyedComponent,
+    clearActivePageCanvas,
     removeCurrentComponent,
     moveExistingNode,
     getCurrentComponentIndex,

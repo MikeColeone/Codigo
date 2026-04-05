@@ -303,7 +303,7 @@ export const EditorViewport = observer(function EditorViewport(
   }
 
   function canStartWorkspacePan(target: EventTarget | null) {
-    if (!(target instanceof HTMLElement)) {
+    if (!(target instanceof Element)) {
       return true;
     }
 
