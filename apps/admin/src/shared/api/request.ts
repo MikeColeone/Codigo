@@ -4,9 +4,10 @@ import type { AxiosRequestConfig } from "axios";
 import { clearAccessToken, getAccessToken } from "@/shared/auth/token";
 
 export const BASE_URL = import.meta.env.VITE_BASE_URL;
+const normalizedBaseUrl = BASE_URL?.replace(/\/$/, "");
 
 const request = axios.create({
-  baseURL: `${BASE_URL}/api`,
+  baseURL: normalizedBaseUrl ? `${normalizedBaseUrl}/api` : "/api",
 });
 
 request.interceptors.request.use((config) => {

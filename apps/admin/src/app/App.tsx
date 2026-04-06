@@ -1,7 +1,7 @@
 import { RouterProvider } from "react-router-dom";
-import "@/shared/assets/base.css";
 import { AuthProvider } from "@/shared/auth/AuthProvider";
 import { router } from "@/app/router";
+import "@/index.css"
 
 function App() {
   return (

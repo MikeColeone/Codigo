@@ -240,12 +240,6 @@ export const SandboxCanvas = observer(() => {
         <div className="px-3 py-2 border-b border-slate-200 bg-slate-50">
           <Text className="text-xs text-slate-600">OpenSumi 编辑适配层（Code JSON）</Text>
         </div>
-        <OpenSumiEditor
-          value={code}
-          onChange={setCode}
-          language="typescript"
-          readOnly={!canEditStructure}
-        />
         <div className="px-3 py-2 border-t border-slate-200 bg-slate-50">
           {errorText ? (
             <Text type="danger" className="text-xs">

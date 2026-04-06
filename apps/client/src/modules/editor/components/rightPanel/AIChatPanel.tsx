@@ -11,7 +11,6 @@ type ChatRole = "user" | "assistant";
 type ChatMessage = {
   id: string;
   role: ChatRole;
-  content: string;
 };
 
 type DraftComponent = {
@@ -236,7 +235,6 @@ const AIChatPanel = observer(function AIChatPanel() {
     {
       id: ulid(),
       role: "assistant",
-      content: "描述你的页面需求，我会直接生成到画布并保持源码同步。",
     },
   ]);
 
