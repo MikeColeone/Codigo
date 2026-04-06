@@ -7,7 +7,7 @@ import {
   generateComponent,
   resolveInitialPageState,
   type RuntimeAction,
-} from "@/modules/editor/components/canvas";
+} from "@/modules/editor/runtime";
 import { useStorePage } from "@/shared/hooks";
 import { useEditorComponents } from "@/modules/editor/hooks";
 import type { ComponentNode, IEditorPageSchema } from "@codigo/schema";

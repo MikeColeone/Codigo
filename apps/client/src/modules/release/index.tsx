@@ -9,7 +9,7 @@ import {
   generateComponent,
   resolveInitialPageState,
   type RuntimeAction,
-} from "@/modules/editor/components/canvas";
+} from "@/modules/editor/runtime";
 
 function resolveSchemaFromReleasePayload(
   payload: Record<string, any> | null | undefined,

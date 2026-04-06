@@ -4,7 +4,6 @@ import {
   EditOutlined,
   FormOutlined,
 } from "@ant-design/icons";
-import { getComponentByType as getBuiltinComponentByType } from "@codigo/materials";
 import { CheckboxComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeCheckbox";
 import { InputComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeInput";
 import { RadioComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeRadio";
@@ -17,7 +16,6 @@ export const formEditorComponents: EditorComponentMeta[] = [
     icon: <EditOutlined />,
     sectionKey: "form",
     propsEditor: InputComponentProps,
-    renderComponent: getBuiltinComponentByType("input"),
   },
   {
     type: "textArea",
@@ -25,7 +23,6 @@ export const formEditorComponents: EditorComponentMeta[] = [
     icon: <FormOutlined />,
     sectionKey: "form",
     propsEditor: InputComponentProps,
-    renderComponent: getBuiltinComponentByType("textArea"),
   },
   {
     type: "radio",
@@ -33,7 +30,6 @@ export const formEditorComponents: EditorComponentMeta[] = [
     icon: <CheckCircleOutlined />,
     sectionKey: "form",
     propsEditor: RadioComponentProps,
-    renderComponent: getBuiltinComponentByType("radio"),
   },
   {
     type: "checkbox",
@@ -41,6 +37,5 @@ export const formEditorComponents: EditorComponentMeta[] = [
     icon: <CheckSquareOutlined />,
     sectionKey: "form",
     propsEditor: CheckboxComponentProps,
-    renderComponent: getBuiltinComponentByType("checkbox"),
   },
 ];

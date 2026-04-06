@@ -1,5 +1,5 @@
 import type { PageCategory, TComponentTypes } from "@codigo/schema";
-import type { ComponentType, FC, ReactNode } from "react";
+import type { FC, ReactNode } from "react";
 
 export type EditorComponentSectionKey = "basic" | "form" | "report";
 
@@ -9,7 +9,6 @@ export interface EditorComponentMeta {
   icon: ReactNode;
   sectionKey: EditorComponentSectionKey;
   propsEditor: FC<any>;
-  renderComponent: ComponentType<any>;
   quickInsert?: boolean;
   hiddenFromPalette?: boolean;
   codeSync?: boolean;

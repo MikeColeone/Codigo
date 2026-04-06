@@ -5,7 +5,6 @@ import {
   PieChartOutlined,
   TableOutlined,
 } from "@ant-design/icons";
-import { getComponentByType as getBuiltinComponentByType } from "@codigo/materials";
 import { ChartComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeChart";
 import { StatisticComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeStatistic";
 import { TableComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeTable";
@@ -18,7 +17,6 @@ export const reportEditorComponents: EditorComponentMeta[] = [
     icon: <DashboardOutlined />,
     sectionKey: "report",
     propsEditor: StatisticComponentProps,
-    renderComponent: getBuiltinComponentByType("statistic"),
   },
   {
     type: "table",
@@ -26,7 +24,6 @@ export const reportEditorComponents: EditorComponentMeta[] = [
     icon: <TableOutlined />,
     sectionKey: "report",
     propsEditor: TableComponentProps,
-    renderComponent: getBuiltinComponentByType("table"),
   },
   {
     type: "barChart",
@@ -34,7 +31,6 @@ export const reportEditorComponents: EditorComponentMeta[] = [
     icon: <BarChartOutlined />,
     sectionKey: "report",
     propsEditor: ChartComponentProps,
-    renderComponent: getBuiltinComponentByType("barChart"),
   },
   {
     type: "lineChart",
@@ -42,7 +38,6 @@ export const reportEditorComponents: EditorComponentMeta[] = [
     icon: <LineChartOutlined />,
     sectionKey: "report",
     propsEditor: ChartComponentProps,
-    renderComponent: getBuiltinComponentByType("lineChart"),
   },
   {
     type: "pieChart",
@@ -50,7 +45,6 @@ export const reportEditorComponents: EditorComponentMeta[] = [
     icon: <PieChartOutlined />,
     sectionKey: "report",
     propsEditor: ChartComponentProps,
-    renderComponent: getBuiltinComponentByType("pieChart"),
   },
   {
     type: "radarChart",
@@ -58,7 +52,6 @@ export const reportEditorComponents: EditorComponentMeta[] = [
     icon: <PieChartOutlined />,
     sectionKey: "report",
     propsEditor: ChartComponentProps,
-    renderComponent: getBuiltinComponentByType("radarChart"),
     hiddenFromPalette: true,
   },
   {
@@ -67,7 +60,6 @@ export const reportEditorComponents: EditorComponentMeta[] = [
     icon: <BarChartOutlined />,
     sectionKey: "report",
     propsEditor: ChartComponentProps,
-    renderComponent: getBuiltinComponentByType("funnelChart"),
     hiddenFromPalette: true,
   },
 ];

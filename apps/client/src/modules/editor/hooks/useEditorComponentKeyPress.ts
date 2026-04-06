@@ -15,6 +15,7 @@ export function useEditorComponentKeyPress() {
     copyCurrentComponent,
     removeCurrentComponent,
     getCurrentComponentConfig,
+    getCurrentComponentIndex,
   } = useEditorComponents();
 
   /**
@@ -41,14 +42,28 @@ export function useEditorComponentKeyPress() {
     return isActive;
   }
 
+  /**
+   * 获取当前选中组件在同级中的有效序号。
+   */
+  function getValidatedComponentIndex() {
+    if (!validateComponent()) {
+      return null;
+    }
+
+    const currentIndex = getCurrentComponentIndex.get();
+    return currentIndex >= 0 ? currentIndex : null;
+  }
+
   useKeyPress("uparrow", () => {
-    if (!validateComponent()) return;
-    moveUpComponent();
+    const currentIndex = getValidatedComponentIndex();
+    if (currentIndex === null) return;
+    moveUpComponent(currentIndex);
   });
 
   useKeyPress("downarrow", () => {
-    if (!validateComponent()) return;
-    moveDownComponent();
+    const currentIndex = getValidatedComponentIndex();
+    if (currentIndex === null) return;
+    moveDownComponent(currentIndex);
   });
 
   useKeyPress(["delete", "backspace"], () => {

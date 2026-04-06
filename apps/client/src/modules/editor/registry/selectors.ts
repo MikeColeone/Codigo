@@ -1,3 +1,4 @@
+import { getComponentByType } from "@codigo/materials";
 import type { PageCategory, TComponentTypes } from "@codigo/schema";
 import { editorComponentCatalog, editorComponentMap } from "./catalog";
 import type { EditorComponentSection, EditorComponentSectionKey } from "./types";
@@ -36,7 +37,7 @@ export function getComponentPropsByType(type?: string | null) {
 }
 
 export function getComponentRenderByType(type?: string | null) {
-  return findEditorComponent(type)?.renderComponent ?? null;
+  return type ? getComponentByType(type as TComponentTypes) : null;
 }
 
 export const quickInsertComponents = editorComponentCatalog
