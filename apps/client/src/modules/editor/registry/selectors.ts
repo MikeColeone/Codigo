@@ -4,12 +4,18 @@ import { editorComponentCatalog, editorComponentMap } from "./catalog";
 import type { EditorComponentSection, EditorComponentSectionKey } from "./types";
 
 const sectionLabelMap: Record<EditorComponentSectionKey, string> = {
+  container: "容器",
   basic: "基础",
   form: "表单",
   report: "报表",
 };
 
-const sectionOrder: EditorComponentSectionKey[] = ["basic", "form", "report"];
+const sectionOrder: EditorComponentSectionKey[] = [
+  "container",
+  "basic",
+  "form",
+  "report",
+];
 
 export function getEditorComponentSections(pageCategory: PageCategory) {
   return sectionOrder.map((key) => ({

@@ -9,7 +9,6 @@ import {
   FontColorsOutlined,
   FontSizeOutlined,
   FundViewOutlined,
-  LayoutOutlined,
   MinusOutlined,
   SplitCellsOutlined,
   TableOutlined,
@@ -24,7 +23,6 @@ import { BreadcrumbBarComponentProps } from "@/modules/editor/components/LowCode
 import { ButtonComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeButton";
 import { CardComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeCard";
 import { CardGridComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeCardGrid";
-import { ContainerComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeContainer";
 import { DataTableComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeDataTable";
 import { EmptyComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeEmpty";
 import { ImageComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeImage";
@@ -36,7 +34,6 @@ import { SplitComponentProps } from "@/modules/editor/components/LowCodeComponen
 import { StatCardComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeStatCard";
 import { SwiperComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeSwiper";
 import { TextComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeText";
-import { TwoColumnComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeTwoColumn";
 import type { EditorComponentMeta } from "../types";
 
 export const basicEditorComponents: EditorComponentMeta[] = [
@@ -88,20 +85,6 @@ export const basicEditorComponents: EditorComponentMeta[] = [
     icon: <TableOutlined />,
     sectionKey: "basic",
     propsEditor: DataTableComponentProps,
-  },
-  {
-    type: "container",
-    name: "容器",
-    icon: <LayoutOutlined />,
-    sectionKey: "basic",
-    propsEditor: ContainerComponentProps,
-  },
-  {
-    type: "twoColumn",
-    name: "双栏布局",
-    icon: <LayoutOutlined />,
-    sectionKey: "basic",
-    propsEditor: TwoColumnComponentProps,
   },
   {
     type: "button",

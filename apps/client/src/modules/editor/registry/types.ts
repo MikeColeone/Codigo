@@ -1,7 +1,11 @@
 import type { PageCategory, TComponentTypes } from "@codigo/schema";
 import type { FC, ReactNode } from "react";
 
-export type EditorComponentSectionKey = "basic" | "form" | "report";
+export type EditorComponentSectionKey =
+  | "container"
+  | "basic"
+  | "form"
+  | "report";
 
 export interface EditorComponentMeta {
   type: TComponentTypes;
