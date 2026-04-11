@@ -6,6 +6,7 @@ import {
   type ITwoColumnComponentProps,
 } from "@codigo/materials";
 import { FormContainer, FormPropLabel } from "..";
+import SidebarLayoutTools from "./SidebarLayoutTools";
 
 export default function TwoColumnComponentProps(
   _props: ITwoColumnComponentProps,
@@ -35,6 +36,7 @@ export default function TwoColumnComponentProps(
       >
         <Input />
       </FormPropLabel>
+      <SidebarLayoutTools />
     </FormContainer>
   );
 }

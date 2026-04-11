@@ -122,6 +122,7 @@ function generateComponent(
   conf: { id: string; type: TComponentTypes; props: Record<string, any> },
   onUpdate: (value: any) => void,
   onAction: (action: RuntimeAction) => void,
+  pageState: Record<string, RuntimeStateValue>,
   slots?: Record<string, any[]>,
   editorNodeId?: string,
 ) {
@@ -133,6 +134,7 @@ function generateComponent(
         {...conf.props}
         key={conf.id}
         onAction={onAction}
+        runtimePageState={pageState}
         slots={slots}
         editorNodeId={editorNodeId}
       />
@@ -144,6 +146,7 @@ function generateComponent(
         key={conf.id}
         onUpdate={onUpdate}
         onAction={onAction}
+        runtimePageState={pageState}
         slots={slots}
         editorNodeId={editorNodeId}
       />
@@ -355,6 +358,7 @@ export default function ComponentRender({
             });
           },
           handleAction,
+          pageState,
           slots,
           node.id,
         )}

@@ -1,6 +1,6 @@
 import { Empty, Tag } from "antd";
 import type { CSSProperties, ReactNode } from "react";
-import type { ComponentNode } from "@codigo/schema";
+import type { ComponentNode, TComponentTypes } from "@codigo/schema";
 import type { PreviewSchema } from "../types/appManagement";
 
 const componentLabelMap: Record<string, string> = {
@@ -105,7 +105,7 @@ export function resolveSchemaFromReleasePayload(
     components?: Array<{
       id?: string | number;
       node_id?: string;
-      type: string;
+      type: TComponentTypes;
       options?: Record<string, unknown>;
       styles?: Record<string, unknown>;
     }>;

@@ -71,7 +71,6 @@ function getCurrentEditorPageId() {
  */
 function mapCollaborators(
   collaborators: any[],
-  currentUserId?: number,
   previousOnlineMap?: Map<string, boolean>,
 ) {
   return collaborators.map((item: any) => ({
@@ -148,10 +147,7 @@ export function useEditorPermission() {
       });
       action(() => {
         storePermission.lockEditing = data.lockEditing;
-        storePermission.collaborators = mapCollaborators(
-          data.collaborators,
-          currentUserId,
-        );
+        storePermission.collaborators = mapCollaborators(data.collaborators);
         const currentUserCollab = data.collaborators.find(
           (item: any) => item.user_id === currentUserId,
         );
@@ -365,7 +361,6 @@ export function useEditorPermission() {
       action(() => {
         storePermission.collaborators = mapCollaborators(
           data.collaborators,
-          undefined,
           previousOnlineMap,
         );
       })();

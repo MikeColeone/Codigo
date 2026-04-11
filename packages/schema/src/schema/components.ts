@@ -4,7 +4,7 @@
 export type TComponentTypes =
   | "container"
   | "twoColumn"
-  | "accordion"
+  | "accordion" 
   | "button"
   | "breadcrumbBar"
   | "pageHeader"

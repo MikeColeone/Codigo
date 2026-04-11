@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { Button } from "antd";
+import type { RuntimeStateValue } from "@codigo/schema";
 import { getDefaultValueByConfig } from "..";
 import {
   type IButtonComponentProps,
@@ -20,6 +21,23 @@ interface ButtonRuntimeAction {
  */
 interface ButtonRuntimeProps extends IButtonComponentProps {
   onAction?: (action: ButtonRuntimeAction) => void;
+  runtimePageState?: Record<string, RuntimeStateValue>;
+}
+
+/**
+ * 计算按钮在运行时应该呈现的视觉状态。
+ */
+function getButtonVisualState(props: ButtonRuntimeProps) {
+  const stateMatched =
+    props.actionType === "set-state" &&
+    Boolean(props.stateKey) &&
+    props.runtimePageState?.[props.stateKey] === props.stateValue;
+  const isActive = props.active || stateMatched;
+
+  return {
+    danger: isActive ? false : props.danger,
+    type: isActive ? "primary" : props.type,
+  };
 }
 
 /**
@@ -29,6 +47,7 @@ export default function ButtonComponent(_props: ButtonRuntimeProps) {
   const props = useMemo(() => {
     return { ...getDefaultValueByConfig(buttonComponentDefaultConfig), ..._props };
   }, [_props]);
+  const visualState = useMemo(() => getButtonVisualState(props), [props]);
 
   /**
    * 统一处理按钮点击行为，按 actionType 路由到对应的交互逻辑。
@@ -61,9 +80,9 @@ export default function ButtonComponent(_props: ButtonRuntimeProps) {
 
   return (
     <Button
-      type={props.type}
+      type={visualState.type}
       size={props.size}
-      danger={props.danger}
+      danger={visualState.danger}
       block={props.block}
       onClick={handleClick}
     >

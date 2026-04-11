@@ -11,6 +11,7 @@ import { createEditorComponentCanvasActions } from "./useEditorComponentCanvasAc
 import { createEditorComponentMutations } from "./useEditorComponentMutations";
 import { createEditorComponentPageActions } from "./useEditorComponentPages";
 import { createEditorComponentPersistence } from "./useEditorComponentPersistence";
+import { createEditorSidebarLayoutActions } from "./useEditorSidebarLayoutActions";
 import { createEditorComponentStructure } from "./useEditorComponentStructure";
 import { useEditorPage } from "./useEditorPage";
 import { useEditorPermission } from "./useEditorPermission";
@@ -274,6 +275,23 @@ export function useEditorComponents() {
     updatePage,
   });
 
+  const {
+    appendSidebarSection,
+    getSidebarSections,
+    moveSidebarSection,
+    removeSidebarSection,
+    syncSidebarPanels,
+    updateSidebarSectionLabel,
+  } = createEditorSidebarLayoutActions({
+    addOperationLog,
+    broadcastReplaceAll,
+    ensurePermission,
+    insertNodeTree,
+    setCurrentComponent,
+    storeComponents,
+    syncSchema,
+  });
+
   ensureEditorPages();
 
   return {
@@ -320,6 +338,12 @@ export function useEditorComponents() {
     initPageData: initFromServerData,
     serializeSchema: () => serializeStore(storeComponents),
     insertNodeIntoContainer,
+    appendSidebarSection,
+    getSidebarSections,
+    moveSidebarSection,
+    removeSidebarSection,
+    syncSidebarPanels,
+    updateSidebarSectionLabel,
     syncLayoutMode,
   };
 }

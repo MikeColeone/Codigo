@@ -85,6 +85,8 @@ export function createContainerNode(
     styles?: ComponentNode["styles"];
     children?: LayoutPresetNode[];
     slot?: string;
+    visibleStateKey?: string;
+    visibleStateValue?: string;
   },
 ): LayoutPresetNode {
   return {
@@ -97,6 +99,8 @@ export function createContainerNode(
       borderColor: options?.borderColor ?? "#d9d9d9",
       padding: options?.padding ?? 24,
       borderRadius: options?.borderRadius ?? 16,
+      visibleStateKey: options?.visibleStateKey ?? "",
+      visibleStateValue: options?.visibleStateValue ?? "",
     },
     styles: {
       width: "100%",
@@ -105,6 +109,62 @@ export function createContainerNode(
     slot: options?.slot,
     children: options?.children ?? [],
   };
+}
+
+/**
+ * 创建用于切换单页面内容区域的导航按钮节点。
+ */
+export function createStateButtonNode(
+  text: string,
+  stateKey: string,
+  stateValue: string,
+  options?: {
+    slot?: string;
+  },
+): LayoutPresetNode {
+  return {
+    id: ulid(),
+    type: "button",
+    props: {
+      text,
+      type: stateValue === "overview" ? "primary" : "default",
+      size: "large",
+      danger: false,
+      active: false,
+      block: true,
+      actionType: "set-state",
+      link: "",
+      targetId: "",
+      stateKey,
+      stateValue,
+    },
+    styles: {
+      width: "100%",
+      marginBottom: 12,
+    },
+    slot: options?.slot,
+  };
+}
+
+/**
+ * 创建单页面侧栏切换布局的右侧内容容器。
+ */
+export function createSidebarPanelNode(
+  title: string,
+  stateKey: string,
+  stateValue: string,
+): LayoutPresetNode {
+  return createContainerNode(title, {
+    minHeight: 320,
+    slot: "right",
+    backgroundColor: "#ffffff",
+    borderColor: "#d9d9d9",
+    visibleStateKey: stateKey,
+    visibleStateValue: stateValue,
+    styles: {
+      marginBottom: 16,
+    },
+  });
 }
 
 /**
@@ -147,6 +207,7 @@ export function createPageLayoutPreset(
   pageCategory: PageCategory,
 ) {
   if (preset === "sidebarLayout") {
+    const stateKey = "activeSidebarPanel";
     const header = createContainerNode(
       pageCategory === "admin" ? "页面头部" : "页面横幅",
       {
@@ -162,6 +223,29 @@ export function createPageLayoutPreset(
         leftWidth: pageCategory === "admin" ? 280 : 300,
         minHeight: 420,
         styles: { marginBottom: 16 },
+        children: [
+          createContainerNode("左侧导航", {
+            minHeight: 360,
+            slot: "left",
+            backgroundColor: "#f8fafc",
+            borderColor: "#cbd5e1",
+            padding: 16,
+            children: [
+              createStateButtonNode("概览", stateKey, "overview", {
+                slot: "default",
+              }),
+              createStateButtonNode("详细内容", stateKey, "details", {
+                slot: "default",
+              }),
+              createStateButtonNode("补充信息", stateKey, "extra", {
+                slot: "default",
+              }),
+            ],
+          }),
+          createSidebarPanelNode("概览内容区", stateKey, "overview"),
+          createSidebarPanelNode("详细内容区", stateKey, "details"),
+          createSidebarPanelNode("补充信息区", stateKey, "extra"),
+        ],
       },
     );
     const footer = createContainerNode(

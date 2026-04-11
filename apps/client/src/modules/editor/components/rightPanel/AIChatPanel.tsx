@@ -9,6 +9,7 @@ import { useEditorComponents } from "@/modules/editor/hooks";
 type ChatRole = "user" | "assistant";
 
 type ChatMessage = {
+  content: string;
   id: string;
   role: ChatRole;
 };
@@ -233,6 +234,7 @@ const AIChatPanel = observer(function AIChatPanel() {
   const [submitting, setSubmitting] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
+      content: "描述你想生成的页面结构，我会把结果同步到当前画布。",
       id: ulid(),
       role: "assistant",
     },

@@ -188,6 +188,7 @@ export function generateComponent(
         echartsTheme={echartsTheme}
         key={conf.id}
         onAction={runtime?.onAction}
+        runtimePageState={runtime?.pageState}
         slots={slots}
         editorNodeId={conf.id}
       />

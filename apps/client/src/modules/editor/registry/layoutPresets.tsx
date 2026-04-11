@@ -16,7 +16,7 @@ export const pageLayoutPresetCatalog: PageLayoutPresetMeta[] = [
   {
     key: "sidebarLayout",
     name: "侧栏布局",
-    description: "左侧导航 + 右侧主内容区域",
+    description: "单页面左侧导航切换右侧内容容器",
     icon: <ApartmentOutlined />,
   },
   {

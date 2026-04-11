@@ -1,5 +1,4 @@
 import type {
-  ComponentNode,
   PageCategory,
   PageLayoutMode,
   TComponentTypes,
