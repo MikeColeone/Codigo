@@ -2,14 +2,18 @@ import { CheckOutlined, EditOutlined } from "@ant-design/icons";
 import { Input, Space } from "antd";
 import { useState } from "react";
 import type { ChangeEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { useEditorPage } from "@/modules/editor/hooks";
+import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
 export default function Left(props: { title: string }) {
   const { setPageTitle } = useEditorPage();
   const [isEditState, setIsEditState] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isFlowWorkspace = location.pathname.startsWith("/flow");
+  const displayTitle = isFlowWorkspace ? "流程编排" : props.title || "未命名页面";
 
   function handleEdit(event: ChangeEvent<HTMLInputElement>) {
     setPageTitle(event.target.value);
@@ -41,20 +45,21 @@ export default function Left(props: { title: string }) {
   } else {
     return (
       <div className="flex items-center gap-2.5">
-        <button className="flex h-8 w-8 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 shadow-[0_10px_24px_-18px_rgba(16,185,129,0.75)] transition-all hover:-translate-y-0.5 hover:bg-emerald-500 hover:text-white">
-          <span
-            className="font-mono text-sm font-bold"
-            onClick={() => navigate("/")}
-          >
+        <button
+          className="flex h-8 w-8 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 shadow-[0_10px_24px_-18px_rgba(16,185,129,0.75)] transition-all hover:-translate-y-0.5 hover:bg-emerald-500 hover:text-white"
+          onClick={() => navigate("/")}
+        >
+          <span className="font-mono text-sm font-bold">
             C
           </span>
         </button>
+        <WorkspaceSwitcher />
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h1 className="truncate text-sm font-semibold tracking-tight text-slate-900">
-              {props.title}
+              {displayTitle}
             </h1>
-            <EditOutlined {...publicProps} />
+            {!isFlowWorkspace && <EditOutlined {...publicProps} />}
           </div>
         </div>
       </div>

@@ -1,24 +1,9 @@
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { ConfigProvider, Tooltip } from "antd";
+import { Outlet } from "react-router-dom";
+import { ConfigProvider } from "antd";
 import { observer } from "mobx-react-lite";
-import { EditOutlined, ApartmentOutlined } from "@ant-design/icons";
 import EditorHeader from "@/modules/editor/components/header";
 
 export const StudioLayout = observer(() => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const navItems = [
-    {
-      key: "/editor",
-      icon: <EditOutlined />,
-    },
-    {
-      key: "/flow",
-      icon: <ApartmentOutlined />,
-    },
-  ];
-
   return (
     <ConfigProvider
       theme={{
@@ -57,30 +42,6 @@ export const StudioLayout = observer(() => {
         </header>
 
         <main className="relative z-10 flex flex-1 overflow-hidden">
-          <aside className="z-20 flex h-full w-[72px] shrink-0 flex-col items-center border-r border-slate-200/80 bg-white/78 px-2 py-4 shadow-[12px_0_40px_-36px_rgba(15,23,42,0.45)] backdrop-blur-xl">
-            <div className="flex w-full flex-col gap-2.5">
-              {navItems.map((item) => {
-                const active = location.pathname === item.key;
-
-                return (
-                  <Tooltip key={item.key}  placement="right">
-                    <button
-                      onClick={() => navigate(item.key)}
-                      className={`group relative flex w-full flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-2.5 transition-all duration-200 ${
-                        active
-                          ? "bg-emerald-500/10  shadow-[0_18px_32px_-24px_rgba(16,185,129,0.65)] before:absolute before:rounded-r-full before:bg-emerald-500"
-                          : "bg-transparent text-slate-400 hover:bg-slate-100/80 hover:text-slate-600"
-                      }`}
-                    >
-                      <span className="text-base leading-none">
-                        {item.icon}
-                      </span>
-                    </button>
-                  </Tooltip>
-                );
-              })}
-            </div>
-          </aside>
           <div className="min-w-0 flex-1 relative bg-transparent">
             <Outlet />
           </div>
