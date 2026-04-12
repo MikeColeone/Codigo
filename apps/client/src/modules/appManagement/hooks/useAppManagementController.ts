@@ -76,7 +76,7 @@ export function useAppManagementController() {
   const handleOpenTemplatePreview = (template: TemplatePreset) => {
     setPreviewState({
       title: template.name,
-      subtitle: `${template.deviceType === "mobile" ? "移动端" : "PC 端"} · 画布 ${template.canvasWidth} × ${template.canvasHeight}`,
+      subtitle: `${template.deviceType === "mobile" ? "移动端" : "PC 端"} · ${template.pages.length} 个页面 · 画布 ${template.canvasWidth} × ${template.canvasHeight}`,
       schema: buildTemplateSchema(template),
     });
   };

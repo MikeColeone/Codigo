@@ -20,18 +20,23 @@ function SlotBox(props: {
   children?: ReactNode[];
   minHeight: number;
   fillHeight: boolean;
+  showChrome: boolean;
 }) {
   const children = props.children ?? [];
   return (
     <div className="flex min-h-0 h-full flex-1 flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <Typography.Text>{props.title}</Typography.Text>
-        <Typography.Text type="secondary">{props.slotName}</Typography.Text>
-      </div>
+      {props.showChrome ? (
+        <div className="flex items-center justify-between">
+          <Typography.Text>{props.title}</Typography.Text>
+          <Typography.Text type="secondary">{props.slotName}</Typography.Text>
+        </div>
+      ) : null}
       <div
-        className={`relative flex-1 rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 ${
-          props.fillHeight ? "min-h-0" : "min-h-[200px]"
-        }`}
+        className={`relative flex-1 ${
+          props.showChrome
+            ? "rounded-2xl border border-dashed border-slate-200 bg-slate-50/70"
+            : "min-h-0"
+        } ${props.fillHeight ? "min-h-0" : "min-h-[200px]"}`}
         style={{ minHeight: props.fillHeight ? undefined : props.minHeight }}
         data-slot-name={props.slotName}
         data-container-id={props.nodeId}
@@ -63,21 +68,24 @@ export default function TwoColumnComponent(_props: TwoColumnRuntimeProps) {
     };
   }, [_props]);
   const hasRuntimeHeight = props.runtimeHeight !== undefined;
+  const showChrome = props.showChrome ?? true;
 
   return (
     <div
-      className={`relative w-full rounded-3xl border border-slate-200 p-5 ${
-        hasRuntimeHeight ? "flex h-full min-h-0 flex-col" : ""
-      }`}
+      className={`relative w-full ${
+        showChrome ? "rounded-3xl border border-slate-200 p-5" : ""
+      } ${hasRuntimeHeight ? "flex h-full min-h-0 flex-col" : ""}`}
       style={{
         height: hasRuntimeHeight ? "100%" : undefined,
         backgroundColor: props.backgroundColor,
       }}
     >
-      <div className="mb-4 flex items-center justify-between">
-        <Typography.Text strong>{props.title}</Typography.Text>
-        <Typography.Text type="secondary">left / right</Typography.Text>
-      </div>
+      {showChrome ? (
+        <div className="mb-4 flex items-center justify-between">
+          <Typography.Text strong>{props.title}</Typography.Text>
+          <Typography.Text type="secondary">left / right</Typography.Text>
+        </div>
+      ) : null}
       <div
         className={`flex w-full items-stretch ${hasRuntimeHeight ? "min-h-0 flex-1" : ""}`}
         style={{ gap: props.gap }}
@@ -93,6 +101,7 @@ export default function TwoColumnComponent(_props: TwoColumnRuntimeProps) {
             children={props.slots?.left}
             minHeight={props.minHeight}
             fillHeight={hasRuntimeHeight}
+            showChrome={showChrome}
           />
         </div>
         <div className={hasRuntimeHeight ? "flex min-h-0 flex-1" : "flex-1"}>
@@ -103,6 +112,7 @@ export default function TwoColumnComponent(_props: TwoColumnRuntimeProps) {
             children={props.slots?.right}
             minHeight={props.minHeight}
             fillHeight={hasRuntimeHeight}
+            showChrome={showChrome}
           />
         </div>
       </div>

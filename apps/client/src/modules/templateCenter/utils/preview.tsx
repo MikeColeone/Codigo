@@ -2,9 +2,18 @@ import { Empty, Tag } from "antd";
 import type { CSSProperties, ReactNode } from "react";
 import type { ComponentNode, TComponentTypes } from "@codigo/schema";
 
+export interface TemplatePreviewPage {
+  id: string | number;
+  name: string;
+  path: string;
+  components: ComponentNode[];
+}
+
 export interface TemplatePreviewSchema {
   version: number;
+  activePageId?: string | number | null;
   components: ComponentNode[];
+  pages: TemplatePreviewPage[];
 }
 
 const componentLabelMap: Record<TComponentTypes | string, string> = {
@@ -104,6 +113,7 @@ export function resolveSchemaFromReleasePayload(
     return {
       version: 2,
       components: [],
+      pages: [],
     };
   }
 
@@ -132,8 +142,23 @@ export function resolveSchemaFromReleasePayload(
 
     return {
       version: schemaPayload.schema.version ?? 2,
-      components:
-        activePage?.components ?? schemaPayload.schema.components ?? [],
+      activePageId: schemaPayload.schema.activePageId ?? activePage?.id ?? null,
+      components: activePage?.components ?? schemaPayload.schema.components ?? [],
+      pages:
+        schemaPayload.schema.pages?.map((page, index) => ({
+          id: page.id ?? `page-${index + 1}`,
+          name:
+            typeof (page as { name?: unknown }).name === "string"
+              ? ((page as { name?: string }).name as string)
+              : `页面 ${index + 1}`,
+          path:
+            typeof (page as { path?: unknown }).path === "string"
+              ? ((page as { path?: string }).path as string)
+              : index === 0
+                ? "home"
+                : `page-${index + 1}`,
+          components: page.components ?? [],
+        })) ?? [],
     };
   }
 
@@ -150,7 +175,34 @@ export function resolveSchemaFromReleasePayload(
   return {
     version: schemaPayload.schema_version ?? 1,
     components,
+    activePageId: "preview-page",
+    pages: [
+      {
+        id: "preview-page",
+        name: "当前页面",
+        path: "home",
+        components,
+      },
+    ],
   };
+}
+
+/**
+ * 从预览 schema 中整理出可展示的页面列表。
+ */
+export function getPreviewPages(schema: TemplatePreviewSchema) {
+  if (schema.pages.length) {
+    return schema.pages;
+  }
+
+  return [
+    {
+      id: schema.activePageId ?? "preview-page",
+      name: "当前页面",
+      path: "home",
+      components: schema.components,
+    },
+  ];
 }
 
 interface SchemaOutlineProps {

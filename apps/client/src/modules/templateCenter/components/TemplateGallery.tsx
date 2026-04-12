@@ -41,7 +41,10 @@ export function TemplateGallery({
               画布 {template.canvasWidth} × {template.canvasHeight}
             </span>
             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-500">
-              {template.components.length} 个组件
+              {template.pages.length} 个页面
+            </span>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-500">
+              默认页 page:{template.activePagePath}
             </span>
           </div>
           <div className="mt-6 flex gap-3">

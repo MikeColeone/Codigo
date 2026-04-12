@@ -16,13 +16,13 @@ export function EditorTemplateLibraryTrigger({
   variant = "toolbar",
 }: EditorTemplateLibraryTriggerProps) {
   const [open, setOpen] = useState(false);
-  const { applyTemplateToCurrentPage, store } = useEditorComponents();
+  const { applyTemplateToWorkspace, store } = useEditorComponents();
   const { can } = useEditorPermission();
   const canUseTemplate = can("edit_structure");
   const hasCanvasContent = store.sortableCompConfig.length > 0;
 
   /**
-   * 在必要时确认覆盖后，将模板应用到当前页面。
+   * 在必要时确认覆盖后，将模板应用到当前工作区。
    */
   function handleUseTemplate(template: TemplatePreset) {
     if (!canUseTemplate) {
@@ -30,7 +30,7 @@ export function EditorTemplateLibraryTrigger({
     }
 
     const applyTemplate = () => {
-      const applied = applyTemplateToCurrentPage(template);
+      const applied = applyTemplateToWorkspace(template);
       if (applied) {
         setOpen(false);
       }
@@ -43,7 +43,7 @@ export function EditorTemplateLibraryTrigger({
 
     Modal.confirm({
       title: `使用“${template.name}”模板？`,
-      content: "会覆盖当前页面的画布组件，页面路径和多页面结构保持不变。",
+      content: "会替换当前工作区内的页面集合，并生成一套新的多页面后台模板结构。",
       okText: "覆盖并应用",
       cancelText: "取消",
       onOk: applyTemplate,

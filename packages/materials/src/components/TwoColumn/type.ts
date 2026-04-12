@@ -9,6 +9,7 @@ export interface ITwoColumnComponentProps {
   gap: number;
   minHeight: number;
   backgroundColor: string;
+  showChrome?: boolean;
 }
 
 export type TTwoColumnComponentConfig = TBasicComponentConfig<

@@ -24,6 +24,7 @@ export default function ContainerComponent(_props: ContainerRuntimeProps) {
 
   const defaultChildren = props.slots?.default ?? [];
   const hasRuntimeHeight = props.runtimeHeight !== undefined;
+  const showChrome = props.showChrome ?? true;
 
   return (
     <div
@@ -33,18 +34,24 @@ export default function ContainerComponent(_props: ContainerRuntimeProps) {
         minHeight: hasRuntimeHeight ? undefined : props.minHeight,
         padding: props.padding,
         borderRadius: props.borderRadius,
-        border: `1px solid ${props.borderColor}`,
+        border: showChrome || props.borderColor !== "transparent"
+          ? `1px solid ${props.borderColor}`
+          : undefined,
         backgroundColor: props.backgroundColor,
       }}
     >
-      <div className="mb-4 flex items-center justify-between">
-        <Typography.Text strong>{props.title}</Typography.Text>
-        <Typography.Text type="secondary">default</Typography.Text>
-      </div>
+      {showChrome ? (
+        <div className="mb-4 flex items-center justify-between">
+          <Typography.Text strong>{props.title}</Typography.Text>
+          <Typography.Text type="secondary">default</Typography.Text>
+        </div>
+      ) : null}
       <div
-        className={`relative rounded-xl border border-dashed border-slate-200 bg-slate-50/70 ${
-          hasRuntimeHeight ? "min-h-0 flex-1" : "min-h-[160px]"
-        }`}
+        className={`relative ${
+          showChrome
+            ? "rounded-xl border border-dashed border-slate-200 bg-slate-50/70"
+            : ""
+        } ${hasRuntimeHeight ? "min-h-0 flex-1" : "min-h-[160px]"}`}
         data-slot-name="default"
         data-container-id={props.editorNodeId}
       >

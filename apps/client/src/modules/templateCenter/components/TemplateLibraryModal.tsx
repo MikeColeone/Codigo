@@ -42,7 +42,7 @@ export function TemplateLibraryModal({
         onCancel={onClose}
       >
         <div className="mb-5 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
-          在编辑器内直接预览并应用模板，默认覆盖当前页面画布内容，不需要再返回应用管理。
+          在编辑器内直接预览并应用模板，会替换当前工作区的页面集合并生成一套完整后台骨架。
         </div>
         <TemplateGallery
           canUseTemplate={canUseTemplate}
@@ -56,7 +56,7 @@ export function TemplateLibraryModal({
         title={previewTemplate?.name}
         subtitle={
           previewTemplate
-            ? `${previewTemplate.deviceType === "mobile" ? "移动端" : "PC 端"} · 画布 ${previewTemplate.canvasWidth} × ${previewTemplate.canvasHeight}`
+            ? `${previewTemplate.deviceType === "mobile" ? "移动端" : "PC 端"} · ${previewTemplate.pages.length} 个页面 · 画布 ${previewTemplate.canvasWidth} × ${previewTemplate.canvasHeight}`
             : undefined
         }
         schema={previewTemplate ? buildTemplateSchema(previewTemplate) : null}

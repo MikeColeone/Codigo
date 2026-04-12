@@ -12,6 +12,7 @@ export interface IContainerComponentProps {
   minHeight: number;
   visibleStateKey: string;
   visibleStateValue: string;
+  showChrome?: boolean;
 }
 
 export type TContainerComponentConfig = TBasicComponentConfig<

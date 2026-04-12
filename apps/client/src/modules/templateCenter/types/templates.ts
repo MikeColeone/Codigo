@@ -1,4 +1,6 @@
 import type {
+  ComponentEventMap,
+  ComponentMeta,
   PageCategory,
   PageLayoutMode,
   TComponentTypes,
@@ -6,8 +8,19 @@ import type {
 
 export interface TemplateComponent {
   type: TComponentTypes;
+  children?: TemplateComponent[];
+  events?: ComponentEventMap;
+  meta?: ComponentMeta;
+  name?: string;
   props?: Record<string, unknown>;
+  slot?: string;
   styles?: Record<string, unknown>;
+}
+
+export interface TemplatePagePreset {
+  name: string;
+  path: string;
+  components: TemplateComponent[];
 }
 
 export interface TemplatePreset {
@@ -21,5 +34,6 @@ export interface TemplatePreset {
   deviceType: "pc" | "mobile";
   canvasWidth: number;
   canvasHeight: number;
-  components: TemplateComponent[];
+  activePagePath: string;
+  pages: TemplatePagePreset[];
 }

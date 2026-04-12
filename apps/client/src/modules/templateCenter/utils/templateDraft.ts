@@ -1,30 +1,59 @@
-import type { ComponentNode } from "@codigo/schema";
-import type { TemplatePreset } from "../types/templates";
+import type { ComponentNode, IPageSchema } from "@codigo/schema";
+import type { TemplateComponent, TemplatePreset } from "../types/templates";
 
 /**
  * 为模板组件生成本次应用所需的唯一节点 ID。
  */
-function createId(index: number): string {
-  return `tpl_${Date.now()}_${index}_${Math.random().toString(36).slice(2, 7)}`;
+function createId(prefix: string, index: number): string {
+  return `${prefix}_${Date.now()}_${index}_${Math.random().toString(36).slice(2, 7)}`;
 }
 
 /**
- * 将模板预设转换为编辑器可读取的 schema。
+ * 递归克隆模板节点，并为当前应用生成新的运行时 ID。
  */
-export function buildTemplateSchema(template: TemplatePreset) {
-  const components: ComponentNode[] = template.components.map(
-    (component, index) => ({
-      id: createId(index),
-      type: component.type,
-      props: component.props ?? {},
-      styles: component.styles,
-      children: [],
-    }),
-  );
+function cloneTemplateNode(
+  component: TemplateComponent,
+  pageIndex: number,
+  pathStack: number[],
+): ComponentNode {
+  const nodeIndex = pathStack[pathStack.length - 1] ?? 0;
+  const nodePrefix = `tpl_${pageIndex}_${pathStack.join("_") || nodeIndex}`;
 
   return {
-    version: 2,
-    components,
+    id: createId(nodePrefix, nodeIndex),
+    type: component.type,
+    name: component.name,
+    props: JSON.parse(JSON.stringify(component.props ?? {})),
+    styles: component.styles ? { ...component.styles } : undefined,
+    events: component.events ? JSON.parse(JSON.stringify(component.events)) : undefined,
+    slot: component.slot,
+    meta: component.meta ? { ...component.meta } : undefined,
+    children: (component.children ?? []).map((child, childIndex) =>
+      cloneTemplateNode(child, pageIndex, [...pathStack, childIndex]),
+    ),
+  };
+}
+
+/**
+ * 将模板预设转换为编辑器可读取的多页面 schema。
+ */
+export function buildTemplateSchema(template: TemplatePreset): IPageSchema {
+  const pages = template.pages.map((page, pageIndex) => ({
+    id: createId(`tpl_page_${pageIndex}`, pageIndex),
+    name: page.name,
+    path: page.path,
+    components: page.components.map((component, componentIndex) =>
+      cloneTemplateNode(component, pageIndex, [componentIndex]),
+    ),
+  }));
+  const activePage =
+    pages.find((page) => page.path === template.activePagePath) ?? pages[0] ?? null;
+
+  return {
+    version: 3,
+    components: activePage?.components ?? [],
+    pages,
+    activePageId: activePage?.id ?? null,
   };
 }
 
@@ -49,17 +78,23 @@ export function createTemplatePageSettings(template: TemplatePreset) {
  */
 export function writeTemplateToDraft(template: TemplatePreset) {
   const schema = buildTemplateSchema(template);
+  const activePage =
+    schema.pages?.find((page) => page.id === schema.activePageId) ??
+    schema.pages?.[0] ??
+    null;
 
   localStorage.setItem(
     "pageSchema",
     JSON.stringify({
       version: schema.version,
       components: schema.components,
+      pages: schema.pages,
+      activePageId: schema.activePageId,
     }),
   );
   localStorage.setItem(
     "currentCompConfig",
-    JSON.stringify((schema.components[0]?.id as string | null) ?? null),
+    JSON.stringify((activePage?.components[0]?.id as string | null) ?? null),
   );
   localStorage.setItem(
     "pageSettings",

@@ -299,47 +299,50 @@ export function useEditorComponents() {
   });
 
   /**
-   * 将模板覆盖应用到当前激活页面。
+   * 将模板整体应用到当前工作区，并替换现有页面集合。
    */
-  const applyTemplateToCurrentPage = action((template: TemplatePreset) => {
+  const applyTemplateToWorkspace = action((template: TemplatePreset) => {
     if (!ensurePermission("edit_structure", "当前角色不能应用模板")) {
       return false;
     }
 
-    ensureEditorPages();
-    const activePage = getActivePage.get();
-    if (!activePage) {
-      message.warning("当前页面不可用，暂时无法应用模板");
+    const schema = buildTemplateSchema(template);
+    const activeTemplatePage =
+      schema.pages?.find((page) => page.id === schema.activePageId) ??
+      schema.pages?.[0] ??
+      null;
+
+    if (!activeTemplatePage || !schema.pages?.length) {
+      message.warning("模板页面不可用，暂时无法应用模板");
       return false;
     }
 
-    const schema = buildTemplateSchema(template);
-    const normalized = normalizeFromSchema(schema, pageStore.layoutMode);
+    const normalized = normalizeFromSchema(
+      {
+        version: schema.version,
+        components: activeTemplatePage.components,
+      },
+      pageStore.layoutMode,
+    );
     const nextPageSettings = createTemplatePageSettings(template);
 
     storeComponents.compConfigs = normalized.compConfigs;
     storeComponents.sortableCompConfig = normalized.sortableCompConfig;
     storeComponents.currentCompConfig = normalized.sortableCompConfig[0] ?? null;
-    storeComponents.pages = getPages.get().map((page) =>
-      page.id === activePage.id
-        ? {
-            ...page,
-            components: schema.components,
-          }
-        : page,
-    );
+    storeComponents.pages = schema.pages ?? [];
+    storeComponents.activePageId = activeTemplatePage.id;
 
     updatePage(nextPageSettings);
     broadcastReplaceAll();
     addOperationLog("update_page", `应用模板:${template.name}`);
-    message.success(`已将“${template.name}”应用到当前页面`);
+    message.success(`已应用“${template.name}”模板，当前工作区已切换为多页面后台骨架`);
     return true;
   });
 
   ensureEditorPages();
 
   return {
-    applyTemplateToCurrentPage,
+    applyTemplateToWorkspace,
     _replace,
     replaceByCode,
     push,
