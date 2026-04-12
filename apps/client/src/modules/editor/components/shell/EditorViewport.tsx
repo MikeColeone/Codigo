@@ -300,7 +300,6 @@ export const EditorViewport = observer(function EditorViewport(
   function finishWorkspacePan() {
     workspacePanRef.current = null;
     setIsWorkspacePanning(false);
-    props.canvasRef.current?.setShowToolbar(true);
   }
 
   function canStartWorkspacePan(target: EventTarget | null) {
@@ -308,7 +307,7 @@ export const EditorViewport = observer(function EditorViewport(
       return true;
     }
 
-    return !target.closest(".component-warpper, .editor-choice-toolbar");
+    return !target.closest(".component-warpper");
   }
 
   function handleWorkspaceMouseDown(
@@ -335,7 +334,6 @@ export const EditorViewport = observer(function EditorViewport(
     };
     shouldCenterWorkspaceRef.current = false;
     setIsWorkspacePanning(true);
-    props.canvasRef.current?.setShowToolbar(false);
     event.preventDefault();
   }
 
@@ -441,6 +439,9 @@ export const EditorViewport = observer(function EditorViewport(
               >
                 <EditorStage {...props} />
               </div>
+            </div>
+            <div className="flex h-[30px] flex-shrink-0 items-center border-t border-slate-200/70 bg-white/55 px-4 text-[11px] text-slate-500 backdrop-blur-xl">
+              拖拽组件移动 · Delete 键删除选中
             </div>
           </div>
         </div>

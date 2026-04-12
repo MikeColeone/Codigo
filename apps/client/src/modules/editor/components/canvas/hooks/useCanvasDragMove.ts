@@ -6,6 +6,7 @@ import {
   resolveMoveTarget,
   type MovingComponentState,
 } from "../utils/canvasMove";
+import { clampRectToBounds } from "../utils/collision";
 
 interface UseCanvasDragMoveOptions {
   canEditStructure: boolean;
@@ -73,6 +74,16 @@ export function useCanvasDragMove({
         origTop: positioningRect ? rect.top - positioningRect.top : 0,
         pointerOffsetX: event.clientX - rect.left,
         pointerOffsetY: event.clientY - rect.top,
+        width: rect.width,
+        height: rect.height,
+        boundsWidth:
+          positioningRect?.width ??
+          canvasRef.current?.getBoundingClientRect().width ??
+          Number.POSITIVE_INFINITY,
+        boundsHeight:
+          positioningRect?.height ??
+          canvasRef.current?.getBoundingClientRect().height ??
+          Number.POSITIVE_INFINITY,
       });
       event.preventDefault();
       event.stopPropagation();
@@ -93,7 +104,11 @@ export function useCanvasDragMove({
         movingComponent.origLeft + event.clientX - movingComponent.startX;
       const top =
         movingComponent.origTop + event.clientY - movingComponent.startY;
-      pendingDragPositionRef.current = { left, top };
+      const safeRect = clampRectToBounds(
+        { left, top, width: movingComponent.width, height: movingComponent.height },
+        { width: movingComponent.boundsWidth, height: movingComponent.boundsHeight },
+      );
+      pendingDragPositionRef.current = { left: safeRect.left, top: safeRect.top };
       if (dragFrameRef.current !== null) {
         return;
       }
@@ -140,10 +155,27 @@ export function useCanvasDragMove({
           targetSlot: target.slot,
           targetIndex: target.index,
         });
+        const targetBoundsRect = target.parentId
+          ? (document.querySelector(
+              `[data-container-id="${target.parentId}"][data-slot-name="${target.slot ?? "default"}"]`,
+            ) as HTMLElement | null)?.getBoundingClientRect() ?? null
+          : canvasRef.current?.getBoundingClientRect() ?? null;
+        const safeRect = clampRectToBounds(
+          {
+            left: target.left,
+            top: target.top,
+            width: movingComponent.width,
+            height: movingComponent.height,
+          },
+          {
+            width: targetBoundsRect?.width ?? movingComponent.boundsWidth,
+            height: targetBoundsRect?.height ?? movingComponent.boundsHeight,
+          },
+        );
         updateComponentPosition(
           movingComponent.id,
-          target.left,
-          target.top,
+          safeRect.left,
+          safeRect.top,
           false,
         );
       } else {
@@ -151,7 +183,11 @@ export function useCanvasDragMove({
           movingComponent.origLeft + event.clientX - movingComponent.startX;
         const top =
           movingComponent.origTop + event.clientY - movingComponent.startY;
-        updateComponentPosition(movingComponent.id, left, top, false);
+        const safeRect = clampRectToBounds(
+          { left, top, width: movingComponent.width, height: movingComponent.height },
+          { width: movingComponent.boundsWidth, height: movingComponent.boundsHeight },
+        );
+        updateComponentPosition(movingComponent.id, safeRect.left, safeRect.top, false);
       }
 
       setMovingComponent(null);

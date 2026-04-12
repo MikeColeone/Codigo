@@ -6,7 +6,7 @@ import type {
   MouseEvent as ReactMouseEvent,
   ReactNode,
 } from "react";
-import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import type { ComponentNode, ComponentNodeRecord } from "@codigo/schema";
 import {
   useEditorComponentKeyPress,
@@ -17,7 +17,6 @@ import {
 import { generateComponent } from "@/modules/editor/runtime";
 import type { TEditorComponentsStore } from "@/modules/editor/stores";
 import { CanvasEmptyState } from "./CanvasEmptyState";
-import { CanvasToolbar } from "./CanvasToolbar";
 import { useCanvasDragMove } from "./hooks/useCanvasDragMove";
 import { useCanvasDrop } from "./hooks/useCanvasDrop";
 import { useCanvasResize } from "./hooks/useCanvasResize";
@@ -111,18 +110,7 @@ const EditorCanvas: FC<{
   const { store: storePage } = useEditorPage();
   const canEditStructure = can("edit_structure");
 
-  const [showToolbar, setShowToolbar] = useState(true);
-  const toolbarRef = useRef<{ setRefresh: (value: boolean) => void } | null>(
-    null,
-  );
   const canvasRef = useRef<HTMLDivElement>(null);
-
-  /**
-   * 在拖拽或缩放结束后刷新工具条位置。
-   */
-  const handleCanvasInteractionFinished = useCallback(() => {
-    toolbarRef.current?.setRefresh(true);
-  }, []);
 
   const {
     isDragging,
@@ -136,15 +124,13 @@ const EditorCanvas: FC<{
     moveExistingNode,
     setCurrentComponent,
     updateComponentPosition,
-    onDragFinished: handleCanvasInteractionFinished,
   });
 
-  const { handleResizeComponentStart, resizingComponentId } = useCanvasResize({
+  const { handleResizeComponentStart } = useCanvasResize({
     canEditStructure,
     canvasRef,
     setCurrentComponent,
     updateComponentSize,
-    onResizeFinished: handleCanvasInteractionFinished,
   });
 
   const { handleDragOver, handleDrop } = useCanvasDrop({
@@ -164,9 +150,7 @@ const EditorCanvas: FC<{
 
   useEditorComponentKeyPress();
 
-  useImperativeHandle(onRef, () => ({
-    setShowToolbar,
-  }));
+  useImperativeHandle(onRef, () => ({}));
 
   useEffect(() => {
     if (storePage.layoutMode !== "absolute") {
@@ -199,6 +183,7 @@ const EditorCanvas: FC<{
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       style={{
+        height: "100%",
         minHeight: `${Math.max(
           700,
           storePage.canvasHeight,
@@ -206,10 +191,6 @@ const EditorCanvas: FC<{
         )}px`,
       }}
     >
-      <CanvasToolbar
-        onRef={toolbarRef}
-        hidden={!showToolbar || isDragging || Boolean(resizingComponentId)}
-      />
       {!store.sortableCompConfig.length && (
         <CanvasEmptyState
           canEditStructure={canEditStructure}
@@ -220,10 +201,14 @@ const EditorCanvas: FC<{
         const renderedChildren =
           node.children?.map((child: ComponentNode) => renderTreeNode(child)) ??
           [];
+        const isAbsoluteNode =
+          node.styles?.position === "absolute" ||
+          node.styles?.left !== undefined ||
+          node.styles?.top !== undefined;
         return (
           <ComponentWrapper
             key={node.id}
-            isFlowLayout={false}
+            isFlowLayout={!isAbsoluteNode}
             isDragable={isDragging}
             isMoving={movingComponentId === node.id}
             canDrag={canEditStructure}
@@ -246,10 +231,15 @@ const EditorCanvas: FC<{
                 ?.slot ?? null
             }
             style={{
-              left: node.styles?.left as string | number | undefined,
-              top: node.styles?.top as string | number | undefined,
-              position: "absolute",
+              ...(isAbsoluteNode
+                ? {
+                    left: node.styles?.left as string | number | undefined,
+                    top: node.styles?.top as string | number | undefined,
+                    position: "absolute" as const,
+                  }
+                : { position: "relative" as const }),
               width: node.styles?.width as string | number | undefined,
+              height: node.styles?.height as string | number | undefined,
             }}
           >
             <div className="relative">

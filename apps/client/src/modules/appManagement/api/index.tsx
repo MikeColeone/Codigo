@@ -63,6 +63,12 @@ export async function fetchVersionPreview(version: PageVersionItem) {
   } satisfies PreviewState;
 }
 
+/**
+ * 获取本地草稿元元数据
+ * @param isLoggedIn 是否登录
+ * @param hasPage 是否有页面
+ * @returns 
+ */
 export function getLocalDraftMeta(
   isLoggedIn: boolean,
   hasPage: boolean,

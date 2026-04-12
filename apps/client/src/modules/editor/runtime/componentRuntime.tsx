@@ -180,7 +180,7 @@ export function generateComponent(
         paddingBottom: conf.styles?.paddingBottom,
         paddingLeft: conf.styles?.paddingLeft,
         paddingRight: conf.styles?.paddingRight,
-        overflow: "hidden",
+        overflow: "visible",
       }}
     >
       <Component

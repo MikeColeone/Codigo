@@ -13,6 +13,10 @@ export interface MovingComponentState {
   origTop: number;
   pointerOffsetX: number;
   pointerOffsetY: number;
+  width: number;
+  height: number;
+  boundsWidth: number;
+  boundsHeight: number;
 }
 
 export interface CanvasMoveTarget {

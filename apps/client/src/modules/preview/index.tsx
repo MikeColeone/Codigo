@@ -10,7 +10,7 @@ import {
 } from "@/modules/editor/runtime";
 import { useStorePage } from "@/shared/hooks";
 import { useEditorComponents } from "@/modules/editor/hooks";
-import type { ComponentNode, IEditorPageSchema } from "@codigo/schema";
+import type { ComponentNode, IEditorPageSchema, RuntimeStateValue } from "@codigo/schema";
 
 function resolvePreviewPage(
   pages: IEditorPageSchema[],
@@ -32,16 +32,20 @@ const PreviewCanvas = observer(() => {
   const [searchParams, setSearchParams] = useSearchParams();
   const hasInitializedRef = useRef(false);
   const pages = getPages.get();
+  const requestedPagePath = searchParams.get("page");
   const activePage = useMemo(
-    () => resolvePreviewPage(pages, searchParams.get("page")),
-    [pages, searchParams],
+    () => resolvePreviewPage(pages, requestedPagePath),
+    [pages, requestedPagePath],
   );
   const componentTree = activePage?.components ?? [];
   const initialPageState = useMemo(
     () => resolveInitialPageState(componentTree),
     [componentTree],
   );
-  const [pageState, setPageState] = useState(initialPageState);
+  const [pageState, setPageState] = useState<Record<string, RuntimeStateValue>>(
+    () => initialPageState,
+  );
+  const lastPageSignatureRef = useRef<string>("");
 
   useEffect(() => {
     if (hasInitializedRef.current) {
@@ -53,8 +57,28 @@ const PreviewCanvas = observer(() => {
   }, [loadPageData]);
 
   useEffect(() => {
+    const stack = [...componentTree];
+    const ids: string[] = [];
+    while (stack.length) {
+      const node = stack.pop();
+      if (!node) {
+        continue;
+      }
+      ids.push(node.id);
+      const children = Array.isArray(node.children) ? node.children : [];
+      for (let i = 0; i < children.length; i += 1) {
+        stack.push(children[i]);
+      }
+    }
+
+    const nextSignature = `${activePage?.id ?? ""}|${activePage?.path ?? ""}|${ids.join(",")}`;
+    if (nextSignature === lastPageSignatureRef.current) {
+      return;
+    }
+
+    lastPageSignatureRef.current = nextSignature;
     setPageState(initialPageState);
-  }, [initialPageState]);
+  }, [activePage?.id, activePage?.path, componentTree, initialPageState]);
 
   const runtime = useMemo(
     () => ({

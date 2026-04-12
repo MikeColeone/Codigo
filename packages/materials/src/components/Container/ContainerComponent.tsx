@@ -24,11 +24,17 @@ export default function ContainerComponent(_props: ContainerRuntimeProps) {
 
   const defaultChildren = props.slots?.default ?? [];
   const hasRuntimeHeight = props.runtimeHeight !== undefined;
-  const showChrome = props.showChrome ?? true;
+  const showChrome =
+    props.showChrome === undefined
+      ? true
+      : props.showChrome === true || props.showChrome === "true";
+  const shouldClip =
+    showChrome ||
+    (typeof props.borderRadius === "number" && props.borderRadius > 0);
 
   return (
     <div
-      className={`relative w-full overflow-hidden ${hasRuntimeHeight ? "flex h-full min-h-0 flex-col" : ""}`}
+      className={`relative w-full ${shouldClip ? "overflow-hidden" : ""} ${hasRuntimeHeight ? "flex h-full min-h-0 flex-col" : ""}`}
       style={{
         height: hasRuntimeHeight ? "100%" : undefined,
         minHeight: hasRuntimeHeight ? undefined : props.minHeight,

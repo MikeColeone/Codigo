@@ -68,7 +68,10 @@ export default function TwoColumnComponent(_props: TwoColumnRuntimeProps) {
     };
   }, [_props]);
   const hasRuntimeHeight = props.runtimeHeight !== undefined;
-  const showChrome = props.showChrome ?? true;
+  const showChrome =
+    props.showChrome === undefined
+      ? true
+      : props.showChrome === true || props.showChrome === "true";
 
   return (
     <div
