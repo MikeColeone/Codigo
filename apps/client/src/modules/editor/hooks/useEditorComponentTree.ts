@@ -17,7 +17,7 @@ interface EditorComponentTreeContext {
 export function createEditorComponentTree(
   context: EditorComponentTreeContext,
 ) {
-  const { pageStore, storeComponents } = context;
+  const { storeComponents } = context;
 
   /**
    * 获取当前节点的同级节点列表。

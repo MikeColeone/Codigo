@@ -41,9 +41,7 @@ export function createEditorComponentPageActions(
     addOperationLog,
     broadcastReplaceAll,
     ensurePermission,
-    insertNodeTree,
     pageStore,
-    setCurrentComponent,
     storeComponents,
   } = context;
 

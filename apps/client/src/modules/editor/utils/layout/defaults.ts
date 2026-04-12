@@ -18,7 +18,6 @@ export function getDefaultWidthByType(type: TComponentTypes): string {
     case "card":
     case "list":
     case "image":
-    case "video":
     case "swiper":
     case "richText":
       return "420px";
@@ -55,7 +54,6 @@ export function getDefaultHeightByType(type: TComponentTypes): number {
     case "cardGrid":
       return 320;
     case "image":
-    case "video":
     case "swiper":
       return 240;
     case "button":

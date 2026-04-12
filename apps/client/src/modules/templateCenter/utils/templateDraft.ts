@@ -1,5 +1,6 @@
-import type { ComponentNode, IPageSchema } from "@codigo/schema";
+import type { ComponentNode } from "@codigo/schema";
 import type { TemplateComponent, TemplatePreset } from "../types/templates";
+import type { TemplatePreviewSchema } from "./preview";
 
 /**
  * 为模板组件生成本次应用所需的唯一节点 ID。
@@ -37,7 +38,7 @@ function cloneTemplateNode(
 /**
  * 将模板预设转换为编辑器可读取的多页面 schema。
  */
-export function buildTemplateSchema(template: TemplatePreset): IPageSchema {
+export function buildTemplateSchema(template: TemplatePreset): TemplatePreviewSchema {
   const pages = template.pages.map((page, pageIndex) => ({
     id: createId(`tpl_page_${pageIndex}`, pageIndex),
     name: page.name,

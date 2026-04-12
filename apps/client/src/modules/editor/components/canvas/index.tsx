@@ -124,6 +124,7 @@ const EditorCanvas: FC<{
     moveExistingNode,
     setCurrentComponent,
     updateComponentPosition,
+    onDragFinished: () => {},
   });
 
   const { handleResizeComponentStart } = useCanvasResize({
@@ -131,6 +132,7 @@ const EditorCanvas: FC<{
     canvasRef,
     setCurrentComponent,
     updateComponentSize,
+    onResizeFinished: () => {},
   });
 
   const { handleDragOver, handleDrop } = useCanvasDrop({

@@ -52,6 +52,8 @@ export class PageReleaseService {
       return {
         version: body.schema.version ?? 2,
         components: body.schema.components,
+        pages: body.schema.pages,
+        activePageId: body.schema.activePageId,
       };
     }
 
@@ -105,11 +107,29 @@ export class PageReleaseService {
       },
     });
     const componentIds = page.components;
-    const schema = this.buildPageSchema(
+    const schemaFromDb = this.buildPageSchema(
       components,
       componentIds,
       page.schema_version ?? 1,
     );
+    const latestVersion = await this.pageVersionRepository.findOne({
+      where: { page_id: Number(page.id) },
+      order: { version: 'DESC' },
+    });
+    const schemaFromVersion = (latestVersion?.schema_data as any)?.schema as
+      | IPageSchema
+      | undefined;
+    const schema = schemaFromVersion
+      ? {
+          version: schemaFromVersion.version ?? schemaFromDb.version,
+          components:
+            schemaFromVersion.components?.length
+              ? schemaFromVersion.components
+              : schemaFromDb.components,
+          pages: schemaFromVersion.pages,
+          activePageId: schemaFromVersion.activePageId,
+        }
+      : schemaFromDb;
 
     return {
       ...objectOmit(page, ['components']),
@@ -140,20 +160,23 @@ export class PageReleaseService {
     const queryRunner = this.dataSource.createQueryRunner();
 
     async function insertComponents(pageId: number) {
-      // for (const component of flattenedNodes) {
-      //   const componentResult = await queryRunner.manager.insert(Component, {
-      //     node_id: component.id,
-      //     parent_node_id: component.parentId ?? null,
-      //     type: component.type,
-      //     options: component.props ?? {},
-      //     styles: component.styles as Record<string, any> | undefined,
-      //     slot: component.slot ?? null,
-      //     name: component.name,
-      //     meta: component.meta as Record<string, any> | undefined,
-      //     page_id: pageId,
-      //     account_id: user.id,
-      //   });
-      // }
+      if (flattenedNodes.length) {
+        await queryRunner.manager.insert(
+          Component,
+          flattenedNodes.map((component) => ({
+            node_id: component.id,
+            parent_node_id: component.parentId ?? null,
+            type: component.type,
+            options: component.props ?? {},
+            styles: component.styles as Record<string, any> | undefined,
+            slot: component.slot ?? null,
+            name: component.name,
+            meta: component.meta as Record<string, any> | undefined,
+            page_id: pageId,
+            account_id: user.id,
+          })),
+        );
+      }
 
       await queryRunner.manager.update(Page, pageId, {
         components: rootIds,

@@ -10,6 +10,7 @@ import {
   resolveInitialPageState,
   type RuntimeAction,
 } from "@/modules/editor/runtime";
+import { AdminShell } from "./components/AdminShell";
 
 function resolveSchemaFromReleasePayload(
   payload: Record<string, any> | null | undefined,
@@ -161,6 +162,7 @@ export default function Release() {
   const nav = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const pageId = Number(searchParams.get("id"));
+  const requestedPagePath = searchParams.get("page");
 
   const { data, loading, error } = useRequest(
     async () => {
@@ -174,8 +176,8 @@ export default function Release() {
 
   const schema = useMemo(() => resolveSchemaFromReleasePayload(data), [data]);
   const activePage = useMemo(
-    () => resolveReleasePage(schema, searchParams.get("page")),
-    [schema, searchParams],
+    () => resolveReleasePage(schema, requestedPagePath),
+    [schema, requestedPagePath],
   );
   const activeNodes = activePage?.components ?? schema.components;
   const deviceType = data?.deviceType === "pc" ? "pc" : "mobile";
@@ -190,6 +192,8 @@ export default function Release() {
     }
     return window.location.href;
   }, [pageId]);
+
+  const shouldUseAdminShell = Array.isArray(schema.pages) && schema.pages.length > 0;
 
   const content = (() => {
     if (!pageId) {
@@ -233,6 +237,40 @@ export default function Release() {
       />
     );
   })();
+
+  if (shouldUseAdminShell && pageId && !loading && !error) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <AdminShell
+          pages={schema.pages!}
+          activePagePath={activePage?.path ?? null}
+          onSelectPagePath={(pagePath) => {
+            setSearchParams((prev) => {
+              const nextParams = new URLSearchParams(prev);
+              nextParams.set("page", pagePath);
+              return nextParams;
+            });
+          }}
+          title={data?.page_name || "管理后台"}
+        >
+          <div className="p-6">
+            <div
+              className="bg-white text-left overflow-y-auto overflow-x-hidden shadow-2xl rounded-2xl border border-slate-200"
+              style={{
+                width: canvasWidth,
+                height: canvasHeight,
+                maxWidth: "100%",
+              }}
+            >
+              {content}
+            </div>
+          </div>
+        </AdminShell>
+
+        <FloatButton icon={<CaretLeftOutlined />} onClick={() => nav(-1)} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 px-6 py-10">

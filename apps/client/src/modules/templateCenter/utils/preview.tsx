@@ -3,7 +3,7 @@ import type { CSSProperties, ReactNode } from "react";
 import type { ComponentNode, TComponentTypes } from "@codigo/schema";
 
 export interface TemplatePreviewPage {
-  id: string | number;
+  id: string;
   name: string;
   path: string;
   components: ComponentNode[];
@@ -11,7 +11,7 @@ export interface TemplatePreviewPage {
 
 export interface TemplatePreviewSchema {
   version: number;
-  activePageId?: string | number | null;
+  activePageId?: string | null;
   components: ComponentNode[];
   pages: TemplatePreviewPage[];
 }
@@ -142,11 +142,16 @@ export function resolveSchemaFromReleasePayload(
 
     return {
       version: schemaPayload.schema.version ?? 2,
-      activePageId: schemaPayload.schema.activePageId ?? activePage?.id ?? null,
+      activePageId:
+        schemaPayload.schema.activePageId != null
+          ? String(schemaPayload.schema.activePageId)
+          : activePage?.id != null
+            ? String(activePage.id)
+            : null,
       components: activePage?.components ?? schemaPayload.schema.components ?? [],
       pages:
         schemaPayload.schema.pages?.map((page, index) => ({
-          id: page.id ?? `page-${index + 1}`,
+          id: page.id != null ? String(page.id) : `page-${index + 1}`,
           name:
             typeof (page as { name?: unknown }).name === "string"
               ? ((page as { name?: string }).name as string)
