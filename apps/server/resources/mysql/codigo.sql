@@ -14,6 +14,7 @@ DROP TABLE IF EXISTS `component`;
 DROP TABLE IF EXISTS `resources`;
 DROP TABLE IF EXISTS `page`;
 DROP TABLE IF EXISTS `user`;
+DROP TABLE IF EXISTS `template`;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -105,4 +106,28 @@ CREATE TABLE IF NOT EXISTS `operation_log` (
     `target` VARCHAR(255) NOT NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `template` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `key` VARCHAR(100) NOT NULL,
+    `name` VARCHAR(100) NOT NULL,
+    `desc` VARCHAR(255) NOT NULL,
+    `tags` TEXT NULL,
+    `page_title` VARCHAR(100) NOT NULL,
+    `page_category` VARCHAR(50) NOT NULL,
+    `layout_mode` VARCHAR(50) NOT NULL,
+    `device_type` VARCHAR(50) NOT NULL,
+    `canvas_width` INT NOT NULL,
+    `canvas_height` INT NOT NULL,
+    `active_page_path` VARCHAR(100) NOT NULL,
+    `pages_count` INT NOT NULL DEFAULT 1,
+    `cover_url` VARCHAR(255) NULL,
+    `status` VARCHAR(50) NOT NULL DEFAULT 'draft',
+    `version` INT NOT NULL DEFAULT 1,
+    `preset` LONGTEXT NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `IDX_template_key` (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

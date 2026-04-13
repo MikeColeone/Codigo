@@ -1,6 +1,5 @@
 import { observer } from "mobx-react-lite";
 import { useNavigate } from "react-router-dom";
-import { templates } from "@/modules/templateCenter/data/templatePresets";
 import { TemplatePreviewModal } from "@/modules/templateCenter/components/TemplatePreviewModal";
 import { useAppManagementController } from "./hooks/useAppManagementController";
 import { useAppManagementViewModel } from "./hooks/useAppManagementViewModel";
@@ -28,12 +27,14 @@ const AppManagement = observer(() => {
     publicLoading,
     publicPages,
     setPreviewState,
+    templates,
   } = useAppManagementController();
   const { metrics, navigationItems } = useAppManagementViewModel({
     isLoggedIn,
     isUpdatedAfterPublish: localDraftMeta?.isUpdatedAfterPublish,
     publicLoading,
     publicPagesCount: publicPages.length,
+    templatesCount: templates.length,
     versionsCount: myPageData?.versions.length ?? 0,
   });
 

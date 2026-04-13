@@ -9,13 +9,13 @@ import type {
   AppManagementMetric,
   AppManagementNavItem,
 } from "../types/appManagement";
-import { templates } from "@/modules/templateCenter/data/templatePresets";
 
 interface UseAppManagementViewModelArgs {
   isLoggedIn: boolean;
   isUpdatedAfterPublish?: boolean;
   publicLoading: boolean;
   publicPagesCount: number;
+  templatesCount: number;
   versionsCount: number;
 }
 
@@ -24,6 +24,7 @@ export function useAppManagementViewModel({
   isUpdatedAfterPublish,
   publicLoading,
   publicPagesCount,
+  templatesCount,
   versionsCount,
 }: UseAppManagementViewModelArgs) {
   const metrics = useMemo<AppManagementMetric[]>(
@@ -40,7 +41,7 @@ export function useAppManagementViewModel({
             },
             {
               label: "模板数量",
-              value: `${templates.length} 套`,
+              value: `${templatesCount} 套`,
             },
           ]
         : [
@@ -50,7 +51,7 @@ export function useAppManagementViewModel({
             },
             {
               label: "模板数量",
-              value: `${templates.length} 套`,
+              value: `${templatesCount} 套`,
             },
             {
               label: "当前身份",
@@ -62,6 +63,7 @@ export function useAppManagementViewModel({
       isUpdatedAfterPublish,
       publicLoading,
       publicPagesCount,
+      templatesCount,
       versionsCount,
     ],
   );

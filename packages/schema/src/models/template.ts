@@ -1,0 +1,37 @@
+import type { ComponentEventMap, ComponentMeta, TComponentTypes } from "../schema/components";
+import type { PageCategory, PageLayoutMode } from "../schema/low-code";
+
+export type TemplateDeviceType = "pc" | "mobile";
+
+export interface TemplateComponent {
+  type: TComponentTypes;
+  children?: TemplateComponent[];
+  events?: ComponentEventMap;
+  meta?: ComponentMeta;
+  name?: string;
+  props?: Record<string, unknown>;
+  slot?: string;
+  styles?: Record<string, unknown>;
+}
+
+export interface TemplatePagePreset {
+  name: string;
+  path: string;
+  components: TemplateComponent[];
+}
+
+export interface TemplatePreset {
+  key: string;
+  name: string;
+  desc: string;
+  tags: string[];
+  pageTitle: string;
+  pageCategory: PageCategory;
+  layoutMode: PageLayoutMode;
+  deviceType: TemplateDeviceType;
+  canvasWidth: number;
+  canvasHeight: number;
+  activePagePath: string;
+  pages: TemplatePagePreset[];
+}
+

@@ -15,11 +15,12 @@ import type {
   PageVersionItem,
   PreviewState,
 } from "../types/appManagement";
-import type { TemplatePreset } from "@/modules/templateCenter/types/templates";
+import type { TemplateListItem } from "@codigo/schema";
 import {
   buildTemplateSchema,
   writeTemplateToDraft,
 } from "@/modules/templateCenter/utils/templateDraft";
+import { fetchTemplateDetail, fetchTemplateList } from "@/modules/templateCenter/api/templates";
 
 export function useAppManagementController() {
   const navigate = useNavigate();
@@ -27,6 +28,10 @@ export function useAppManagementController() {
   const { store: storeAuth } = useStoreAuth();
   const [previewState, setPreviewState] = useState<PreviewState | null>(null);
   const isLoggedIn = Boolean(storeAuth.token);
+
+  const { data: templates = [], loading: templatesLoading } = useRequest(
+    fetchTemplateList,
+  );
 
   const { data: publicPages = [], loading: publicLoading } = useRequest(
     fetchPublicPages,
@@ -73,21 +78,25 @@ export function useAppManagementController() {
     setSearchParams({ tab });
   };
 
-  const handleOpenTemplatePreview = (template: TemplatePreset) => {
-    setPreviewState({
-      title: template.name,
-      subtitle: `${template.deviceType === "mobile" ? "移动端" : "PC 端"} · ${template.pages.length} 个页面 · 画布 ${template.canvasWidth} × ${template.canvasHeight}`,
-      schema: buildTemplateSchema(template),
+  const handleOpenTemplatePreview = async (template: TemplateListItem) => {
+    await openPreview(async () => {
+      const detail = await fetchTemplateDetail(template.id);
+      return {
+        title: detail.preset.name,
+        subtitle: `${detail.preset.deviceType === "mobile" ? "移动端" : "PC 端"} · ${detail.preset.pages.length} 个页面 · 画布 ${detail.preset.canvasWidth} × ${detail.preset.canvasHeight}`,
+        schema: buildTemplateSchema(detail.preset),
+      };
     });
   };
 
-  const handleUseTemplate = (template: TemplatePreset) => {
+  const handleUseTemplate = async (template: TemplateListItem) => {
     if (!isLoggedIn) {
       message.info("访客仅可查看模板内容，登录后可将模板载入编辑器");
       return;
     }
 
-    writeTemplateToDraft(template);
+    const detail = await fetchTemplateDetail(template.id);
+    writeTemplateToDraft(detail.preset);
     navigate("/editor");
   };
 
@@ -120,5 +129,7 @@ export function useAppManagementController() {
     publicLoading,
     publicPages,
     setPreviewState,
+    templates,
+    templatesLoading,
   };
 }

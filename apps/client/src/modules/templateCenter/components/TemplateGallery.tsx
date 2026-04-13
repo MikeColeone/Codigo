@@ -1,12 +1,12 @@
 import { EyeOutlined, RocketOutlined } from "@ant-design/icons";
 import { Button } from "antd";
-import type { TemplatePreset } from "../types/templates";
+import type { TemplateListItem } from "@codigo/schema";
 
 interface TemplateGalleryProps {
   canUseTemplate: boolean;
-  onPreview: (template: TemplatePreset) => void;
-  onUse: (template: TemplatePreset) => void;
-  templates: TemplatePreset[];
+  onPreview: (template: TemplateListItem) => void;
+  onUse: (template: TemplateListItem) => void;
+  templates: TemplateListItem[];
 }
 
 export function TemplateGallery({
@@ -19,7 +19,7 @@ export function TemplateGallery({
     <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
       {templates.map((template) => (
         <article
-          key={template.key}
+          key={template.id}
           className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
         >
           <div className="mb-3 flex flex-wrap gap-2">
@@ -41,7 +41,7 @@ export function TemplateGallery({
               画布 {template.canvasWidth} × {template.canvasHeight}
             </span>
             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-500">
-              {template.pages.length} 个页面
+              {template.pagesCount} 个页面
             </span>
             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-500">
               默认页 page:{template.activePagePath}

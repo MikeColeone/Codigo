@@ -1,6 +1,6 @@
 import type { AppManagementTab, LocalDraftMeta, MyPagePayload, PageVersionItem, PublicPageItem } from "../../types/appManagement";
 import { TemplateGallery } from "@/modules/templateCenter/components/TemplateGallery";
-import type { TemplatePreset } from "@/modules/templateCenter/types/templates";
+import type { TemplateListItem } from "@codigo/schema";
 import DevelopingSection from "./DevelopingSection";
 import HistorySection from "./HistorySection";
 import PublishedSection from "./PublishedSection";
@@ -17,12 +17,12 @@ interface AppManagementSectionContentProps {
     title: string,
     subtitle: string,
   ) => void | Promise<void>;
-  onPreviewTemplate: (template: TemplatePreset) => void;
+  onPreviewTemplate: (template: TemplateListItem) => void;
   onPreviewVersion: (version: PageVersionItem) => void | Promise<void>;
-  onUseTemplate: (template: TemplatePreset) => void;
+  onUseTemplate: (template: TemplateListItem) => void;
   publicLoading: boolean;
   publicPages: PublicPageItem[];
-  templates: TemplatePreset[];
+  templates: TemplateListItem[];
 }
 
 function AppManagementSectionContent({

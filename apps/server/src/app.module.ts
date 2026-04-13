@@ -9,6 +9,7 @@ import { User } from './modules/user/entity/user.entity';
 import { FlowModule } from './modules/flow/flow.module';
 import { ResourcesModule } from './modules/resources/resources.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { TemplateModule } from './modules/template/template.module';
 import { JwtStrategy } from './core/guard/jwt.strategy';
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { JwtStrategy } from './core/guard/jwt.strategy';
     FlowModule,
     ResourcesModule,
     AdminModule,
+    TemplateModule,
     RedisModule.forRoot(redisConfig),
     JwtModule.register(jwtConfig),
   ],
