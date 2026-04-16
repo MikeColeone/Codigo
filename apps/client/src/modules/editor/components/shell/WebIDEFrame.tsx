@@ -6,6 +6,7 @@ import { BASE_URL } from "@/shared/utils/request";
 
 type WebIDEFrameProps = {
   workspaceRoot?: string | null;
+  pageName?: string | null;
 };
 
 function normalizeBaseUrl(value: string) {
@@ -42,14 +43,21 @@ export const WebIDEFrame = observer(function WebIDEFrame(
     }
     return "/codigo/pages/0";
   }, [pageId, props.workspaceRoot]);
+  const pageName = useMemo(() => {
+    const normalizedName = props.pageName?.trim();
+    return normalizedName || "";
+  }, [props.pageName]);
 
   const iframeUrl = useMemo(() => {
     const url = new URL(`${ideBaseUrl}/`);
     url.searchParams.set("pageId", String(pageId));
     url.searchParams.set("apiBaseUrl", apiBaseUrl);
     url.searchParams.set("workspaceRoot", workspaceRoot);
+    if (pageName) {
+      url.searchParams.set("pageName", pageName);
+    }
     return url.toString();
-  }, [apiBaseUrl, ideBaseUrl, pageId, workspaceRoot]);
+  }, [apiBaseUrl, ideBaseUrl, pageId, pageName, workspaceRoot]);
 
   useEffect(() => {
     const postContext = () => {
@@ -64,6 +72,7 @@ export const WebIDEFrame = observer(function WebIDEFrame(
             token: storeAuth.token,
             pageId,
             apiBaseUrl,
+            pageName,
           },
         },
         ideOrigin,
@@ -86,7 +95,7 @@ export const WebIDEFrame = observer(function WebIDEFrame(
     return () => {
       window.removeEventListener("message", onMessage);
     };
-  }, [apiBaseUrl, ideOrigin, pageId, storeAuth.token]);
+  }, [apiBaseUrl, ideOrigin, pageId, pageName, storeAuth.token]);
 
   if (!pageId) {
     return (

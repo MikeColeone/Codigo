@@ -21,6 +21,40 @@ export class PageWorkspaceFs {
     return `page-${pageId}`;
   }
 
+  /**
+   * 返回用于 IDE 展示的工作区名称，优先使用页面名。
+   */
+  resolveWorkspaceDisplayName(pageName: string | null | undefined, pageId: number) {
+    const normalizedName = String(pageName || '').trim();
+    return normalizedName || `page-${pageId}`;
+  }
+
+  /**
+   * 将页面名转换为可安全挂载到虚拟文件系统中的目录段。
+   */
+  resolveWorkspacePathSegment(pageName: string | null | undefined, pageId: number) {
+    const fallbackName = `page-${pageId}`;
+    const displayName = this.resolveWorkspaceDisplayName(pageName, pageId);
+    const normalizedName = displayName
+      .normalize('NFKC')
+      .replace(/[\\/:*?"<>|]/g, '-')
+      .replace(/\s+/g, ' ')
+      .replace(/\.+$/g, '')
+      .trim();
+
+    return normalizedName || fallbackName;
+  }
+
+  /**
+   * 生成用于 OpenSumi 挂载的虚拟工作区根路径。
+   */
+  buildVirtualWorkspaceRoot(pageId: number, pageName: string | null | undefined) {
+    return `${this.resolveWorkspaceRootVirtual()}/${pageId}/${this.resolveWorkspacePathSegment(
+      pageName,
+      pageId,
+    )}`.replace(/\/+/g, '/');
+  }
+
   resolveSchemaFilePath() {
     return 'src/schema.json';
   }
@@ -97,12 +131,13 @@ export class PageWorkspaceFs {
     return resolved;
   }
 
-  buildVirtualAbsolutePath(pageId: number, filePath: string) {
+  buildVirtualAbsolutePath(
+    pageId: number,
+    filePath: string,
+    pageName: string | null | undefined,
+  ) {
     const normalized = this.normalizeWorkspacePath(filePath);
-    return `${this.resolveWorkspaceRootVirtual()}/${pageId}/${normalized}`.replace(
-      /\/+/g,
-      '/',
-    );
+    return `${this.buildVirtualWorkspaceRoot(pageId, pageName)}/${normalized}`.replace(/\/+/g, '/');
   }
 
   async readExplorerTree(pageWorkspaceDir: string, relativePath: string): Promise<ExplorerNode[]> {
@@ -191,4 +226,3 @@ export class PageWorkspaceFs {
     return candidates;
   }
 }
-

@@ -49,8 +49,10 @@ const hash =
 const { platform, owner, name } = parseUri(hash);
 const searchParams = new URLSearchParams(window.location.search);
 const workspaceDir = searchParams.get('workspaceRoot') || `/${platform}/${owner}/${name}`;
+const initialPageName = readPageName(searchParams.get('pageName')) || readWorkspaceLabel(workspaceDir);
 
 installConsoleFilters();
+applyWorkspaceTitle(initialPageName);
 
 configure({
   isolateGlobalState: true,
@@ -63,7 +65,12 @@ configureFileServiceContext({
 
 window.addEventListener(
   'message',
-  (event: MessageEvent<{ type?: string; payload?: { token?: string; pageId?: number; apiBaseUrl?: string } }>) => {
+  (
+    event: MessageEvent<{
+      type?: string;
+      payload?: { token?: string; pageId?: number; apiBaseUrl?: string; pageName?: string };
+    }>,
+  ) => {
     if (event.data?.type !== 'codigo:opensumi-app-context') {
       return;
     }
@@ -73,6 +80,7 @@ window.addEventListener(
       pageId: event.data.payload?.pageId,
       baseUrl: event.data.payload?.apiBaseUrl,
     });
+    applyWorkspaceTitle(readPageName(event.data.payload?.pageName) || initialPageName);
   },
 );
 
@@ -113,6 +121,29 @@ function parsePageId(value: string | null) {
 
   const pageId = Number(value);
   return Number.isNaN(pageId) ? undefined : pageId;
+}
+
+/**
+ * 读取页面名并去除无意义空白，避免 IDE 标题出现空字符串。
+ */
+function readPageName(value: string | null | undefined) {
+  const normalizedName = String(value || '').trim();
+  return normalizedName || undefined;
+}
+
+/**
+ * 从虚拟工作区路径中提取展示名称，作为页面名缺失时的兜底标题。
+ */
+function readWorkspaceLabel(workspacePath: string) {
+  const segments = workspacePath.split('/').filter(Boolean);
+  return segments[segments.length - 1] || 'Codigo IDE';
+}
+
+/**
+ * 同步浏览器标题，保证进入 OpenSumi 后展示页面名而不是 pageId。
+ */
+function applyWorkspaceTitle(workspaceName: string) {
+  document.title = `${workspaceName} - Codigo IDE`;
 }
 
 function installConsoleFilters() {

@@ -39,6 +39,8 @@ export class PageWorkspaceService {
     const exists = fs.existsSync(pageWorkspaceDir);
     const schemaService = this.createSchemaService();
     const schema = await schemaService.loadPageSchema(pageId);
+    const workspaceName = this.fsHelper.resolveWorkspaceDisplayName(page.page_name, pageId);
+    const workspaceRoot = this.fsHelper.buildVirtualWorkspaceRoot(pageId, page.page_name);
     const componentCount = flattenComponentTree(schema.components ?? []).length;
     const schemaFileAbsolutePath = path.join(
       pageWorkspaceDir,
@@ -53,12 +55,9 @@ export class PageWorkspaceService {
       pageId,
       pageName: page.page_name,
       workspaceId: this.fsHelper.resolveWorkspaceId(pageId),
-      workspaceName: `page-${pageId}`,
-      workspaceRoot: `${this.fsHelper.resolveWorkspaceRootVirtual()}/${pageId}`.replace(
-        /\/+/g,
-        '/',
-      ),
-      workspaceRelativePath: `pages/${pageId}`,
+      workspaceName,
+      workspaceRoot,
+      workspaceRelativePath: workspaceRoot.replace(/^\/+/, ''),
       templateRoot: 'packages/template',
       packageJsonPath: 'package.json',
       schemaFilePath: this.fsHelper.resolveSchemaFilePath(),
@@ -106,7 +105,7 @@ export class PageWorkspaceService {
   }
 
   async getExplorer(pageId: number, user: TCurrentUser): Promise<PageWorkspaceExplorerResponse> {
-    await this.ensurePageOwner(pageId, user);
+    const page = await this.ensurePageOwner(pageId, user);
     const pageWorkspaceDir = await this.fsHelper.getWorkspaceDir(pageId);
     if (!fs.existsSync(pageWorkspaceDir)) {
       throw new BadRequestException('workspace_missing');
@@ -115,10 +114,7 @@ export class PageWorkspaceService {
     return {
       pageId,
       workspaceId: this.fsHelper.resolveWorkspaceId(pageId),
-      rootPath: `${this.fsHelper.resolveWorkspaceRootVirtual()}/${pageId}`.replace(
-        /\/+/g,
-        '/',
-      ),
+      rootPath: this.fsHelper.buildVirtualWorkspaceRoot(pageId, page.page_name),
       tree: await this.fsHelper.readExplorerTree(pageWorkspaceDir, ''),
     };
   }
@@ -128,7 +124,7 @@ export class PageWorkspaceService {
     filePath: string,
     user: TCurrentUser,
   ): Promise<PageWorkspaceFileResponse> {
-    await this.ensurePageOwner(pageId, user);
+    const page = await this.ensurePageOwner(pageId, user);
     const pageWorkspaceDir = await this.fsHelper.getWorkspaceDir(pageId);
     if (!fs.existsSync(pageWorkspaceDir)) {
       throw new BadRequestException('workspace_missing');
@@ -145,7 +141,7 @@ export class PageWorkspaceService {
       pageId,
       workspaceId: this.fsHelper.resolveWorkspaceId(pageId),
       path: normalizedPath,
-      absolutePath: this.fsHelper.buildVirtualAbsolutePath(pageId, normalizedPath),
+      absolutePath: this.fsHelper.buildVirtualAbsolutePath(pageId, normalizedPath, page.page_name),
       language: this.fsHelper.resolveLanguage(filePath),
       content,
       updatedAt,
@@ -157,7 +153,7 @@ export class PageWorkspaceService {
     body: PutPageWorkspaceFileRequest,
     user: TCurrentUser,
   ): Promise<PutPageWorkspaceFileResponse> {
-    await this.ensurePageOwner(pageId, user);
+    const page = await this.ensurePageOwner(pageId, user);
     const pageWorkspaceDir = await this.fsHelper.ensureWorkspaceDir(pageId);
     const absolutePath = this.fsHelper.resolveWorkspaceFileAbsolutePath(
       pageWorkspaceDir,
@@ -177,7 +173,7 @@ export class PageWorkspaceService {
       pageId,
       workspaceId: this.fsHelper.resolveWorkspaceId(pageId),
       path: normalizedPath,
-      absolutePath: this.fsHelper.buildVirtualAbsolutePath(pageId, normalizedPath),
+      absolutePath: this.fsHelper.buildVirtualAbsolutePath(pageId, normalizedPath, page.page_name),
       language: this.fsHelper.resolveLanguage(normalizedPath),
       content: body.content ?? '',
       updatedAt,
@@ -189,13 +185,10 @@ export class PageWorkspaceService {
     user: TCurrentUser,
     options: { origin?: string },
   ): Promise<PageWorkspaceIDEConfigResponse> {
-    await this.ensurePageOwner(pageId, user);
+    const page = await this.ensurePageOwner(pageId, user);
     const ideUrl = process.env.OPENSUMI_IDE_URL || 'http://localhost:8081';
     const origin = options.origin || '*';
-    const workspaceDir = `${this.fsHelper.resolveWorkspaceRootVirtual()}/${pageId}`.replace(
-      /\/+/g,
-      '/',
-    );
+    const workspaceDir = this.fsHelper.buildVirtualWorkspaceRoot(pageId, page.page_name);
     const apiBaseUrl = process.env.SERVER_URL
       ? `${process.env.SERVER_URL.replace(/\/+$/, '')}/api`
       : '/api';

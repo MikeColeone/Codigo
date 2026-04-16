@@ -333,7 +333,10 @@ export const EditorViewport = observer(function EditorViewport(
   if (props.storePage.editorMode === "webide") {
     return (
       <div className="h-full w-full overflow-hidden bg-[var(--ide-bg)]">
-        <WebIDEFrame workspaceRoot={props.storePage.workspace?.workspaceRoot} />
+        <WebIDEFrame
+          workspaceRoot={props.storePage.workspace?.workspaceRoot}
+          pageName={props.storePage.workspace?.pageName}
+        />
       </div>
     );
   }
