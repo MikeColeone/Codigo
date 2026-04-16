@@ -1,24 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  /* VS Code / Trae Style Colors */
-  --ide-bg: #1e1e1e;
-  --ide-header-bg: #2d2d2d;
-  --ide-sidebar-bg: #252526;
-  --ide-activitybar-bg: #333333;
+  /* Light editor palette aligned with OpenSumi */
+  --ide-bg: #f3f3f3;
+  --ide-header-bg: #ececec;
+  --ide-sidebar-bg: #f7f7f7;
+  --ide-activitybar-bg: #efefef;
   --ide-statusbar-bg: #007acc;
-  --ide-border: #3c3c3c;
-  --ide-text: #cccccc;
-  --ide-text-bright: #ffffff;
-  --ide-text-muted: #858585;
-  --ide-accent: #0e639c;
-  --ide-hover: #2a2d2e;
-  --ide-active: #37373d;
-  --ide-control-bg: #3c3c3c;
-  --ide-control-border: #3c3c3c;
-  --ide-grid-line: rgba(255, 255, 255, 0.03);
+  --ide-border: #d9d9d9;
+  --ide-text: #1f2328;
+  --ide-text-bright: #111827;
+  --ide-text-muted: #6b7280;
+  --ide-accent: #0f6cbd;
+  --ide-hover: #e9ecef;
+  --ide-active: #dde3e8;
+  --ide-control-bg: #ffffff;
+  --ide-control-border: #cfd6dd;
+  --ide-grid-line: rgba(31, 35, 40, 0.05);
   --ide-statusbar-text: #ffffff;
-  
+  --ide-panel-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --ide-scrollbar-size: 10px;
+  --ide-scrollbar-track: rgba(15, 23, 42, 0.04);
+  --ide-scrollbar-thumb: rgba(31, 35, 40, 0.18);
+  --ide-scrollbar-thumb-hover: rgba(31, 35, 40, 0.3);
+  --ide-scrollbar-thumb-active: rgba(31, 35, 40, 0.4);
+
   /* Layout Variables */
   --activity-bar-width: 48px;
   --header-height: 35px;
@@ -26,22 +32,27 @@
 }
 
 .studio-theme-light {
-  --ide-bg: #f8fafc;
-  --ide-header-bg: #ffffff;
-  --ide-sidebar-bg: #ffffff;
-  --ide-activitybar-bg: #f1f5f9;
-  --ide-statusbar-bg: #10b981;
-  --ide-border: #e2e8f0;
-  --ide-text: #0f172a;
-  --ide-text-bright: #0f172a;
-  --ide-text-muted: #64748b;
-  --ide-accent: #10b981;
-  --ide-hover: #f1f5f9;
-  --ide-active: #e2e8f0;
+  --ide-bg: #f3f3f3;
+  --ide-header-bg: #ececec;
+  --ide-sidebar-bg: #f7f7f7;
+  --ide-activitybar-bg: #efefef;
+  --ide-statusbar-bg: #007acc;
+  --ide-border: #d9d9d9;
+  --ide-text: #1f2328;
+  --ide-text-bright: #111827;
+  --ide-text-muted: #6b7280;
+  --ide-accent: #0f6cbd;
+  --ide-hover: #e9ecef;
+  --ide-active: #dde3e8;
   --ide-control-bg: #ffffff;
-  --ide-control-border: #e2e8f0;
-  --ide-grid-line: rgba(15, 23, 42, 0.06);
+  --ide-control-border: #cfd6dd;
+  --ide-grid-line: rgba(31, 35, 40, 0.05);
   --ide-statusbar-text: #ffffff;
+  --ide-panel-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --ide-scrollbar-track: rgba(15, 23, 42, 0.04);
+  --ide-scrollbar-thumb: rgba(31, 35, 40, 0.18);
+  --ide-scrollbar-thumb-hover: rgba(31, 35, 40, 0.3);
+  --ide-scrollbar-thumb-active: rgba(31, 35, 40, 0.4);
 }
 
 html,
@@ -52,11 +63,56 @@ body,
   padding: 0;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  background: var(--ide-bg);
+  color: var(--ide-text);
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+body,
+.studio-root,
+.studio-root * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ide-scrollbar-thumb) var(--ide-scrollbar-track);
+}
+
+.studio-root ::-webkit-scrollbar {
+  width: var(--ide-scrollbar-size);
+  height: var(--ide-scrollbar-size);
+}
+
+.studio-root ::-webkit-scrollbar-track {
+  background: var(--ide-scrollbar-track);
+}
+
+.studio-root ::-webkit-scrollbar-thumb {
+  min-height: 24px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--ide-scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+.studio-root ::-webkit-scrollbar-thumb:hover {
+  background: var(--ide-scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+
+.studio-root ::-webkit-scrollbar-thumb:active {
+  background: var(--ide-scrollbar-thumb-active);
+  background-clip: padding-box;
+}
+
+.studio-root ::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Ant Design Override for IDE style */
 .studio-root .ant-btn {
   border-radius: 2px !important;
+  box-shadow: none !important;
 }
 
 .studio-root .ant-input {
@@ -71,6 +127,34 @@ body,
   box-shadow: none !important;
 }
 
+.studio-root .ant-input-number,
+.studio-root .ant-input-number-group-addon,
+.studio-root .ant-select-selector,
+.studio-root .ant-dropdown .ant-dropdown-menu,
+.studio-root .ant-modal-content {
+  border-color: var(--ide-control-border) !important;
+  box-shadow: none !important;
+}
+
+.studio-root .ant-input-number,
+.studio-root .ant-select-selector,
+.studio-root .ant-dropdown .ant-dropdown-menu,
+.studio-root .ant-modal-content {
+  background-color: var(--ide-control-bg) !important;
+}
+
+.studio-root .ant-modal-header,
+.studio-root .ant-dropdown .ant-dropdown-menu,
+.studio-root .ant-dropdown-menu-item {
+  background-color: var(--ide-sidebar-bg) !important;
+  color: var(--ide-text) !important;
+}
+
+.studio-root .ant-dropdown-menu-item:hover,
+.studio-root .ant-dropdown-menu-submenu-title:hover {
+  background-color: var(--ide-hover) !important;
+}
+
 .studio-root .ant-btn-primary {
   background-color: var(--ide-accent) !important;
   border-color: var(--ide-accent) !important;
@@ -78,4 +162,8 @@ body,
 
 .studio-root .ant-tabs-nav::before {
   border-bottom: 1px solid var(--ide-border) !important;
+}
+
+.studio-root .editor-stage-scroll {
+  scrollbar-gutter: stable both-edges;
 }

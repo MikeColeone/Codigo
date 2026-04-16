@@ -10,7 +10,7 @@ import { VersionHistoryAction } from "./center/VersionHistoryAction";
 
 const Center = observer(() => {
   return (
-    <div className="flex items-center gap-2 bg-[var(--ide-hover)] px-1 py-0.5">
+    <div className="flex items-center gap-2 rounded-sm border border-[var(--ide-border)] bg-[var(--ide-sidebar-bg)] px-1 py-0.5 shadow-[var(--ide-panel-shadow)]">
       <DeviceModeSwitch />
       <div className="hidden h-4 w-px bg-[var(--ide-border)] xl:block" />
       <CanvasSettings />

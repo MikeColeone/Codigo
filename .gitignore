@@ -27,6 +27,11 @@ dist-ssr
 *.sln
 *.sw?
 
+# build output
+tempdist/*
+
+
+# environment variables
 .env
 .env.*.local
 *.pem
@@ -35,4 +40,5 @@ dist-ssr
 *.pfx
 .turbo
 
+# worktrees
 .worktrees/*

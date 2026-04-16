@@ -19,7 +19,7 @@
     "typecheck": "turbo run typecheck",
     "typecheck:apps": "turbo run typecheck --filter=@codigo/client --filter=@codigo/admin --filter=@codigo/server --filter=@codigo/release",
     "test": "turbo run test",
-    "run:client": "pnpm --filter @codigo/client run dev",
+    "run:client": "pnpm --filter @codigo/client --filter @codigo/opensumi-app run dev",
     "run:admin": "pnpm --filter @codigo/admin run dev",
     "run:ide": "pnpm --filter @codigo/opensumi-app run start",
     "run:server": "pnpm --filter @codigo/server run start:dev",

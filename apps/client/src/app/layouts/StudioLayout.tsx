@@ -15,6 +15,7 @@ export const StudioLayout = observer(() => {
           colorBorder: "var(--ide-border)",
           colorText: "var(--ide-text)",
           colorTextSecondary: "var(--ide-text-muted)",
+          colorFillSecondary: "var(--ide-hover)",
           borderRadius: 2,
           fontSize: 13,
         },
@@ -22,6 +23,9 @@ export const StudioLayout = observer(() => {
           Button: {
             borderRadius: 2,
             controlHeight: 28,
+            defaultBg: "var(--ide-control-bg)",
+            defaultBorderColor: "var(--ide-control-border)",
+            defaultColor: "var(--ide-text)",
           },
           Layout: {
             bodyBg: "var(--ide-bg)",
@@ -34,6 +38,18 @@ export const StudioLayout = observer(() => {
             itemHoverColor: "var(--ide-text)",
             cardBg: "var(--ide-header-bg)",
             headerBg: "var(--ide-sidebar-bg)",
+          },
+          Input: {
+            activeBorderColor: "var(--ide-accent)",
+            hoverBorderColor: "var(--ide-accent)",
+          },
+          InputNumber: {
+            activeBorderColor: "var(--ide-accent)",
+            hoverBorderColor: "var(--ide-accent)",
+          },
+          Switch: {
+            colorPrimary: "var(--ide-accent)",
+            colorPrimaryHover: "var(--ide-accent)",
           },
         },
       }}
