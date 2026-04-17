@@ -30,8 +30,8 @@ function getOutlineTreeStorageKey(pageId: number) {
 /**
  * 兼容旧草稿中的流式布局配置，并统一收口到自由布局。
  */
-function normalizePageLayoutMode() {
-  return "absolute" as const;
+function normalizePageLayoutMode(mode?: unknown): PageLayoutMode {
+  return mode === "grid" || mode === "absolute" ? mode : "absolute";
 }
 
 export function useStorePage() {
@@ -41,8 +41,6 @@ export function useStorePage() {
       storePage.canvasWidth = 1280;
       storePage.canvasHeight = 900;
     }
-
-    storePage.layoutMode = normalizePageLayoutMode();
   });
 
   /**
@@ -79,7 +77,7 @@ export function useStorePage() {
   });
 
   const setLayoutMode = action((mode: PageLayoutMode) => {
-    storePage.layoutMode = mode ?? normalizePageLayoutMode();
+    storePage.layoutMode = normalizePageLayoutMode(mode);
   });
 
   const setEditorMode = action((mode: EditorMode) => {
@@ -206,10 +204,11 @@ export function useStorePage() {
         storePage.deviceType = page.deviceType ?? "pc";
         storePage.canvasWidth = page.canvasWidth ?? 1280;
         storePage.canvasHeight = page.canvasHeight ?? 900;
-        storePage.layoutMode = normalizePageLayoutMode();
       }
-    } else if (Object.prototype.hasOwnProperty.call(page, "layoutMode")) {
-      storePage.layoutMode = normalizePageLayoutMode();
+    }
+
+    if (Object.prototype.hasOwnProperty.call(page, "layoutMode")) {
+      storePage.layoutMode = normalizePageLayoutMode(page.layoutMode);
     }
 
     if (Object.prototype.hasOwnProperty.call(page, "chartTheme")) {

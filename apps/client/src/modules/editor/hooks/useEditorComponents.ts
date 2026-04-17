@@ -180,6 +180,7 @@ export function useEditorComponents() {
     broadcastNodeChange,
     ensurePermission,
     getCurrentComponent,
+    pageStore,
     storeComponents,
   });
 
@@ -323,6 +324,7 @@ export function useEditorComponents() {
         components: activeTemplatePage.components,
       },
       pageStore.layoutMode,
+      pageStore.grid,
     );
     const nextPageSettings = createTemplatePageSettings(template);
 

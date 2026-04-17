@@ -2,8 +2,9 @@ import {
   BgColorsOutlined,
   FileTextOutlined,
   GlobalOutlined,
+  LayoutOutlined,
 } from "@ant-design/icons";
-import { Form, Input, Select } from "antd";
+import { Form, Input, InputNumber, Select } from "antd";
 import { observer } from "mobx-react-lite";
 import type { FC } from "react";
 
@@ -18,7 +19,14 @@ const GlobalFields: FC<{ store: TStorePage }> = observer(({ store }) => {
   const chartThemeOptions = getBuiltinEChartsThemeOptions() as any;
 
   function handleValuesChange(changedValues: Partial<TStorePage>) {
-    updatePage(changedValues);
+    const nextValues: Partial<TStorePage> = { ...changedValues };
+    if (Object.prototype.hasOwnProperty.call(changedValues, "grid")) {
+      nextValues.grid = {
+        ...store.grid,
+        ...(changedValues.grid ?? {}),
+      };
+    }
+    updatePage(nextValues);
   }
 
   const fieldGroups = [
@@ -31,7 +39,7 @@ const GlobalFields: FC<{ store: TStorePage }> = observer(({ store }) => {
           label: "搭建场景",
           node: (
             <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-hover)] px-3 py-2 text-[11px] leading-relaxed text-[var(--ide-text-muted)]">
-              当前编辑器已收口为管理系统搭建场景。
+              管理系统搭建场景
             </div>
           ),
         },
@@ -55,6 +63,67 @@ const GlobalFields: FC<{ store: TStorePage }> = observer(({ store }) => {
               placeholder="输入用途说明"
               autoSize={{ minRows: 2, maxRows: 4 }}
               className="!bg-[var(--ide-control-bg)] !border-[var(--ide-control-border)] !text-[var(--ide-text)]"
+            />
+          ),
+        },
+      ],
+    },
+    {
+      key: "layout",
+      title: "布局设置",
+      icon: <LayoutOutlined />,
+      description: "决定画布内组件的定位方式。",
+      fields: [
+        {
+          label: "布局模式",
+          name: "layoutMode",
+          node: (
+            <Select
+              size="small"
+              options={[
+                { label: "自由布局", value: "absolute" },
+                { label: "栅格布局", value: "grid" },
+              ]}
+              className="w-full"
+            />
+          ),
+        },
+        {
+          label: "栅格列数 (n)",
+          name: ["grid", "cols"],
+          hidden: store.layoutMode !== "grid",
+          node: (
+            <InputNumber
+              size="small"
+              min={1}
+              max={48}
+              className="w-full !bg-[var(--ide-control-bg)]"
+            />
+          ),
+        },
+        {
+          label: "栅格行数 (m)",
+          name: ["grid", "rows"],
+          hidden: store.layoutMode !== "grid",
+          node: (
+            <InputNumber
+              size="small"
+              min={1}
+              max={48}
+              className="w-full !bg-[var(--ide-control-bg)]"
+            />
+          ),
+        },
+        {
+          label: "栅格间距 (px)",
+          name: ["grid", "gap"],
+          hidden: store.layoutMode !== "grid",
+          node: (
+            <InputNumber
+              size="small"
+              min={0}
+              max={64}
+              className="w-full !bg-[var(--ide-control-bg)]"
             />
           ),
         },
@@ -146,6 +215,7 @@ const GlobalFields: FC<{ store: TStorePage }> = observer(({ store }) => {
                   key={field.name ? String(field.name) : `${group.key}-${field.label}`}
                   label={field.label}
                   name={field.name}
+                  hidden={Boolean((field as any).hidden)}
                   className="!mb-2 last:!mb-0"
                 >
                   {field.node}

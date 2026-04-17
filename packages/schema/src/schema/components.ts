@@ -85,6 +85,10 @@ export interface TComponentStyles {
   top?: number | string;
   width?: number | string;
   height?: number | string;
+  gridColumnStart?: number;
+  gridColumnSpan?: number;
+  gridRowStart?: number;
+  gridRowSpan?: number;
   marginTop?: number | string;
   marginBottom?: number | string;
   marginLeft?: number | string;

@@ -1,6 +1,6 @@
 import type { ComponentNodeRecord, TComponentTypes } from "@codigo/schema";
 import type { DragEvent, RefObject } from "react";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { resolveCanvasDropResult } from "../utils/canvasDrop";
 
 interface UseCanvasDropOptions {
@@ -27,13 +27,56 @@ export function useCanvasDrop({
   getAvailableSlots,
   push,
 }: UseCanvasDropOptions) {
+  const lastSlotZoneRef = useRef<HTMLElement | null>(null);
+
+  const clearDropHover = useCallback(() => {
+    if (lastSlotZoneRef.current) {
+      lastSlotZoneRef.current.classList.remove("editor-drop-slot-hover");
+      lastSlotZoneRef.current = null;
+    }
+  }, []);
+
   /**
    * 允许浏览器持续派发 drop 事件。
    */
   const handleDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "copy";
-  }, []);
+
+    if (!canEditStructure) {
+      clearDropHover();
+      return;
+    }
+
+    const targetElement = document.elementFromPoint(
+      event.clientX,
+      event.clientY,
+    ) as HTMLElement | null;
+    const slotZone = targetElement?.closest(
+      "[data-slot-name]",
+    ) as HTMLElement | null;
+
+    if (slotZone === lastSlotZoneRef.current) {
+      return;
+    }
+
+    clearDropHover();
+    if (slotZone) {
+      slotZone.classList.add("editor-drop-slot-hover");
+      lastSlotZoneRef.current = slotZone;
+    }
+  }, [canEditStructure, clearDropHover]);
+
+  const handleDragLeave = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      const related = event.relatedTarget as Node | null;
+      if (related && event.currentTarget.contains(related)) {
+        return;
+      }
+      clearDropHover();
+    },
+    [clearDropHover],
+  );
 
   /**
    * 根据当前落点将物料插入画布或容器插槽。
@@ -41,6 +84,7 @@ export function useCanvasDrop({
   const handleDrop = useCallback(
     (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault();
+      clearDropHover();
       if (!canEditStructure) {
         return;
       }
@@ -64,6 +108,7 @@ export function useCanvasDrop({
     [
       canEditStructure,
       canvasRef,
+      clearDropHover,
       currentComponentId,
       getAvailableSlots,
       getComponentById,
@@ -73,6 +118,7 @@ export function useCanvasDrop({
 
   return {
     handleDragOver,
+    handleDragLeave,
     handleDrop,
   };
 }

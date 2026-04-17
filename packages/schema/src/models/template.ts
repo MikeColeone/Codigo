@@ -1,5 +1,5 @@
 import type { ComponentEventMap, ComponentMeta, TComponentTypes } from "../schema/components";
-import type { PageCategory, PageLayoutMode } from "../schema/low-code";
+import type { PageCategory, PageGridConfig, PageLayoutMode } from "../schema/low-code";
 
 export type TemplateDeviceType = "pc" | "mobile";
 
@@ -28,10 +28,10 @@ export interface TemplatePreset {
   pageTitle: string;
   pageCategory: PageCategory;
   layoutMode: PageLayoutMode;
+  grid?: PageGridConfig;
   deviceType: TemplateDeviceType;
   canvasWidth: number;
   canvasHeight: number;
   activePagePath: string;
   pages: TemplatePagePreset[];
 }
-

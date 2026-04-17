@@ -5,6 +5,8 @@ import type {
   ComponentNodeRecord,
   IEditorPageSchema,
   IPageSchema,
+  PageGridConfig,
+  PageLayoutMode,
   TBasicComponentConfig,
   TComponentTypes,
 } from "@codigo/schema";
@@ -191,7 +193,8 @@ export function normalizeEditorPages(schema?: IPageSchema | null) {
  */
 export function normalizeFromSchema(
   schema: IPageSchema | null | undefined,
-  _layoutMode: "absolute",
+  layoutMode: PageLayoutMode,
+  grid?: PageGridConfig,
 ) {
   const nextCompConfigs: Record<string, ComponentNodeRecord> = {};
   const nextSortableCompConfig: string[] = [];
@@ -227,7 +230,7 @@ export function normalizeFromSchema(
     nextSortableCompConfig.push(node.id);
   }
 
-  normalizeLayout(nextCompConfigs, nextSortableCompConfig);
+  normalizeLayout(nextCompConfigs, nextSortableCompConfig, { layoutMode, grid });
   return {
     compConfigs: nextCompConfigs,
     sortableCompConfig: nextSortableCompConfig,
@@ -256,7 +259,8 @@ export function sanitizeCodeSyncNodes(nodes: CodeSyncNode[]): ComponentNode[] {
  */
 export function normalizeFromFlatComponents(
   components: CodeSyncNode[],
-  layoutMode: "absolute",
+  layoutMode: PageLayoutMode,
+  grid?: PageGridConfig,
 ) {
   return normalizeFromSchema(
     {
@@ -264,6 +268,7 @@ export function normalizeFromFlatComponents(
       components: sanitizeCodeSyncNodes(components),
     },
     layoutMode,
+    grid,
   );
 }
 

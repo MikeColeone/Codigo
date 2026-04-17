@@ -1,7 +1,13 @@
 import { action, computed } from "mobx";
 import { message } from "antd";
 import { ulid } from "ulid";
-import type { ComponentNode, IEditorPageSchema, PageCategory } from "@codigo/schema";
+import type {
+  ComponentNode,
+  IEditorPageSchema,
+  PageCategory,
+  PageGridConfig,
+  PageLayoutMode,
+} from "@codigo/schema";
 import type { TEditorComponentsStore } from "@/modules/editor/stores";
 import {
   createEditorPageDefinition,
@@ -20,7 +26,8 @@ type InsertNodeArgs = {
 interface EditorComponentPageActionsContext {
   storeComponents: TEditorComponentsStore;
   pageStore: {
-    layoutMode: "absolute";
+    layoutMode: PageLayoutMode;
+    grid?: PageGridConfig;
     pageCategory: PageCategory;
     canvasWidth: number;
   };
@@ -99,6 +106,7 @@ export function createEditorComponentPageActions(
         components: page.components ?? [],
       },
       pageStore.layoutMode,
+      pageStore.grid,
     );
 
     storeComponents.compConfigs = normalized.compConfigs;

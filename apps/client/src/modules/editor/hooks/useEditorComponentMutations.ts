@@ -3,6 +3,8 @@ import { calcValueByString } from "@codigo/materials";
 import type {
   ActionConfig,
   ComponentNodeRecord,
+  PageGridConfig,
+  PageLayoutMode,
   TComponentTypes,
 } from "@codigo/schema";
 import type { TEditorComponentsStore } from "@/modules/editor/stores";
@@ -10,6 +12,12 @@ import { getDefaultWidthByType } from "@/modules/editor/utils/pageLayout";
 
 interface EditorComponentMutationsContext {
   storeComponents: TEditorComponentsStore;
+  pageStore: {
+    layoutMode: PageLayoutMode;
+    grid?: PageGridConfig;
+    canvasWidth: number;
+    canvasHeight: number;
+  };
   ensurePermission: (permission: any, deniedMessage?: string) => boolean;
   addOperationLog: (action: any, detail: string) => void;
   broadcastNodeChange: (actionType: string, payload: any) => void;
@@ -27,8 +35,40 @@ export function createEditorComponentMutations(
     broadcastNodeChange,
     ensurePermission,
     getCurrentComponent,
+    pageStore,
     storeComponents,
   } = context;
+
+  const clampInt = (value: number, min: number, max: number) => {
+    if (!Number.isFinite(value)) return min;
+    return Math.max(min, Math.min(max, Math.floor(value)));
+  };
+
+  const resolveGridCellSize = (
+    total: number,
+    count: number,
+    gap: number,
+  ) => {
+    const safeCount = Math.max(1, Math.floor(count));
+    const safeGap = Math.max(0, Math.floor(gap));
+    const available = total - safeGap * (safeCount - 1);
+    const cell = available / safeCount;
+    return { count: safeCount, gap: safeGap, cell };
+  };
+
+  const resolveGridStart = (
+    offset: number,
+    total: number,
+    count: number,
+    gap: number,
+  ) => {
+    const { cell } = resolveGridCellSize(total, count, gap);
+    const step = cell + Math.max(0, gap);
+    if (!Number.isFinite(step) || step <= 0) {
+      return 1;
+    }
+    return clampInt(Math.floor(offset / step) + 1, 1, Math.max(1, count));
+  };
 
   /**
    * 标准化组件事件配置。
@@ -133,12 +173,46 @@ export function createEditorComponentMutations(
         currentComponent.styles = {};
       }
 
-      currentComponent.styles.position = "absolute";
-      currentComponent.styles.left = `${Math.max(0, Math.round(left))}px`;
-      currentComponent.styles.top = `${Math.max(0, Math.round(top))}px`;
-      currentComponent.styles.width =
-        currentComponent.styles.width ??
-        getDefaultWidthByType(currentComponent.type as TComponentTypes);
+      const isRootNode = !currentComponent.parentId;
+      const isGridRoot = pageStore.layoutMode === "grid" && isRootNode;
+
+      if (isGridRoot) {
+        const cols = pageStore.grid?.cols ?? 12;
+        const rows = pageStore.grid?.rows ?? 12;
+        const gap = pageStore.grid?.gap ?? 0;
+
+        const nextColumnStart = resolveGridStart(
+          Math.max(0, left),
+          pageStore.canvasWidth,
+          cols,
+          gap,
+        );
+        const nextRowStart = resolveGridStart(
+          Math.max(0, top),
+          pageStore.canvasHeight,
+          rows,
+          gap,
+        );
+
+        currentComponent.styles.position = "relative";
+        currentComponent.styles.gridColumnStart = nextColumnStart;
+        currentComponent.styles.gridRowStart = nextRowStart;
+        currentComponent.styles.gridColumnSpan =
+          currentComponent.styles.gridColumnSpan ?? 1;
+        currentComponent.styles.gridRowSpan =
+          currentComponent.styles.gridRowSpan ?? 1;
+        currentComponent.styles.left = undefined;
+        currentComponent.styles.top = undefined;
+        currentComponent.styles.width = "100%";
+        currentComponent.styles.height = "100%";
+      } else {
+        currentComponent.styles.position = "absolute";
+        currentComponent.styles.left = `${Math.max(0, Math.round(left))}px`;
+        currentComponent.styles.top = `${Math.max(0, Math.round(top))}px`;
+        currentComponent.styles.width =
+          currentComponent.styles.width ??
+          getDefaultWidthByType(currentComponent.type as TComponentTypes);
+      }
 
       if (!silent) {
         broadcastNodeChange("update", currentComponent);
@@ -168,8 +242,60 @@ export function createEditorComponentMutations(
       const nextWidth = Math.max(80, Math.round(width));
       const nextHeight = Math.max(40, Math.round(height));
 
-      currentComponent.styles.width = `${nextWidth}px`;
-      currentComponent.styles.height = `${nextHeight}px`;
+      const isRootNode = !currentComponent.parentId;
+      const isGridRoot = pageStore.layoutMode === "grid" && isRootNode;
+
+      if (isGridRoot) {
+        const cols = pageStore.grid?.cols ?? 12;
+        const rows = pageStore.grid?.rows ?? 12;
+        const gap = pageStore.grid?.gap ?? 0;
+        const { cell: cellWidth } = resolveGridCellSize(
+          pageStore.canvasWidth,
+          cols,
+          gap,
+        );
+        const { cell: cellHeight } = resolveGridCellSize(
+          pageStore.canvasHeight,
+          rows,
+          gap,
+        );
+        const safeCellWidth = Number.isFinite(cellWidth) && cellWidth > 0 ? cellWidth : 1;
+        const safeCellHeight = Number.isFinite(cellHeight) && cellHeight > 0 ? cellHeight : 1;
+
+        const columnStart = clampInt(
+          Number(currentComponent.styles.gridColumnStart ?? 1),
+          1,
+          cols,
+        );
+        const rowStart = clampInt(
+          Number(currentComponent.styles.gridRowStart ?? 1),
+          1,
+          rows,
+        );
+        const columnSpan = clampInt(
+          Math.round(nextWidth / safeCellWidth),
+          1,
+          cols - columnStart + 1,
+        );
+        const rowSpan = clampInt(
+          Math.round(nextHeight / safeCellHeight),
+          1,
+          rows - rowStart + 1,
+        );
+
+        currentComponent.styles.position = "relative";
+        currentComponent.styles.gridColumnStart = columnStart;
+        currentComponent.styles.gridRowStart = rowStart;
+        currentComponent.styles.gridColumnSpan = columnSpan;
+        currentComponent.styles.gridRowSpan = rowSpan;
+        currentComponent.styles.left = undefined;
+        currentComponent.styles.top = undefined;
+        currentComponent.styles.width = "100%";
+        currentComponent.styles.height = "100%";
+      } else {
+        currentComponent.styles.width = `${nextWidth}px`;
+        currentComponent.styles.height = `${nextHeight}px`;
+      }
 
       if (
         currentComponent.props &&

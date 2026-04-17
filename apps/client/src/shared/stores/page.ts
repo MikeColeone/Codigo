@@ -1,6 +1,7 @@
 import { makeAutoObservable } from "mobx";
 import type {
   PageCategory,
+  PageGridConfig,
   PageLayoutMode,
   PageWorkspaceExplorerResponse,
   PageWorkspaceFileResponse,
@@ -28,6 +29,7 @@ interface IStorePage {
   tdk: string;
   pageCategory: PageCategory;
   layoutMode: PageLayoutMode;
+  grid: PageGridConfig;
   deviceType: DeviceType;
   canvasWidth: number;
   canvasHeight: number;
@@ -52,6 +54,11 @@ export function createStorePage() {
     tdk: "admin dashboard, management system, business console",
     pageCategory: "admin",
     layoutMode: "absolute",
+    grid: {
+      cols: 12,
+      rows: 12,
+      gap: 8,
+    },
     deviceType: "pc",
     canvasWidth: 1280,
     canvasHeight: 900,

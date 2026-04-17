@@ -18,6 +18,7 @@ interface EditorPageSettingsSnapshot {
   tdk?: string;
   pageCategory?: TStorePage["pageCategory"];
   layoutMode?: TStorePage["layoutMode"];
+  grid?: TStorePage["grid"];
   deviceType?: TStorePage["deviceType"];
   canvasWidth?: number;
   canvasHeight?: number;
@@ -33,6 +34,7 @@ interface EditorComponentPersistenceContext {
     | "tdk"
     | "pageCategory"
     | "layoutMode"
+    | "grid"
     | "deviceType"
     | "canvasWidth"
     | "canvasHeight"
@@ -53,8 +55,8 @@ const schemaStorageKey = "pageSchema";
 /**
  * 兼容旧页面数据中的流式布局值，并统一恢复为自由布局。
  */
-function normalizePageLayoutMode() {
-  return "absolute" as const;
+function normalizePageLayoutMode(mode?: unknown): TStorePage["layoutMode"] {
+  return mode === "grid" || mode === "absolute" ? mode : "absolute";
 }
 
 /**
@@ -74,7 +76,8 @@ function hydratePageSettings(
     description: settings.description ?? "用于配置管理后台页面的结构与业务说明",
     tdk: settings.tdk ?? "admin dashboard, management system, business console",
     pageCategory: settings.pageCategory ?? "admin",
-    layoutMode: normalizePageLayoutMode(),
+    layoutMode: normalizePageLayoutMode(settings.layoutMode),
+    grid: settings.grid,
     deviceType: settings.deviceType ?? "pc",
     canvasWidth: settings.canvasWidth ?? 1280,
     canvasHeight: settings.canvasHeight ?? 900,
@@ -150,7 +153,8 @@ export function createEditorComponentPersistence(
   const hydrateStoreFromSchema = action(
     (
       schema: IPageSchema,
-      layoutMode: "absolute",
+      layoutMode: TStorePage["layoutMode"],
+      grid: TStorePage["grid"] | undefined,
       preferredCurrentCompId?: string | null,
     ) => {
       const { pages, activePageId } = normalizeEditorPages(schema);
@@ -162,6 +166,7 @@ export function createEditorComponentPersistence(
           components: activePage?.components ?? [],
         },
         layoutMode,
+        grid,
       );
 
       storeComponents.pages = pages;
@@ -191,6 +196,7 @@ export function createEditorComponentPersistence(
       tdk: pageStore.tdk,
       pageCategory: pageStore.pageCategory,
       layoutMode: pageStore.layoutMode,
+      grid: pageStore.grid,
       deviceType: pageStore.deviceType,
       canvasWidth: pageStore.canvasWidth,
       canvasHeight: pageStore.canvasHeight,
@@ -224,13 +230,15 @@ export function createEditorComponentPersistence(
           ),
         } satisfies IPageSchema);
 
-    hydrateStoreFromSchema(schema, normalizePageLayoutMode());
+    const layoutMode = normalizePageLayoutMode(data?.layoutMode);
+    hydrateStoreFromSchema(schema, layoutMode, data?.grid);
     updatePage({
       tdk: data?.tdk || "",
       title: data?.page_name,
       description: data?.desc,
       pageCategory: "admin",
-      layoutMode: normalizePageLayoutMode(),
+      layoutMode,
+      grid: data?.grid,
       deviceType: data?.deviceType ?? "pc",
       canvasWidth: data?.canvasWidth ?? 1280,
       canvasHeight: data?.canvasHeight ?? 900,
@@ -257,9 +265,11 @@ export function createEditorComponentPersistence(
 
       if (pageSchema && shouldUseLocalDraft(storeTime, releaseTime)) {
         const settings = pageSettings ? JSON.parse(pageSettings) : null;
+        const layoutMode = normalizePageLayoutMode(settings?.layoutMode);
         hydrateStoreFromSchema(
           JSON.parse(pageSchema),
-          normalizePageLayoutMode(),
+          layoutMode,
+          settings?.grid,
           currentCompConfig ? JSON.parse(currentCompConfig) : null,
         );
         hydratePageSettings(settings, updatePage, setCodeFramework);
@@ -280,6 +290,7 @@ export function createEditorComponentPersistence(
         const legacyComponents = JSON.parse(compConfig);
         const legacyOrder = JSON.parse(sortableCompConfig || "[]");
         const settings = pageSettings ? JSON.parse(pageSettings) : null;
+        const layoutMode = normalizePageLayoutMode(settings?.layoutMode);
         const legacySchema = {
           version: 2,
           components: sanitizeCodeSyncNodes(
@@ -290,7 +301,8 @@ export function createEditorComponentPersistence(
         } satisfies IPageSchema;
         hydrateStoreFromSchema(
           legacySchema,
-          normalizePageLayoutMode(),
+          layoutMode,
+          settings?.grid,
           currentCompConfig ? JSON.parse(currentCompConfig) : null,
         );
         hydratePageSettings(settings, updatePage, setCodeFramework);

@@ -1,5 +1,5 @@
 import { action } from "mobx";
-import type { ComponentNode } from "@codigo/schema";
+import type { ComponentNode, PageGridConfig, PageLayoutMode } from "@codigo/schema";
 import type { TEditorComponentsStore } from "@/modules/editor/stores";
 import { normalizeLayout } from "@/modules/editor/utils/pageLayout";
 import { createRecordFromNode } from "@/modules/editor/utils/pageSchema";
@@ -7,7 +7,8 @@ import { createRecordFromNode } from "@/modules/editor/utils/pageSchema";
 interface EditorComponentTreeContext {
   storeComponents: TEditorComponentsStore;
   pageStore: {
-    layoutMode: "absolute";
+    layoutMode: PageLayoutMode;
+    grid?: PageGridConfig;
   };
 }
 
@@ -104,6 +105,7 @@ export function createEditorComponentTree(
     normalizeLayout(
       storeComponents.compConfigs,
       storeComponents.sortableCompConfig,
+      { layoutMode: context.pageStore.layoutMode, grid: context.pageStore.grid },
     );
     if (
       keepCurrentId &&
@@ -118,10 +120,11 @@ export function createEditorComponentTree(
   /**
    * 在布局模式切换时同步现有节点布局。
    */
-  const syncLayoutMode = action((_layoutMode: "absolute") => {
+  const syncLayoutMode = action((_layoutMode: PageLayoutMode) => {
     normalizeLayout(
       storeComponents.compConfigs,
       storeComponents.sortableCompConfig,
+      { layoutMode: _layoutMode, grid: context.pageStore.grid },
     );
   });
 

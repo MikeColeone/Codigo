@@ -4,6 +4,8 @@ import { message } from "antd";
 import type {
   ComponentNode,
   ComponentNodeRecord,
+  PageGridConfig,
+  PageLayoutMode,
   TBasicComponentConfig,
 } from "@codigo/schema";
 import type { TEditorComponentsStore } from "@/modules/editor/stores";
@@ -19,7 +21,8 @@ import {
 interface EditorComponentCanvasActionsContext {
   storeComponents: TEditorComponentsStore;
   pageStore: {
-    layoutMode: "absolute";
+    layoutMode: PageLayoutMode;
+    grid?: PageGridConfig;
   };
   ensurePermission: (permission: any, deniedMessage?: string) => boolean;
   addOperationLog: (action: any, detail: string) => void;
@@ -229,6 +232,7 @@ export function createEditorComponentCanvasActions(
       const normalized = normalizeFromFlatComponents(
         components,
         pageStore.layoutMode,
+        pageStore.grid,
       );
       storeComponents.compConfigs = normalized.compConfigs;
       storeComponents.sortableCompConfig = normalized.sortableCompConfig;

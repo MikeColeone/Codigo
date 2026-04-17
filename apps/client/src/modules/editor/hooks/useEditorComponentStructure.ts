@@ -1,4 +1,5 @@
 import type { TEditorComponentsStore } from "@/modules/editor/stores";
+import type { PageGridConfig, PageLayoutMode } from "@codigo/schema";
 import { createEditorComponentCreation } from "./useEditorComponentCreation";
 import { createEditorComponentMove } from "./useEditorComponentMove";
 import { createEditorComponentTree } from "./useEditorComponentTree";
@@ -6,7 +7,8 @@ import { createEditorComponentTree } from "./useEditorComponentTree";
 interface EditorComponentStructureContext {
   storeComponents: TEditorComponentsStore;
   pageStore: {
-    layoutMode: "absolute";
+    layoutMode: PageLayoutMode;
+    grid?: PageGridConfig;
   };
   ensurePermission: (permission: any, deniedMessage?: string) => boolean;
   addOperationLog: (action: any, detail: string) => void;

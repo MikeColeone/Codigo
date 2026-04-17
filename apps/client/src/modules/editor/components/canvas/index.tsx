@@ -25,7 +25,7 @@ interface ComponentWrapperProps {
   parentId?: string | null;
   slot?: string | null;
   children: ReactNode;
-  isFlowLayout: boolean;
+  layout: "absolute" | "flow" | "grid";
   isDragable: boolean;
   isMoving: boolean;
   canDrag: boolean;
@@ -41,7 +41,7 @@ const ComponentWrapper: FC<ComponentWrapperProps> = ({
   parentId,
   slot,
   children,
-  isFlowLayout,
+  layout,
   isDragable,
   isMoving,
   canDrag,
@@ -53,20 +53,20 @@ const ComponentWrapper: FC<ComponentWrapperProps> = ({
 }) => {
   const classNames = useMemo(() => {
     return ClassNames({
-      "absolute left-0 top-0 w-full h-full z-[999] transition-all duration-200":
-        !isFlowLayout,
-      "absolute inset-0 z-[999] rounded-[20px] transition-all duration-200":
-        isFlowLayout,
-      "hover:border-[2px] hover:border-emerald-400 hover:shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]":
+      "pointer-events-none absolute left-0 top-0 w-full h-full z-[999] transition-all duration-200":
+        layout !== "flow",
+      "pointer-events-none absolute inset-0 z-[999] rounded-[20px] transition-all duration-200":
+        layout === "flow",
+      "group-hover:border-[2px] group-hover:border-emerald-400 group-hover:shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]":
         !isCurrentComponent && !isDragable,
       "border-[2px] border-emerald-500 shadow-[inset_0_0_20px_rgba(16,185,129,0.2)]":
         isCurrentComponent,
     });
-  }, [isCurrentComponent, isDragable, isFlowLayout]);
+  }, [isCurrentComponent, isDragable, layout]);
 
   return (
     <div
-      className={`${isFlowLayout ? "relative mb-4" : "absolute"} component-warpper ${canDrag ? "cursor-move" : "cursor-pointer"} ${isMoving ? "pointer-events-none" : ""}`}
+      className={`${layout === "absolute" ? "absolute" : "relative"} ${layout === "flow" ? "mb-4" : ""} group component-warpper ${canDrag ? "cursor-move" : "cursor-pointer"} ${isMoving ? "pointer-events-none" : ""}`}
       onClick={onClick}
       onMouseDown={onMouseDown}
       style={style}
@@ -134,7 +134,7 @@ const EditorCanvas: FC<{
     onResizeFinished: () => {},
   });
 
-  const { handleDragOver, handleDrop } = useCanvasDrop({
+  const { handleDragOver, handleDragLeave, handleDrop } = useCanvasDrop({
     canEditStructure,
     canvasRef,
     currentComponentId: store.currentCompConfig,
@@ -182,6 +182,7 @@ const EditorCanvas: FC<{
       ref={canvasRef}
       className="relative min-h-[700px] bg-white"
       onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       style={{
         height: "100%",
@@ -190,6 +191,15 @@ const EditorCanvas: FC<{
           storePage.canvasHeight,
           store.sortableCompConfig.length * 220,
         )}px`,
+        ...(storePage.layoutMode === "grid"
+          ? {
+              display: "grid",
+              gridTemplateColumns: `repeat(${Math.max(1, storePage.grid?.cols ?? 12)}, minmax(0, 1fr))`,
+              gridTemplateRows: `repeat(${Math.max(1, storePage.grid?.rows ?? 12)}, minmax(0, 1fr))`,
+              gap: Math.max(0, storePage.grid?.gap ?? 0),
+              alignContent: "start",
+            }
+          : null),
       }}
     >
       {getComponentTree.get().map(function renderTreeNode(node: ComponentNode) {
@@ -200,10 +210,20 @@ const EditorCanvas: FC<{
           node.styles?.position === "absolute" ||
           node.styles?.left !== undefined ||
           node.styles?.top !== undefined;
+        const record = node.id
+          ? (getComponentById(node.id) as ComponentNodeRecord | undefined)
+          : undefined;
+        const isRootNode = !record?.parentId;
+        const isGridRoot = storePage.layoutMode === "grid" && isRootNode;
+        const layout: ComponentWrapperProps["layout"] = isGridRoot
+          ? "grid"
+          : isAbsoluteNode
+            ? "absolute"
+            : "flow";
         return (
           <ComponentWrapper
             key={node.id}
-            isFlowLayout={!isAbsoluteNode}
+            layout={layout}
             isDragable={isDragging}
             isMoving={movingComponentId === node.id}
             canDrag={canEditStructure}
@@ -214,27 +234,30 @@ const EditorCanvas: FC<{
             onClick={() => handleComponentClick(node)}
             isCurrentComponent={isCurrentComponent(node)}
             id={node.id}
-            parentId={
-              node.id
-                ? ((
-                    getComponentById(node.id) as ComponentNodeRecord | undefined
-                  )?.parentId ?? null)
-                : null
-            }
-            slot={
-              (getComponentById(node.id) as ComponentNodeRecord | undefined)
-                ?.slot ?? null
-            }
+            parentId={record?.parentId ?? null}
+            slot={record?.slot ?? null}
             style={{
-              ...(isAbsoluteNode
+              ...(layout === "grid"
                 ? {
-                    left: node.styles?.left as string | number | undefined,
-                    top: node.styles?.top as string | number | undefined,
-                    position: "absolute" as const,
+                    gridColumn: `${Math.max(1, Number(node.styles?.gridColumnStart ?? 1))} / span ${Math.max(1, Number(node.styles?.gridColumnSpan ?? 1))}`,
+                    gridRow: `${Math.max(1, Number(node.styles?.gridRowStart ?? 1))} / span ${Math.max(1, Number(node.styles?.gridRowSpan ?? 1))}`,
+                    position: "relative" as const,
+                    width: "100%",
+                    height: "100%",
                   }
-                : { position: "relative" as const }),
-              width: node.styles?.width as string | number | undefined,
-              height: node.styles?.height as string | number | undefined,
+                : layout === "absolute"
+                  ? {
+                      left: node.styles?.left as string | number | undefined,
+                      top: node.styles?.top as string | number | undefined,
+                      position: "absolute" as const,
+                      width: node.styles?.width as string | number | undefined,
+                      height: node.styles?.height as string | number | undefined,
+                    }
+                  : {
+                      position: "relative" as const,
+                      width: node.styles?.width as string | number | undefined,
+                      height: node.styles?.height as string | number | undefined,
+                    }),
             }}
           >
             <div className="relative">

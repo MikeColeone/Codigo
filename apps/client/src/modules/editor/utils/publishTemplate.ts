@@ -2,6 +2,8 @@ import type {
   ComponentNode,
   IEditorPageSchema,
   IPageSchema,
+  PageGridConfig,
+  PageLayoutMode,
   TemplateComponent,
   TemplatePreset,
 } from "@codigo/schema";
@@ -67,7 +69,8 @@ export function buildTemplatePresetFromEditor(params: {
   tags: string[];
   pageTitle: string;
   pageCategory: "admin";
-  layoutMode: "absolute";
+  layoutMode: PageLayoutMode;
+  grid?: PageGridConfig;
   deviceType: "pc" | "mobile";
   canvasWidth: number;
   canvasHeight: number;
@@ -87,6 +90,7 @@ export function buildTemplatePresetFromEditor(params: {
     pageTitle: params.pageTitle,
     pageCategory: params.pageCategory,
     layoutMode: params.layoutMode,
+    grid: params.grid,
     deviceType: params.deviceType,
     canvasWidth: params.canvasWidth,
     canvasHeight: params.canvasHeight,

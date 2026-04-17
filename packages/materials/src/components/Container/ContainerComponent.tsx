@@ -26,7 +26,7 @@ export default function ContainerComponent(_props: ContainerRuntimeProps) {
   const hasRuntimeHeight = props.runtimeHeight !== undefined;
   const showChrome =
     props.showChrome === undefined
-      ? true
+      ? false
       : props.showChrome === true || props.showChrome === "true";
   const shouldClip =
     showChrome ||

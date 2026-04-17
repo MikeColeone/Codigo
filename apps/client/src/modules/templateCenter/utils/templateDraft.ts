@@ -68,6 +68,7 @@ export function createTemplatePageSettings(template: TemplatePreset) {
     tdk: `${template.tags.join(",")},${template.key}`,
     pageCategory: template.pageCategory,
     layoutMode: template.layoutMode,
+    grid: template.grid,
     deviceType: template.deviceType,
     canvasWidth: template.canvasWidth,
     canvasHeight: template.canvasHeight,

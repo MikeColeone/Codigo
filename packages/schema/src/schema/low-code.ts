@@ -13,7 +13,13 @@ export type PageCategory = "admin";
 /**
  * 描述页面在画布中的布局模式。
  */
-export type PageLayoutMode = "absolute";
+export type PageLayoutMode = "absolute" | "grid";
+
+export interface PageGridConfig {
+  cols: number;
+  rows: number;
+  gap?: number;
+}
 
 /**
  * 描述发布链接的可见范围。
@@ -37,6 +43,7 @@ export interface ILowCode {
   lockEditing?: boolean; // 编辑锁状态
   pageCategory?: PageCategory;
   layoutMode?: PageLayoutMode;
+  grid?: PageGridConfig;
   visibility?: ReleaseVisibility;
   expire_at?: string | Date | null;
 }
