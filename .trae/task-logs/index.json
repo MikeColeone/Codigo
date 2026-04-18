@@ -1,5 +1,16 @@
 [
   {
+    "taskId": "TASK20260418153208",
+    "title": "替换 Vite 默认站点图标",
+    "scope": "repository",
+    "author": "Trae Agent",
+    "timestamp": "2026-04-18T07:32:08.430Z",
+    "gitBranch": "main",
+    "gitCommit": "56dfe39",
+    "markdownPath": ".trae/task-logs/2026-04-18/TASK20260418153208-vite.md",
+    "snapshotPath": ".trae/task-logs/2026-04-18/TASK20260418153208-vite.json"
+  },
+  {
     "taskId": "TASK20260418013449",
     "title": "发布：私密页去登录回跳",
     "scope": "apps/client",

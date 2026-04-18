@@ -1,0 +1,24 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="18" fill="#0B1220" />
+  <rect x="8" y="8" width="48" height="48" rx="14" fill="url(#codigo-bg)" />
+  <path
+    d="M40.75 22.5C39.05 20.95 36.74 20 34.2 20H28.8C23.39 20 19 24.39 19 29.8V34.2C19 39.61 23.39 44 28.8 44H34.2C36.74 44 39.05 43.05 40.75 41.5"
+    stroke="#F8FAFC"
+    stroke-width="5.5"
+    stroke-linecap="round"
+  />
+  <path
+    d="M46 24.75V39.25"
+    stroke="#38BDF8"
+    stroke-width="5.5"
+    stroke-linecap="round"
+  />
+  <rect x="41.5" y="15" width="9" height="9" rx="2.5" fill="#38BDF8" />
+  <rect x="41.5" y="40" width="9" height="9" rx="2.5" fill="#7DD3FC" />
+  <defs>
+    <linearGradient id="codigo-bg" x1="12" y1="10" x2="54" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A" />
+      <stop offset="1" stop-color="#111C35" />
+    </linearGradient>
+  </defs>
+</svg>
