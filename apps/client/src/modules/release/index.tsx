@@ -106,10 +106,12 @@ function ReleaseCanvas({
           if (!action.viewGroupId || !action.containerId) {
             return;
           }
+          const viewGroupId = action.viewGroupId;
+          const containerId = action.containerId;
           setPageState((prev) => {
             const nextMap = {
               ...((prev as any).__viewGroupActive ?? {}),
-              [action.viewGroupId]: action.containerId,
+              [viewGroupId]: containerId,
             };
             return {
               ...prev,
@@ -137,8 +139,10 @@ function ReleaseCanvas({
           return;
         }
 
-        const targetElement = document.getElementById(action.targetId);
-        targetElement?.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (action.type === "scrollTo") {
+          const targetElement = document.getElementById(action.targetId);
+          targetElement?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       },
     }),
     [onNavigatePage, pageState],
@@ -184,9 +188,7 @@ function ReleaseCanvas({
           const renderedChildren =
             node.children?.map((child) => renderTreeNode(child, node, false)) ?? [];
           const isAbsoluteNode =
-            node.styles?.position === "absolute" ||
-            node.styles?.left !== undefined ||
-            node.styles?.top !== undefined;
+            node.styles?.left !== undefined && node.styles?.top !== undefined;
           const parentUseGrid =
             parent?.type === "viewGroup" &&
             Boolean(

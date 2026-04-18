@@ -25,7 +25,7 @@ export const VersionHistoryDrawer = observer(({ open, onClose }: Props) => {
     async () => {
       if (!pageId) return [];
       const res = await getPageVersions(pageId);
-      return res;
+      return Array.isArray(res?.data) ? res.data : [];
     },
     {
       ready: open && !!pageId,
@@ -41,8 +41,9 @@ export const VersionHistoryDrawer = observer(({ open, onClose }: Props) => {
       content: "应用后将覆盖当前画布内容，你可以稍后再次保存为一个新版本。",
       onOk: async () => {
         try {
-          const detail = await getPageVersionDetail(pageId, versionId);
-          if (detail && detail.schema_data && detail.schema_data.components) {
+          const res = await getPageVersionDetail(pageId, versionId);
+          const detail = res?.data;
+          if (detail?.schema_data?.components) {
             initPageData(detail.schema_data.components);
             message.success("已成功应用该版本，请记得保存！");
             onClose();

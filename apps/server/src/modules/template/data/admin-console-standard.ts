@@ -85,7 +85,15 @@ function createAdminContentPage(options: {
   return {
     name: options.name,
     path: options.path,
-    components: [withStyles(page, { width: '100%', minHeight: `${CANVAS_HEIGHT}px` })],
+    components: [
+      withStyles(page, {
+        width: '100%',
+        minHeight: `${CANVAS_HEIGHT}px`,
+        position: 'absolute',
+        left: 0,
+        top: 0,
+      }),
+    ],
   };
 }
 

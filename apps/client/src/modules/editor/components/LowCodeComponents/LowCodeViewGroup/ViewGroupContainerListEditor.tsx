@@ -2,6 +2,7 @@ import { Button, Input } from "antd";
 import { useMemo } from "react";
 import { ulid } from "ulid";
 import type { ViewGroupContainerItem } from "@codigo/materials";
+import type { ComponentNodeRecord } from "@codigo/schema";
 import { useEditorComponents } from "@/modules/editor/hooks";
 
 function normalizeContainers(value: unknown): ViewGroupContainerItem[] {
@@ -59,7 +60,7 @@ export default function ViewGroupContainerListEditor() {
     }
     const toMove = config.childIds
       .map((childId) => (childId ? store.compConfigs[childId] : null))
-      .filter(Boolean)
+      .filter((child): child is ComponentNodeRecord => child != null)
       .filter((child) => (child.slot ?? "default") === fromSlot)
       .map((child) => child.id);
 

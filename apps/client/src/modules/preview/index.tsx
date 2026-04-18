@@ -321,11 +321,13 @@ const PreviewCanvas = observer(() => {
           }
         }
 
-        const targetElement = document.getElementById(action.targetId);
-        targetElement?.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (action.type === "scrollTo") {
+          const targetElement = document.getElementById(action.targetId);
+          targetElement?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
     };
 
-    return { pageState, onAction };
+    return { mode: "preview" as const, pageState, onAction };
   }, [pageState, setSearchParams]);
 
   const handleSelectPagePath = (path: string) => {
@@ -351,9 +353,7 @@ const PreviewCanvas = observer(() => {
       const renderedChildren =
         node.children?.map((child) => renderTreeNode(child, node, false)) ?? [];
       const isAbsoluteNode =
-        node.styles?.position === "absolute" ||
-        node.styles?.left !== undefined ||
-        node.styles?.top !== undefined;
+        node.styles?.left !== undefined && node.styles?.top !== undefined;
       const parentUseGrid =
         parent?.type === "viewGroup" &&
         Boolean((parent.props as Record<string, unknown> | undefined)?.contentUseGrid);
