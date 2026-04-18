@@ -8,7 +8,7 @@ import {
   resolveInitialPageState,
   type RuntimeAction,
 } from "@/modules/editor/runtime";
-import { useStorePage } from "@/shared/hooks";
+import { useFitScale, useStorePage } from "@/shared/hooks";
 import { useEditorComponents } from "@/modules/editor/hooks";
 import type { ComponentNode, IEditorPageSchema, RuntimeStateValue } from "@codigo/schema";
 import { AdminShell } from "./components/AdminShell";
@@ -433,32 +433,47 @@ const PreviewCanvas = observer(() => {
 export default observer(function Preview() {
   const nav = useNavigate();
   const { store } = useStorePage();
+  const { containerRef, scale, scaledWidth, scaledHeight } = useFitScale({
+    contentWidth: store.canvasWidth,
+    contentHeight: store.canvasHeight,
+    padding: 24,
+    maxScale: 1.25,
+  });
 
   return (
-    <div className="w-screen h-screen flex items-center justify-center overflow-hidden bg-slate-50">
+    <div className="w-screen h-screen overflow-hidden bg-slate-50">
       <div
-        className={`bg-white text-left overflow-y-auto overflow-x-hidden shadow-2xl transition-all duration-300 ${
-          store.deviceType === "mobile"
-            ? "rounded-[30px] border-[8px] border-slate-800 scrollbar-hide"
-            : "rounded-lg border border-slate-200"
-        }`}
-        style={{
-          width: store.canvasWidth,
-          height: store.canvasHeight,
-        }}
+        ref={containerRef}
+        className="h-full w-full flex items-center justify-center p-6"
       >
-        {store.deviceType === "mobile" && (
-          <div className="sticky top-0 z-50 h-6 bg-black/90 text-white text-[10px] flex items-center justify-between px-4 font-mono">
-            <span>9:41</span>
-            <div className="flex gap-1">
-              <div className="w-3 h-3 bg-white/20 rounded-full"></div>
-              <div className="w-3 h-3 bg-white/20 rounded-full"></div>
-            </div>
+        <div className="relative" style={{ width: scaledWidth, height: scaledHeight }}>
+          <div
+            className={`bg-white text-left overflow-y-auto overflow-x-hidden scrollbar-hide shadow-2xl transition-transform duration-300 ${
+              store.deviceType === "mobile"
+                ? "rounded-[30px] border-[8px] border-slate-800"
+                : "rounded-lg border border-slate-200"
+            }`}
+            style={{
+              width: store.canvasWidth,
+              height: store.canvasHeight,
+              transform: `scale(${scale})`,
+              transformOrigin: "top left",
+            }}
+          >
+            {store.deviceType === "mobile" && (
+              <div className="sticky top-0 z-50 h-6 bg-black/90 text-white text-[10px] flex items-center justify-between px-4 font-mono">
+                <span>9:41</span>
+                <div className="flex gap-1">
+                  <div className="w-3 h-3 bg-white/20 rounded-full"></div>
+                  <div className="w-3 h-3 bg-white/20 rounded-full"></div>
+                </div>
+              </div>
+            )}
+            <PreviewCanvas />
           </div>
-        )}
-        <PreviewCanvas />
-        <FloatButton icon={<CaretLeftOutlined />} onClick={() => nav(-1)} />
+        </div>
       </div>
+      <FloatButton icon={<CaretLeftOutlined />} onClick={() => nav(-1)} />
     </div>
   );
 });

@@ -1,6 +1,6 @@
-import { CaretLeftOutlined } from "@ant-design/icons";
+import { CaretLeftOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { useRequest } from "ahooks";
-import { Button, Empty, FloatButton, QRCode, Result, Spin } from "antd";
+import { Button, Drawer, Empty, FloatButton, QRCode, Result, Spin } from "antd";
 import type { ComponentNode, IPageSchema } from "@codigo/schema";
 import { useEffect, useMemo, useState } from "react";
 import type { AxiosError } from "axios";
@@ -11,6 +11,7 @@ import {
   resolveInitialPageState,
   type RuntimeAction,
 } from "@/modules/editor/runtime";
+import { useFitScale } from "@/shared/hooks";
 import { AdminShell } from "./components/AdminShell";
 
 function resolveSchemaFromReleasePayload(
@@ -243,6 +244,7 @@ export default function Release() {
   const nav = useNavigate();
   const params = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [infoOpen, setInfoOpen] = useState(false);
   const pageIdRaw = params.id ?? searchParams.get("id") ?? "";
   const pageId = Number(pageIdRaw);
   const isValidPageId = Number.isFinite(pageId) && pageId > 0;
@@ -280,6 +282,12 @@ export default function Release() {
     Number(data?.canvasHeight) || (deviceType === "pc" ? 768 : 700);
   const layoutMode = data?.layoutMode === "grid" ? "grid" : "absolute";
   const grid = data?.grid ?? null;
+  const { containerRef, scale, scaledWidth, scaledHeight } = useFitScale({
+    contentWidth: canvasWidth,
+    contentHeight: canvasHeight,
+    padding: deviceType === "mobile" ? 16 : 24,
+    maxScale: 1.25,
+  });
 
   const previewUrl = useMemo(() => {
     if (typeof window === "undefined") {
@@ -294,7 +302,7 @@ export default function Release() {
 
   if (shouldShowInitialLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="h-screen bg-slate-50 flex items-center justify-center">
         <Spin size="large" />
       </div>
     );
@@ -372,7 +380,7 @@ export default function Release() {
 
   if (shouldUseAdminShell && pageId && !loading && !error) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="h-screen overflow-hidden bg-slate-50">
         <AdminShell
           pages={schema.pages!}
           activePagePath={activePage?.path ?? null}
@@ -385,16 +393,35 @@ export default function Release() {
           }}
           title={data?.page_name || "管理后台"}
         >
-          <div className="p-6">
-            <div
-              className="bg-white text-left overflow-y-auto overflow-x-hidden shadow-2xl rounded-2xl border border-slate-200"
-              style={{
-                width: canvasWidth,
-                height: canvasHeight,
-                maxWidth: "100%",
-              }}
-            >
-              {content}
+          <div
+            ref={containerRef}
+            className="h-full w-full flex items-center justify-center p-4"
+          >
+            <div className="relative" style={{ width: scaledWidth, height: scaledHeight }}>
+              <div
+                className={`bg-white text-left overflow-y-auto overflow-x-hidden scrollbar-hide shadow-2xl ${
+                  deviceType === "mobile"
+                    ? "rounded-[30px] border-[8px] border-slate-800"
+                    : "rounded-2xl border border-slate-200"
+                }`}
+                style={{
+                  width: canvasWidth,
+                  height: canvasHeight,
+                  transform: `scale(${scale})`,
+                  transformOrigin: "top left",
+                }}
+              >
+                {deviceType === "mobile" && (
+                  <div className="sticky top-0 z-50 flex h-6 items-center justify-between bg-black/90 px-4 font-mono text-[10px] text-white">
+                    <span>9:41</span>
+                    <div className="flex gap-1">
+                      <div className="h-3 w-3 rounded-full bg-white/20" />
+                      <div className="h-3 w-3 rounded-full bg-white/20" />
+                    </div>
+                  </div>
+                )}
+                {content}
+              </div>
             </div>
           </div>
         </AdminShell>
@@ -405,63 +432,83 @@ export default function Release() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-6 py-10">
-      <div className="mx-auto flex max-w-7xl flex-col items-center gap-8 lg:flex-row lg:items-start lg:justify-between">
-        <section className="order-2 w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:order-1">
-          <h1 className="text-xl font-semibold text-slate-900">发布预览</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-500">
-            发布后会直接读取服务端保存的页面数据，因此这里展示的是线上可访问的内容，而不是本地草稿。
-          </p>
-          <div className="mt-6 flex justify-center rounded-3xl bg-slate-50 p-5">
-            <QRCode value={previewUrl || "about:blank"} />
+    <div className="w-screen h-screen overflow-hidden bg-slate-50">
+      <div
+        ref={containerRef}
+        className="h-full w-full flex items-center justify-center p-6"
+      >
+        {isValidPageId && !loading && !error && activeNodes.length > 0 ? (
+          <div className="relative" style={{ width: scaledWidth, height: scaledHeight }}>
+            <div
+              className={`bg-white text-left overflow-y-auto overflow-x-hidden scrollbar-hide shadow-2xl ${
+                deviceType === "mobile"
+                  ? "rounded-[30px] border-[8px] border-slate-800"
+                  : "rounded-2xl border border-slate-200"
+              }`}
+              style={{
+                width: canvasWidth,
+                height: canvasHeight,
+                transform: `scale(${scale})`,
+                transformOrigin: "top left",
+              }}
+            >
+              {deviceType === "mobile" && (
+                <div className="sticky top-0 z-50 flex h-6 items-center justify-between bg-black/90 px-4 font-mono text-[10px] text-white">
+                  <span>9:41</span>
+                  <div className="flex gap-1">
+                    <div className="h-3 w-3 rounded-full bg-white/20" />
+                    <div className="h-3 w-3 rounded-full bg-white/20" />
+                  </div>
+                </div>
+              )}
+              {content}
+            </div>
           </div>
-          <p className="mt-4 text-center text-sm text-slate-500">
-            扫码后可在当前地址打开发布页
-          </p>
-          <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-            {deviceType === "mobile" ? "移动端" : "PC 端"} · 画布 {canvasWidth}{" "}
-            × {canvasHeight}
+        ) : (
+          <div className="w-full max-w-2xl">{content}</div>
+        )}
+      </div>
+
+      <FloatButton
+        icon={<InfoCircleOutlined />}
+        onClick={() => setInfoOpen(true)}
+        style={{ right: 24, bottom: 88 }}
+      />
+      <FloatButton icon={<CaretLeftOutlined />} onClick={() => nav(-1)} />
+
+      <Drawer
+        open={infoOpen}
+        onClose={() => setInfoOpen(false)}
+        title="发布信息"
+        placement="right"
+        width={380}
+      >
+        <div className="space-y-4">
+          <div className="rounded-2xl bg-slate-50 p-4">
+            <div className="text-sm font-medium text-slate-900">扫码打开</div>
+            <div className="mt-3 flex justify-center">
+              <QRCode value={previewUrl || "about:blank"} />
+            </div>
+            <div className="mt-3 text-center text-sm text-slate-500">
+              扫码后可在当前地址打开发布页
+            </div>
           </div>
+
+          <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+            {deviceType === "mobile" ? "移动端" : "PC 端"} · 画布 {canvasWidth} ×{" "}
+            {canvasHeight}
+          </div>
+
           {data?.page_name ? (
-            <div className="mt-6 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+            <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
               <div className="font-medium text-slate-900">{data.page_name}</div>
               <div className="mt-2 leading-6 text-slate-500">
                 {data.desc || "当前页面已发布"}
               </div>
             </div>
           ) : null}
-        </section>
-
-        <section className="order-1 flex w-full justify-center lg:order-2 lg:flex-1">
-          <div
-            className={`overflow-y-auto overflow-x-hidden bg-white text-left shadow-2xl ${
-              deviceType === "mobile"
-                ? "rounded-[30px] border-[8px] border-slate-800"
-                : "rounded-2xl border border-slate-200"
-            }`}
-            style={{
-              width: canvasWidth,
-              height: canvasHeight,
-              maxWidth: "100%",
-            }}
-          >
-            {deviceType === "mobile" && (
-              <div className="sticky top-0 z-50 flex h-6 items-center justify-between bg-black/90 px-4 font-mono text-[10px] text-white">
-                <span>9:41</span>
-                <div className="flex gap-1">
-                  <div className="h-3 w-3 rounded-full bg-white/20" />
-                  <div className="h-3 w-3 rounded-full bg-white/20" />
-                </div>
-              </div>
-            )}
-            {content}
-          </div>
-        </section>
-
-        <div className="hidden w-full max-w-sm lg:order-3 lg:block" />
-      </div>
-
-      <FloatButton icon={<CaretLeftOutlined />} onClick={() => nav(-1)} />
+        </div>
+      </Drawer>
     </div>
   );
 }
