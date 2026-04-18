@@ -35,7 +35,12 @@ export function HomeUserEntry({
         <Avatar
           src={avatarUrl ? <img src={avatarUrl} alt={username || "avatar"} referrerPolicy="no-referrer" /> : undefined}
           icon={!avatarUrl && <UserOutlined />}
-          className={!avatarUrl ? "bg-[var(--ide-accent)]" : ""}
+          className={avatarUrl ? "overflow-hidden" : ""}
+          style={
+            avatarUrl
+              ? { backgroundColor: "transparent" }
+              : { backgroundColor: "var(--ide-accent)" }
+          }
         />
         <span className="hidden text-sm font-medium text-[var(--ide-text)] sm:inline">
           {username || "已登录"}

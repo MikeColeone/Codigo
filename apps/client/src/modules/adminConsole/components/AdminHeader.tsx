@@ -32,7 +32,7 @@ export default function AdminHeader() {
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <button
           className="flex h-7 w-7 items-center justify-center rounded-sm bg-[var(--ide-accent)] text-white transition-opacity hover:opacity-90"
-          onClick={() => navigate("/console")}
+          onClick={() => navigate("/")}
         >
           <span className="font-mono text-xs font-bold">C</span>
         </button>
