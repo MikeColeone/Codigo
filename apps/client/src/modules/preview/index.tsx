@@ -87,6 +87,43 @@ const PreviewCanvas = observer(() => {
   }, [activePage?.id, activePage?.path, componentTree, initialPageState]);
 
   const runtime = useMemo(() => {
+    const getByPath = (input: unknown, path: string) => {
+      if (!path) {
+        return input;
+      }
+
+      const parts = path.split(".").filter(Boolean);
+      let cur: any = input;
+      for (const key of parts) {
+        if (cur == null) {
+          return undefined;
+        }
+        cur = cur[key];
+      }
+      return cur;
+    };
+
+    const resolveTemplateString = (
+      template: string,
+      state: Record<string, RuntimeStateValue>,
+    ) => {
+      return template.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_m, rawKey) => {
+        const key = String(rawKey ?? "").trim();
+        const value = getByPath(state, key);
+        if (value === undefined || value === null) {
+          return "";
+        }
+        if (typeof value === "string") {
+          return value;
+        }
+        try {
+          return JSON.stringify(value);
+        } catch {
+          return String(value);
+        }
+      });
+    };
+
     const runActions = async (actions: RuntimeAction[] | undefined) => {
       const list = Array.isArray(actions) ? actions : [];
       for (const item of list) {
@@ -157,14 +194,29 @@ const PreviewCanvas = observer(() => {
         if (action.type === "when") {
           const stateValue = (pageStateRef.current ?? {})[action.key];
           const op = action.op ?? "truthy";
+          const toNumber = (v: unknown) => (typeof v === "number" ? v : Number(v));
           const passed =
             op === "eq"
               ? stateValue === action.value
               : op === "ne"
                 ? stateValue !== action.value
-                : op === "falsy"
-                  ? !stateValue
-                  : !!stateValue;
+                : op === "gt"
+                  ? toNumber(stateValue) > toNumber(action.value)
+                  : op === "gte"
+                    ? toNumber(stateValue) >= toNumber(action.value)
+                    : op === "lt"
+                      ? toNumber(stateValue) < toNumber(action.value)
+                      : op === "lte"
+                        ? toNumber(stateValue) <= toNumber(action.value)
+                        : op === "includes"
+                          ? Array.isArray(stateValue)
+                            ? stateValue.includes(action.value as never)
+                            : typeof stateValue === "string"
+                              ? stateValue.includes(String(action.value ?? ""))
+                              : false
+                          : op === "falsy"
+                            ? !stateValue
+                            : !!stateValue;
 
           if (passed) {
             await runActions(action.onTrue);
@@ -177,6 +229,10 @@ const PreviewCanvas = observer(() => {
         if (action.type === "request") {
           const method = (action.method ?? "GET").toUpperCase();
           const headers: Record<string, string> = { ...(action.headers ?? {}) };
+          const resolvedUrl = resolveTemplateString(
+            action.url,
+            pageStateRef.current ?? {},
+          );
           const hasContentType = Object.keys(headers).some(
             (key) => key.toLowerCase() === "content-type",
           );
@@ -184,14 +240,18 @@ const PreviewCanvas = observer(() => {
           let body: BodyInit | undefined;
           if (method !== "GET" && method !== "HEAD" && action.body !== undefined) {
             if (typeof action.body === "string") {
+              const resolvedBody = resolveTemplateString(
+                action.body,
+                pageStateRef.current ?? {},
+              );
               try {
-                const parsed = JSON.parse(action.body);
+                const parsed = JSON.parse(resolvedBody);
                 body = JSON.stringify(parsed);
                 if (!hasContentType) {
                   headers["Content-Type"] = "application/json";
                 }
               } catch {
-                body = action.body;
+                body = resolvedBody;
                 if (!hasContentType) {
                   headers["Content-Type"] = "text/plain;charset=UTF-8";
                 }
@@ -204,8 +264,15 @@ const PreviewCanvas = observer(() => {
             }
           }
 
+          Object.keys(headers).forEach((key) => {
+            headers[key] = resolveTemplateString(
+              String(headers[key]),
+              pageStateRef.current ?? {},
+            );
+          });
+
           try {
-            const resp = await fetch(action.url, {
+            const resp = await fetch(resolvedUrl, {
               method,
               headers,
               body,
@@ -218,9 +285,12 @@ const PreviewCanvas = observer(() => {
 
             if (resp.ok) {
               if (action.saveToStateKey) {
+                const nextValue = action.responsePath
+                  ? getByPath(data, action.responsePath)
+                  : data;
                 pageStateRef.current = {
                   ...pageStateRef.current,
-                  [action.saveToStateKey]: data,
+                  [action.saveToStateKey]: nextValue,
                 };
                 setPageState(pageStateRef.current);
               }
@@ -233,14 +303,19 @@ const PreviewCanvas = observer(() => {
               return;
             }
 
-            throw new Error(
-              typeof data === "string" ? data : `Request failed: ${resp.status}`,
-            );
+            const errorMessage =
+              typeof data === "string" ? data : `Request failed: ${resp.status}`;
+            message.open({ content: errorMessage, type: "error" });
+            throw new Error(errorMessage);
           } catch (err) {
             if (Array.isArray(action.onError) && action.onError.length) {
               await runActions(action.onError);
               return;
             }
+            message.open({
+              content: err instanceof Error ? err.message : "请求失败",
+              type: "error",
+            });
             throw err;
           }
         }

@@ -86,6 +86,33 @@ export default function Page() {
           runtime={{
             pageState,
             onAction: async (action) => {
+              const getByPath = (input, path) => {
+                if (!path) return input;
+                const parts = String(path).split(".").filter(Boolean);
+                let cur = input;
+                for (const key of parts) {
+                  if (cur == null) return undefined;
+                  cur = cur[key];
+                }
+                return cur;
+              };
+              const resolveTemplateString = (template) => {
+                return String(template ?? "").replace(
+                  /\\{\\{\\s*([^}]+?)\\s*\\}\\}/g,
+                  (_m, rawKey) => {
+                    const key = String(rawKey ?? "").trim();
+                    const value = getByPath(pageState ?? {}, key);
+                    if (value === undefined || value === null) return "";
+                    if (typeof value === "string") return value;
+                    try {
+                      return JSON.stringify(value);
+                    } catch {
+                      return String(value);
+                    }
+                  },
+                );
+              };
+
               if (action.type === "set-state" || action.type === "setState") {
                 setPageState((prev) => ({
                   ...prev,
@@ -121,14 +148,29 @@ export default function Page() {
               if (action.type === "when") {
                 const op = action.op ?? "truthy";
                 const stateValue = (pageState ?? {})[action.key];
+                const toNumber = (v) => (typeof v === "number" ? v : Number(v));
                 const passed =
                   op === "eq"
                     ? stateValue === action.value
                     : op === "ne"
                       ? stateValue !== action.value
-                      : op === "falsy"
-                        ? !stateValue
-                        : !!stateValue;
+                      : op === "gt"
+                        ? toNumber(stateValue) > toNumber(action.value)
+                        : op === "gte"
+                          ? toNumber(stateValue) >= toNumber(action.value)
+                          : op === "lt"
+                            ? toNumber(stateValue) < toNumber(action.value)
+                            : op === "lte"
+                              ? toNumber(stateValue) <= toNumber(action.value)
+                              : op === "includes"
+                                ? Array.isArray(stateValue)
+                                  ? stateValue.includes(action.value)
+                                  : typeof stateValue === "string"
+                                    ? stateValue.includes(String(action.value ?? ""))
+                                    : false
+                                : op === "falsy"
+                                  ? !stateValue
+                                  : !!stateValue;
                 if (!passed) return;
               }
 
@@ -138,6 +180,7 @@ export default function Page() {
                 const hasContentType = Object.keys(headers).some(
                   (key) => key.toLowerCase() === "content-type",
                 );
+                const resolvedUrl = resolveTemplateString(action.url);
                 let body;
                 if (
                   method !== "GET" &&
@@ -145,14 +188,15 @@ export default function Page() {
                   action.body !== undefined
                 ) {
                   if (typeof action.body === "string") {
+                    const resolvedBody = resolveTemplateString(action.body);
                     try {
-                      const parsed = JSON.parse(action.body);
+                      const parsed = JSON.parse(resolvedBody);
                       body = JSON.stringify(parsed);
                       if (!hasContentType) {
                         headers["Content-Type"] = "application/json";
                       }
                     } catch {
-                      body = action.body;
+                      body = resolvedBody;
                       if (!hasContentType) {
                         headers["Content-Type"] = "text/plain;charset=UTF-8";
                       }
@@ -164,8 +208,11 @@ export default function Page() {
                     }
                   }
                 }
+                Object.keys(headers).forEach((key) => {
+                  headers[key] = resolveTemplateString(headers[key]);
+                });
 
-                const resp = await fetch(action.url, {
+                const resp = await fetch(resolvedUrl, {
                   method,
                   headers,
                   body,
@@ -176,10 +223,19 @@ export default function Page() {
                   ? await resp.json()
                   : await resp.text();
                 if (resp.ok && action.saveToStateKey) {
+                  const nextValue = action.responsePath
+                    ? getByPath(data, action.responsePath)
+                    : data;
                   setPageState((prev) => ({
                     ...prev,
-                    [action.saveToStateKey]: data,
+                    [action.saveToStateKey]: nextValue,
                   }));
+                  return;
+                }
+                if (!resp.ok) {
+                  window.alert(
+                    typeof data === "string" ? data : \`Request failed: \${resp.status}\`,
+                  );
                 }
                 return;
               }

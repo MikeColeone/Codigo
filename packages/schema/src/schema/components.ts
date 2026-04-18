@@ -81,7 +81,7 @@ export type ActionConfig =
   | {
       type: "when";
       key: string;
-      op?: "eq" | "ne" | "truthy" | "falsy";
+      op?: "eq" | "ne" | "gt" | "gte" | "lt" | "lte" | "includes" | "truthy" | "falsy";
       value?: RuntimeStateValue;
       onTrue?: ActionConfig[];
       onFalse?: ActionConfig[];
@@ -93,6 +93,7 @@ export type ActionConfig =
       headers?: Record<string, string>;
       body?: unknown;
       saveToStateKey?: string;
+      responsePath?: string;
       onSuccess?: ActionConfig[];
       onError?: ActionConfig[];
     };
