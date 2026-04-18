@@ -1,4 +1,4 @@
-import type { ComponentNodeRecord, TComponentTypes } from "@codigo/schema";
+import type { ComponentNodeRecord, LayoutBlock, TComponentTypes } from "@codigo/schema";
 import type { DragEvent, RefObject } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import { resolveCanvasDropResult } from "../utils/canvasDrop";
@@ -7,6 +7,7 @@ import { resolveSlotZoneFromPoint } from "../utils/resolveSlotZone";
 interface UseCanvasDropOptions {
   canEditStructure: boolean;
   canvasRef: RefObject<HTMLDivElement | null>;
+  layoutBlocks?: LayoutBlock[];
   currentComponentId: string | null;
   getComponentById: (id: string) => ComponentNodeRecord | undefined | null;
   getAvailableSlots: (type: TComponentTypes) => Array<{ name: string }>;
@@ -30,6 +31,7 @@ interface UseCanvasDropOptions {
 export function useCanvasDrop({
   canEditStructure,
   canvasRef,
+  layoutBlocks,
   currentComponentId,
   getComponentById,
   getAvailableSlots,
@@ -134,6 +136,7 @@ export function useCanvasDrop({
           clientY: event.clientY,
           rawType: anchorType,
           canvasElement: canvasRef.current,
+          layoutBlocks,
           currentComponentId,
           getComponentById,
           getAvailableSlots,
@@ -150,6 +153,7 @@ export function useCanvasDrop({
         clientY: event.clientY,
         rawType: event.dataTransfer.getData("componentType"),
         canvasElement: canvasRef.current,
+        layoutBlocks,
         currentComponentId,
         getComponentById,
         getAvailableSlots,
@@ -168,6 +172,7 @@ export function useCanvasDrop({
       currentComponentId,
       getAvailableSlots,
       getComponentById,
+      layoutBlocks,
       push,
       pushBlock,
     ],

@@ -1,11 +1,12 @@
 import { getComponentContainerMeta } from "@codigo/materials";
-import type { ComponentNodeRecord, TComponentTypes } from "@codigo/schema";
+import type { ComponentNodeRecord, LayoutBlock, TComponentTypes } from "@codigo/schema";
 import {
   collectSiblingRects,
   getEstimatedRectByType,
   resolveCollisionFreeRect,
 } from "./collision";
 import { resolveSlotZoneFromPoint } from "./resolveSlotZone";
+import { findLayoutBlockAt } from "@/modules/editor/utils/layoutBlocks";
 
 export interface CanvasDropResult {
   type: TComponentTypes;
@@ -28,6 +29,7 @@ interface ResolveCanvasDropResultOptions {
   clientY: number;
   rawType: string;
   canvasElement: HTMLDivElement | null;
+  layoutBlocks?: LayoutBlock[];
   currentComponentId: string | null;
   getComponentById: (id: string) => ComponentNodeRecord | undefined | null;
   getAvailableSlots: (type: TComponentTypes) => Array<{ name: string }>;
@@ -41,6 +43,7 @@ export function resolveCanvasDropResult({
   clientY,
   rawType,
   canvasElement,
+  layoutBlocks,
   currentComponentId,
   getComponentById,
   getAvailableSlots,
@@ -59,19 +62,59 @@ export function resolveCanvasDropResult({
     rect: DOMRect,
     parentId: string | null,
     slot: string | null,
+    layoutBlock?: LayoutBlock | null,
   ) {
-    const estimatedRect = getEstimatedRectByType(type, left, top);
+    if (!layoutBlock) {
+      const estimatedRect = getEstimatedRectByType(type, left, top);
+      const safeRect = resolveCollisionFreeRect(
+        estimatedRect,
+        collectSiblingRects(parentId, slot, rect),
+        {
+          width: rect.width,
+          height: Math.max(rect.height, estimatedRect.top + estimatedRect.height + 24),
+        },
+      );
+      return {
+        left: safeRect.left,
+        top: safeRect.top,
+      };
+    }
+
+    const localLeft = left - layoutBlock.x;
+    const localTop = top - layoutBlock.y;
+    const estimatedRect = getEstimatedRectByType(type, localLeft, localTop);
+    const siblingRects = collectSiblingRects(parentId, slot, rect)
+      .filter((item) => {
+        const x1 = item.left;
+        const y1 = item.top;
+        const x2 = item.left + item.width;
+        const y2 = item.top + item.height;
+        return !(
+          x2 <= layoutBlock.x ||
+          x1 >= layoutBlock.x + layoutBlock.width ||
+          y2 <= layoutBlock.y ||
+          y1 >= layoutBlock.y + layoutBlock.height
+        );
+      })
+      .map((item) => ({
+        ...item,
+        left: item.left - layoutBlock.x,
+        top: item.top - layoutBlock.y,
+      }));
     const safeRect = resolveCollisionFreeRect(
       estimatedRect,
-      collectSiblingRects(parentId, slot, rect),
+      siblingRects,
       {
-        width: rect.width,
-        height: Math.max(rect.height, estimatedRect.top + estimatedRect.height + 24),
+        width: layoutBlock.width,
+        height: Math.max(
+          layoutBlock.height,
+          estimatedRect.top + estimatedRect.height + 24,
+        ),
       },
     );
     return {
-      left: safeRect.left,
-      top: safeRect.top,
+      left: safeRect.left + layoutBlock.x,
+      top: safeRect.top + layoutBlock.y,
     };
   }
   const slotZone = resolveSlotZoneFromPoint({ clientX, clientY });
@@ -145,8 +188,19 @@ export function resolveCanvasDropResult({
   }
 
   const rect = canvasElement?.getBoundingClientRect();
+  const layoutBlock =
+    rect && layoutBlocks?.length
+      ? findLayoutBlockAt(layoutBlocks, clientX - rect.left, clientY - rect.top)
+      : null;
   const safePosition = rect
-    ? resolveSafePosition(clientX - rect.left, clientY - rect.top, rect, null, null)
+    ? resolveSafePosition(
+        clientX - rect.left,
+        clientY - rect.top,
+        rect,
+        null,
+        null,
+        layoutBlock,
+      )
     : { left: 32, top: 24 };
   return {
     type,

@@ -1,12 +1,10 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   ParseIntPipe,
   Post,
-  Query,
   Put,
   UseGuards,
 } from '@nestjs/common';
@@ -122,30 +120,6 @@ export class PagesController {
       { page_id: pageId, ...body },
       key,
     );
-  }
-
-  @Get('me/analytics/components')
-  @UseGuards(AuthGuard('jwt'))
-  getAnalyticsComponents(@getUserMess() user: TCurrentUser) {
-    return this.pageAnalyticsService.getQuestionComponents(user);
-  }
-
-  @Get('me/analytics/submissions')
-  @UseGuards(AuthGuard('jwt'))
-  getAnalyticsSubmissions(@getUserMess() user: TCurrentUser) {
-    return this.pageAnalyticsService.getQuestionData(user.id);
-  }
-
-  @Get('me/analytics/components/:componentId/submissions')
-  @UseGuards(AuthGuard('jwt'))
-  getAnalyticsSubmissionsByComponent(
-    @getUserMess() user: TCurrentUser,
-    @Param('componentId', ParseIntPipe) componentId: number,
-  ) {
-    return this.pageAnalyticsService.getQuestionDataByIdRequest({
-      id: componentId,
-      userId: user.id,
-    });
   }
 
   private resolveSubmissionKey(ip: string, agent: string) {

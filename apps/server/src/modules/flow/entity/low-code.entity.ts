@@ -5,6 +5,7 @@ import type {
   ILowCode,
   PageGridConfig,
   PageLayoutMode,
+  PageShellLayout,
 } from '@codigo/schema';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import type { TComponentTypes } from '@codigo/schema';
@@ -40,6 +41,9 @@ export class Page implements ILowCode {
 
   @Column({ type: 'simple-json', nullable: true })
   grid?: PageGridConfig;
+
+  @Column({ type: 'varchar', length: 20, default: 'leftRight' })
+  shellLayout: PageShellLayout = 'leftRight';
 
   @Column({ type: 'varchar', length: 20, default: 'pc' })
   deviceType: 'mobile' | 'pc' = 'pc';

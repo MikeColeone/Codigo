@@ -6,13 +6,14 @@ export const EDITOR_COMPONENT_SHORTCUTS: Array<{
   keys: string[][];
   label: string;
 }> = [
+  { keys: [["Ctrl", "A"], ["⌘", "A"]], label: "全选组件" },
   { keys: [["↑"]], label: "上移选中组件" },
   { keys: [["↓"]], label: "下移选中组件" },
   { keys: [["Delete"], ["Backspace"]], label: "删除选中组件" },
   { keys: [["Ctrl", "C"], ["⌘", "C"]], label: "复制选中组件" },
   { keys: [["Ctrl", "V"], ["⌘", "V"]], label: "粘贴组件" },
   { keys: [["Ctrl", "Z"], ["⌘", "Z"]], label: "撤销" },
-  { keys: [["Ctrl", "Shift", "Z"], ["⌘", "Shift", "Z"]], label: "重做" },
+  { keys: [["Ctrl", "Shift", "Z"], ["⌘", "Shift", "Z"], ["Ctrl", "Y"]], label: "重做" },
 ];
 
 /**
@@ -29,6 +30,8 @@ export function useEditorComponentKeyPress() {
     removeCurrentComponent,
     getCurrentComponentConfig,
     getCurrentComponentIndex,
+    selectAllComponents,
+    store,
   } = useEditorComponents();
 
   /**
@@ -71,7 +74,8 @@ export function useEditorComponentKeyPress() {
    */
   function validateComponent() {
     const isActive = canTriggerShortcut();
-    const isCompExist = getCurrentComponentConfig.get() !== null;
+    const isCompExist =
+      (store.selectedCompIds?.length ?? 0) > 0 || getCurrentComponentConfig.get() !== null;
 
     if (!isActive) {
       return false;
@@ -92,45 +96,62 @@ export function useEditorComponentKeyPress() {
       return null;
     }
 
+    if ((store.selectedCompIds?.length ?? 0) !== 1) {
+      return null;
+    }
     const currentIndex = getCurrentComponentIndex.get();
     return currentIndex >= 0 ? currentIndex : null;
   }
 
-  useKeyPress("uparrow", () => {
+  useKeyPress("uparrow", (event) => {
     const currentIndex = getValidatedComponentIndex();
     if (currentIndex === null) return;
+    event?.preventDefault?.();
     moveUpComponent(currentIndex);
   });
 
-  useKeyPress("downarrow", () => {
+  useKeyPress("downarrow", (event) => {
     const currentIndex = getValidatedComponentIndex();
     if (currentIndex === null) return;
+    event?.preventDefault?.();
     moveDownComponent(currentIndex);
   });
 
-  useKeyPress(["delete", "backspace"], () => {
+  useKeyPress(["delete", "backspace"], (event) => {
     if (!validateComponent()) return;
+    event?.preventDefault?.();
     removeCurrentComponent();
   });
 
-  useKeyPress(["ctrl.c", "meta.c"], () => {
+  useKeyPress(["ctrl.c", "meta.c"], (event) => {
     if (!validateComponent()) return;
+    event?.preventDefault?.();
     copyCurrentComponent();
   });
 
-  useKeyPress(["ctrl.v", "meta.v"], () => {
-    if (!validateComponent()) return;
+  useKeyPress(["ctrl.v", "meta.v"], (event) => {
+    if (!canTriggerShortcut()) return;
+    event?.preventDefault?.();
     pasteCopyedComponent();
   });
 
-  useKeyPress(["ctrl.shift.z", "meta.shift.z"], () => {
+  useKeyPress(["ctrl.a", "meta.a"], (event) => {
+    if (!canTriggerShortcut()) return;
+    event?.preventDefault?.();
+    selectAllComponents();
+  });
+
+  useKeyPress(["ctrl.shift.z", "meta.shift.z", "ctrl.y"], (event) => {
+    if (!canTriggerShortcut()) return;
+    event?.preventDefault?.();
     redo();
   });
 
   useKeyPress(
     ["ctrl.z", "meta.z"],
-    () => {
-      if (!validateComponent()) return;
+    (event) => {
+      if (!canTriggerShortcut()) return;
+      event?.preventDefault?.();
       undo();
     },
     {

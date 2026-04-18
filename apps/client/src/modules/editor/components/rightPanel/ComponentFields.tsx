@@ -2,13 +2,7 @@ import type { FC } from "react";
 import { observer } from "mobx-react-lite";
 import { toJS } from "mobx";
 import { getComponentContainerMeta } from "@codigo/materials";
-import {
-  AppstoreOutlined,
-  BorderOutlined,
-  DragOutlined,
-  NodeIndexOutlined,
-  ShrinkOutlined,
-} from "@ant-design/icons";
+import { AppstoreOutlined, NodeIndexOutlined } from "@ant-design/icons";
 import type { ComponentNode } from "@codigo/schema";
 import type { ReactNode } from "react";
 import {
@@ -18,7 +12,8 @@ import {
 import type { TEditorComponentsStore } from "@/modules/editor/stores";
 import { useEditorComponents } from "@/modules/editor/hooks";
 import { useEditorPage } from "@/modules/editor/hooks";
-import { Collapse, Empty, Form, InputNumber } from "antd";
+import { Collapse, Empty, Form } from "antd";
+import { LayoutSpacingFields } from "./LayoutSpacingFields";
 
 const { Panel } = Collapse;
 
@@ -182,65 +177,6 @@ const ComponentFields: FC<{ store: TEditorComponentsStore }> = observer(
 
     const isGridRoot = pageStore.layoutMode === "grid" && !config.parentId;
 
-    const styleSections = [
-      isGridRoot
-        ? {
-            key: "position",
-            title: "栅格位置",
-            icon: <DragOutlined />,
-            fields: [
-              { label: "列", name: "gridColumnStart", placeholder: "1" },
-              { label: "行", name: "gridRowStart", placeholder: "1" },
-              { label: "列跨度", name: "gridColumnSpan", placeholder: "1" },
-              { label: "行跨度", name: "gridRowSpan", placeholder: "1" },
-            ],
-          }
-        : {
-            key: "position",
-            title: "位置",
-            icon: <DragOutlined />,
-            fields: [
-              { label: "X", name: "left", placeholder: "px" },
-              { label: "Y", name: "top", placeholder: "px" },
-            ],
-          },
-      ...(isGridRoot
-        ? []
-        : [
-            {
-              key: "size",
-              title: "尺寸",
-              icon: <BorderOutlined />,
-              fields: [
-                { label: "W", name: "width", placeholder: "100%" },
-                { label: "H", name: "height", placeholder: "auto" },
-              ],
-            },
-          ]),
-      {
-        key: "margin",
-        title: "外间距",
-        icon: <ShrinkOutlined />,
-        fields: [
-          { label: "T", name: "marginTop", placeholder: "px" },
-          { label: "B", name: "marginBottom", placeholder: "px" },
-          { label: "L", name: "marginLeft", placeholder: "px" },
-          { label: "R", name: "marginRight", placeholder: "px" },
-        ],
-      },
-      {
-        key: "padding",
-        title: "内间距",
-        icon: <AppstoreOutlined />,
-        fields: [
-          { label: "T", name: "paddingTop", placeholder: "px" },
-          { label: "B", name: "paddingBottom", placeholder: "px" },
-          { label: "L", name: "paddingLeft", placeholder: "px" },
-          { label: "R", name: "paddingRight", placeholder: "px" },
-        ],
-      },
-    ];
-
     return (
       <div className="component-fields-container space-y-2 px-3 pb-8">
         <div className="border-b border-[var(--ide-border)] py-2">
@@ -338,31 +274,7 @@ const ComponentFields: FC<{ store: TEditorComponentsStore }> = observer(
               className="[&_.ant-form-item]:mb-2 [&_.ant-form-item-label>label]:text-[11px] [&_.ant-form-item-label>label]:text-[var(--ide-text-muted)] [&_.ant-input-number]:!h-7 [&_.ant-input-number]:!w-full [&_.ant-input-number]:!rounded-sm [&_.ant-input-number]:!border-[var(--ide-control-border)] [&_.ant-input-number]:!bg-[var(--ide-control-bg)] [&_.ant-input-number-input]:!text-[var(--ide-text)]"
             >
               <div className="space-y-1.5">
-                {styleSections.map((section) => (
-                  <div
-                    key={section.key}
-                    className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-hover)] p-2"
-                  >
-                    <div className="mb-2 flex items-center gap-2">
-                      <span className="text-[var(--ide-accent)]">{section.icon}</span>
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--ide-text)]">
-                        {section.title}
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-x-2 gap-y-1">
-                      {section.fields.map((field) => (
-                        <Form.Item
-                          key={String(field.name)}
-                          label={field.label}
-                          name={field.name}
-                          className="!mb-0"
-                        >
-                          <InputNumber placeholder={field.placeholder} size="small" />
-                        </Form.Item>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                <LayoutSpacingFields isGridRoot={isGridRoot} />
               </div>
             </Form>
           </Panel>

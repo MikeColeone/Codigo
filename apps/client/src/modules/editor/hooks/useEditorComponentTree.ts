@@ -112,8 +112,10 @@ export function createEditorComponentTree(
       !storeComponents.compConfigs[keepCurrentId] &&
       storeComponents.currentCompConfig === keepCurrentId
     ) {
-      storeComponents.currentCompConfig =
-        storeComponents.sortableCompConfig[0] ?? null;
+      storeComponents.currentCompConfig = storeComponents.sortableCompConfig[0] ?? null;
+      storeComponents.selectedCompIds = storeComponents.currentCompConfig
+        ? [storeComponents.currentCompConfig]
+        : [];
     }
   };
 

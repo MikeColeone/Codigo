@@ -375,6 +375,27 @@ export const EditorViewport = observer(function EditorViewport(
       }
 
       const activeElement = document.activeElement;
+      if (activeElement instanceof HTMLElement) {
+        const isEditing =
+          Boolean(
+            activeElement.closest(
+              'input, textarea, select, option, [contenteditable=""], [contenteditable="true"], [role="textbox"]',
+            ),
+          ) || activeElement.isContentEditable;
+        if (isEditing) {
+          return;
+        }
+
+        const isInOverlay = Boolean(
+          activeElement.closest(
+            ".ant-modal, .ant-dropdown, .ant-popover, .ant-select-dropdown",
+          ),
+        );
+        if (isInOverlay) {
+          return;
+        }
+      }
+
       const canHandle =
         activeElement === document.body ||
         (activeElement instanceof Node && viewport.contains(activeElement));
@@ -388,6 +409,13 @@ export const EditorViewport = observer(function EditorViewport(
         event.key !== "ArrowLeft" &&
         event.key !== "ArrowRight"
       ) {
+        return;
+      }
+
+      const hasSelection =
+        Boolean(props.storeComps.currentCompConfig) ||
+        Boolean(props.storeComps.selectedCompIds?.length);
+      if (hasSelection) {
         return;
       }
 

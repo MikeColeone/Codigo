@@ -10,6 +10,7 @@ import { setDefaultEChartsTheme } from "@codigo/materials";
 import type {
   PageCategory,
   PageLayoutMode,
+  PageShellLayout,
   PageWorkspaceIDEConfigResponse,
   PageWorkspaceExplorerResponse,
   PageWorkspaceFileResponse,
@@ -32,6 +33,17 @@ function getGridDashedLinesStorageKey(pageId: number) {
  */
 function normalizePageLayoutMode(mode?: unknown): PageLayoutMode {
   return mode === "grid" || mode === "absolute" ? mode : "absolute";
+}
+
+function normalizePageShellLayout(layout?: unknown): PageShellLayout {
+  return layout === "leftRight" ||
+    layout === "topBottom" ||
+    layout === "leftTop" ||
+    layout === "topLeft" ||
+    layout === "breadcrumb" ||
+    layout === "none"
+    ? layout
+    : "leftRight";
 }
 
 export function useStorePage() {
@@ -216,6 +228,10 @@ export function useStorePage() {
 
     if (Object.prototype.hasOwnProperty.call(page, "layoutMode")) {
       storePage.layoutMode = normalizePageLayoutMode(page.layoutMode);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(page, "shellLayout")) {
+      storePage.shellLayout = normalizePageShellLayout((page as any).shellLayout);
     }
 
     if (Object.prototype.hasOwnProperty.call(page, "chartTheme")) {

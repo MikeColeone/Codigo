@@ -1,7 +1,6 @@
 import { Navigate, createHashRouter } from "react-router-dom";
 import Editor from "@/modules/editor";
 import Home from "@/modules/home/index";
-import DataCount from "@/modules/dataCount";
 import Release from "@/modules/release";
 import Preview from "@/modules/preview";
 import LoginOrRegister from "@/modules/auth";
@@ -37,10 +36,6 @@ export const router = createHashRouter([
   {
     path: "/login",
     element: <LoginOrRegister />,
-  },
-  {
-    path: "/dataCount",
-    element: <Navigate to="/console/metrics" replace />,
   },
   {
     path: "/profile",
@@ -90,7 +85,6 @@ export const router = createHashRouter([
       { path: "versions", element: <AdminPlaceholder title="版本管理" /> },
       { path: "snippets", element: <AdminPlaceholder title="代码片段管理" /> },
       { path: "big-screen", element: <AdminPlaceholder title="数据大屏" /> },
-      { path: "metrics", element: <DataCount /> },
     ],
   },
   {

@@ -62,6 +62,30 @@ export function createEditorComponentCanvasActions(
     syncSchema,
   } = context;
 
+  const resolveSelectedRootIds = () => {
+    const sourceIds =
+      storeComponents.selectedCompIds?.length
+        ? storeComponents.selectedCompIds
+        : (storeComponents.currentCompConfig ? [storeComponents.currentCompConfig] : []);
+    const candidateIds = Array.from(
+      new Set(sourceIds.filter((id) => Boolean(id && storeComponents.compConfigs[id]))),
+    );
+    if (candidateIds.length <= 1) {
+      return candidateIds;
+    }
+    const selectedSet = new Set(candidateIds);
+    return candidateIds.filter((id) => {
+      let parentId = storeComponents.compConfigs[id]?.parentId ?? null;
+      while (parentId) {
+        if (selectedSet.has(parentId)) {
+          return false;
+        }
+        parentId = storeComponents.compConfigs[parentId]?.parentId ?? null;
+      }
+      return true;
+    });
+  };
+
   /**
    * 调整当前组件在同级中的顺序。
    */
@@ -129,17 +153,17 @@ export function createEditorComponentCanvasActions(
    * 复制当前组件树。
    */
   const copyCurrentComponent = action(() => {
-    const currentComponent = getCurrentComponent();
-    if (!currentComponent) {
+    const selectedIds = resolveSelectedRootIds();
+    if (!selectedIds.length) {
       return;
     }
-
-    const nodeTree = buildTreeNode(storeComponents.compConfigs, currentComponent.id);
-    if (!nodeTree) {
+    const copiedNodes = selectedIds
+      .map((id) => buildTreeNode(storeComponents.compConfigs, id))
+      .filter((node): node is ComponentNode => Boolean(node));
+    if (!copiedNodes.length) {
       return;
     }
-
-    storeComponents.copyedCompConig = nodeTree;
+    storeComponents.copyedCompConig = copiedNodes.length === 1 ? copiedNodes[0] : copiedNodes;
   });
 
   /**
@@ -155,20 +179,48 @@ export function createEditorComponentCanvasActions(
 
     const currentId = storeComponents.currentCompConfig;
     const current = currentId ? storeComponents.compConfigs[currentId] : null;
-    const parentId = current?.parentId ?? null;
-    const siblingIds = currentId
-      ? getSiblingIds(currentId)
-      : storeComponents.sortableCompConfig;
-    const insertIndex = currentId
-      ? siblingIds.indexOf(currentId) + 1
-      : siblingIds.length;
+    const siblingIds = currentId ? getSiblingIds(currentId) : storeComponents.sortableCompConfig;
+    const anchorId = (() => {
+      const selectedIds = storeComponents.selectedCompIds ?? [];
+      if (selectedIds.length <= 1) {
+        return currentId;
+      }
+      for (let i = selectedIds.length - 1; i >= 0; i -= 1) {
+        const candidate = selectedIds[i];
+        if (candidate && siblingIds.includes(candidate)) {
+          return candidate;
+        }
+      }
+      return currentId;
+    })();
+    const anchor = anchorId ? storeComponents.compConfigs[anchorId] : current;
+    const parentId = anchor?.parentId ?? null;
+    const slot = anchor?.slot ?? null;
+    let insertIndex = anchorId ? siblingIds.indexOf(anchorId) + 1 : siblingIds.length;
+
+    if (Array.isArray(storeComponents.copyedCompConig)) {
+      let lastInsertedId: string | null = null;
+      for (const rawNode of storeComponents.copyedCompConig) {
+        const copiedTree = duplicateTreeNode(rawNode);
+        offsetNodePosition(copiedTree);
+        insertNodeTree(copiedTree, {
+          parentId,
+          slot,
+          index: insertIndex,
+        });
+        insertIndex += 1;
+        lastInsertedId = copiedTree.id;
+      }
+      if (lastInsertedId) {
+        setCurrentComponent(lastInsertedId);
+      }
+      addOperationLog("add_component", "粘贴组件");
+      return;
+    }
+
     const copiedTree = duplicateTreeNode(storeComponents.copyedCompConig);
     offsetNodePosition(copiedTree);
-    insertNodeTree(copiedTree, {
-      parentId,
-      slot: current?.slot ?? null,
-      index: insertIndex,
-    });
+    insertNodeTree(copiedTree, { parentId, slot, index: insertIndex });
     setCurrentComponent(copiedTree.id);
     addOperationLog("add_component", "粘贴组件");
   });
@@ -180,34 +232,42 @@ export function createEditorComponentCanvasActions(
     if (!ensurePermission("edit_structure", "当前角色不能删除组件")) {
       return;
     }
-
-    const currentComponent = getCurrentComponent();
-    if (!currentComponent) {
+    const selectedIds = resolveSelectedRootIds();
+    if (!selectedIds.length) {
       return;
     }
+    const removedIds = new Set<string>();
 
-    const subtreeIds = gatherSubtreeIds(
-      storeComponents.compConfigs,
-      currentComponent.id,
-    );
-    if (currentComponent.parentId) {
-      const parent = storeComponents.compConfigs[currentComponent.parentId];
-      if (parent) {
-        parent.childIds = parent.childIds.filter((id) => id !== currentComponent.id);
+    for (const rootId of selectedIds) {
+      if (!storeComponents.compConfigs[rootId] || removedIds.has(rootId)) {
+        continue;
       }
-    } else {
-      storeComponents.sortableCompConfig = storeComponents.sortableCompConfig.filter(
-        (id) => id !== currentComponent.id,
-      );
+      const currentComponent = storeComponents.compConfigs[rootId];
+      const subtreeIds = gatherSubtreeIds(storeComponents.compConfigs, rootId);
+
+      if (currentComponent.parentId) {
+        const parent = storeComponents.compConfigs[currentComponent.parentId];
+        if (parent) {
+          parent.childIds = parent.childIds.filter((id) => id !== rootId);
+        }
+      } else {
+        storeComponents.sortableCompConfig = storeComponents.sortableCompConfig.filter(
+          (id) => id !== rootId,
+        );
+      }
+
+      for (const targetId of subtreeIds) {
+        removedIds.add(targetId);
+        delete storeComponents.compConfigs[targetId];
+      }
+
+      broadcastNodeChange("remove", { id: rootId, subtreeIds });
     }
 
-    for (const targetId of subtreeIds) {
-      delete storeComponents.compConfigs[targetId];
-    }
-
-    storeComponents.currentCompConfig = storeComponents.sortableCompConfig[0] ?? null;
-    broadcastNodeChange("remove", { id: currentComponent.id, subtreeIds });
-    addOperationLog("remove_component", currentComponent.type);
+    const nextId = storeComponents.sortableCompConfig[0] ?? null;
+    storeComponents.currentCompConfig = nextId;
+    storeComponents.selectedCompIds = nextId ? [nextId] : [];
+    addOperationLog("remove_component", `批量删除:${selectedIds.length}项`);
   });
 
   /**
@@ -240,6 +300,9 @@ export function createEditorComponentCanvasActions(
         currentId && normalized.compConfigs[currentId]
           ? currentId
           : (normalized.sortableCompConfig[0] ?? null);
+      storeComponents.selectedCompIds = storeComponents.currentCompConfig
+        ? [storeComponents.currentCompConfig]
+        : [];
 
       broadcastReplaceAll();
       addOperationLog(

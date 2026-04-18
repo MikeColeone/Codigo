@@ -3,6 +3,7 @@ import type {
   PageCategory,
   PageGridConfig,
   PageLayoutMode,
+  PageShellLayout,
   PageWorkspaceExplorerResponse,
   PageWorkspaceFileResponse,
   PageWorkspaceIDEConfigResponse,
@@ -30,6 +31,7 @@ interface IStorePage {
   pageCategory: PageCategory;
   layoutMode: PageLayoutMode;
   grid: PageGridConfig;
+  shellLayout: PageShellLayout;
   deviceType: DeviceType;
   canvasWidth: number;
   canvasHeight: number;
@@ -59,6 +61,7 @@ export function createStorePage() {
       rows: 12,
       gap: 8,
     },
+    shellLayout: "leftRight",
     deviceType: "pc",
     canvasWidth: 1280,
     canvasHeight: 900,

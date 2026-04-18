@@ -115,6 +115,7 @@ async function applyRemoteComponentUpdate(payload: any) {
     if (store.currentCompConfig === data.id) {
       store.currentCompConfig = null;
     }
+    store.selectedCompIds = (store.selectedCompIds ?? []).filter((id) => !ids.includes(id));
     return;
   }
 
@@ -127,6 +128,10 @@ async function applyRemoteComponentUpdate(payload: any) {
       store.currentCompConfig && data.compConfigs?.[store.currentCompConfig]
         ? store.currentCompConfig
         : (data.sortableCompConfig?.[0] ?? null);
+    store.selectedCompIds =
+      Array.isArray(store.selectedCompIds) && store.selectedCompIds.length
+        ? store.selectedCompIds.filter((id) => Boolean(data.compConfigs?.[id]))
+        : (store.currentCompConfig ? [store.currentCompConfig] : []);
   }
 }
 

@@ -1,4 +1,4 @@
-import type { ComponentNodeRecord } from "@codigo/schema";
+import type { ComponentNodeRecord, LayoutBlock } from "@codigo/schema";
 import type { MouseEvent as ReactMouseEvent, RefObject } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -11,6 +11,7 @@ import { clampRectToBounds } from "../utils/collision";
 interface UseCanvasDragMoveOptions {
   canEditStructure: boolean;
   canvasRef: RefObject<HTMLDivElement | null>;
+  layoutBlocks?: LayoutBlock[];
   getComponentById: (id: string) => ComponentNodeRecord | undefined | null;
   moveExistingNode: (payload: {
     nodeId: string;
@@ -35,6 +36,7 @@ interface UseCanvasDragMoveOptions {
 export function useCanvasDragMove({
   canEditStructure,
   canvasRef,
+  layoutBlocks,
   getComponentById,
   moveExistingNode,
   setCurrentComponent,
@@ -146,6 +148,7 @@ export function useCanvasDragMove({
         clientX: event.clientX,
         clientY: event.clientY,
         canvasElement: canvasRef.current,
+        layoutBlocks,
         movingComponent,
         getComponentById,
       });
@@ -219,6 +222,7 @@ export function useCanvasDragMove({
     canEditStructure,
     canvasRef,
     getComponentById,
+    layoutBlocks,
     moveExistingNode,
     movingComponent,
     onDragFinished,

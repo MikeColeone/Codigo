@@ -204,9 +204,11 @@ export function useEditorComponents() {
     if (config?.type === "container") {
       const nextId = config.childIds?.[0] ?? config.parentId ?? null;
       storeComponents.currentCompConfig = nextId;
+      storeComponents.selectedCompIds = nextId ? [nextId] : [];
       return;
     }
     storeComponents.currentCompConfig = id;
+    storeComponents.selectedCompIds = [id];
   });
 
   /**
@@ -214,6 +216,43 @@ export function useEditorComponents() {
    */
   const clearCurrentComponent = action(() => {
     storeComponents.currentCompConfig = null;
+    storeComponents.selectedCompIds = [];
+  });
+
+  /**
+   * 设置当前选中的组件集合。
+   */
+  const setSelectedComponents = action((ids: string[]) => {
+    const nextIds = Array.from(
+      new Set(ids.filter((id) => Boolean(id && storeComponents.compConfigs[id]))),
+    );
+    storeComponents.selectedCompIds = nextIds;
+    if (!nextIds.length) {
+      storeComponents.currentCompConfig = null;
+      return;
+    }
+    if (storeComponents.currentCompConfig && nextIds.includes(storeComponents.currentCompConfig)) {
+      return;
+    }
+    storeComponents.currentCompConfig = nextIds[0] ?? null;
+  });
+
+  /**
+   * 全选当前页面的根组件。
+   */
+  const selectAllComponents = action(() => {
+    const allRootIds = storeComponents.sortableCompConfig.filter((id) =>
+      Boolean(id && storeComponents.compConfigs[id]),
+    );
+    storeComponents.selectedCompIds = allRootIds;
+    if (!allRootIds.length) {
+      storeComponents.currentCompConfig = null;
+      return;
+    }
+    if (storeComponents.currentCompConfig && allRootIds.includes(storeComponents.currentCompConfig)) {
+      return;
+    }
+    storeComponents.currentCompConfig = allRootIds[0] ?? null;
   });
 
   /**
@@ -292,6 +331,7 @@ export function useEditorComponents() {
     getPages,
     switchEditorPage,
     updateEditorPageMeta,
+    updateEditorPageLayoutBlocks,
   } = createEditorComponentPageActions({
     addOperationLog: addOperationLogWithHistory,
     broadcastReplaceAll,
@@ -348,6 +388,9 @@ export function useEditorComponents() {
     storeComponents.currentCompConfig = value.currentCompConfig;
     storeComponents.sortableCompConfig = value.sortableCompConfig;
     storeComponents.copyedCompConig = value.copyedCompConig;
+    storeComponents.selectedCompIds = Array.isArray((value as any).selectedCompIds)
+      ? (value as any).selectedCompIds
+      : (value.currentCompConfig ? [value.currentCompConfig] : []);
     storeComponents.itemsExpandIndex = value.itemsExpandIndex;
     storeComponents.pages = value.pages;
     storeComponents.activePageId = value.activePageId;
@@ -482,6 +525,9 @@ export function useEditorComponents() {
     storeComponents.compConfigs = normalized.compConfigs;
     storeComponents.sortableCompConfig = normalized.sortableCompConfig;
     storeComponents.currentCompConfig = normalized.sortableCompConfig[0] ?? null;
+    storeComponents.selectedCompIds = storeComponents.currentCompConfig
+      ? [storeComponents.currentCompConfig]
+      : [];
     storeComponents.pages = schema.pages ?? [];
     storeComponents.activePageId = activeTemplatePage.id;
 
@@ -538,9 +584,12 @@ export function useEditorComponents() {
     getCurrentComponentConfig,
     setCurrentComponent,
     clearCurrentComponent,
+    setSelectedComponents,
+    selectAllComponents,
     createEditorPage,
     switchEditorPage,
     updateEditorPageMeta,
+    updateEditorPageLayoutBlocks,
     store: storeComponents,
     updateCurrentComponent,
     updateCurrentComponentEvents,

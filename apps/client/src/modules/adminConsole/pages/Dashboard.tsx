@@ -47,7 +47,7 @@ export default function AdminDashboard() {
                 快捷入口
               </div>
               <div className="mt-0.5 text-[11px] text-[var(--ide-text-muted)]">
-                常用能力收口在这里：应用管理、指标统计、编辑器与文档。
+                常用能力收口在这里：应用管理、编辑器与文档。
               </div>
             </div>
           </div>
@@ -63,21 +63,6 @@ export default function AdminDashboard() {
                 </div>
                 <div className="mt-0.5 truncate text-[11px] text-[var(--ide-text-muted)]">
                   查看已发布/开发中应用
-                </div>
-              </div>
-              <ArrowRightOutlined className="text-[12px] text-[var(--ide-text-muted)] transition-colors group-hover:text-[var(--ide-text)]" />
-            </button>
-
-            <button
-              className="group flex items-center justify-between rounded-sm border border-[var(--ide-control-border)] bg-[var(--ide-sidebar-bg)] px-3 py-2 text-left transition-colors hover:bg-[var(--ide-hover)]"
-              onClick={() => navigate("/console/metrics")}
-            >
-              <div className="min-w-0">
-                <div className="text-[12px] font-medium text-[var(--ide-text)]">
-                  指标统计
-                </div>
-                <div className="mt-0.5 truncate text-[11px] text-[var(--ide-text-muted)]">
-                  表单组件数据与详情
                 </div>
               </div>
               <ArrowRightOutlined className="text-[12px] text-[var(--ide-text-muted)] transition-colors group-hover:text-[var(--ide-text)]" />
@@ -148,7 +133,6 @@ export default function AdminDashboard() {
           </div>
           <ul className="mt-2 space-y-1 text-[11px] text-[var(--ide-text-muted)]">
             <li>先创建/编辑页面，再发布生成可分享链接。</li>
-            <li>指标统计依赖表单组件；若为空请先在编辑器中创建表单。</li>
             <li>权限与角色模块将用于后续页面搭建者的 RBAC 配置。</li>
           </ul>
         </section>

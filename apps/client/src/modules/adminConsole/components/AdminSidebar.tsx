@@ -1,6 +1,5 @@
 import {
   AreaChartOutlined,
-  BarChartOutlined,
   CodeOutlined,
   DashboardOutlined,
   HistoryOutlined,
@@ -30,7 +29,6 @@ const items: AdminNavItem[] = [
   { key: "versions", label: "版本管理", to: "/console/versions", icon: <HistoryOutlined /> },
   { key: "snippets", label: "代码片段管理", to: "/console/snippets", icon: <CodeOutlined /> },
   { key: "big-screen", label: "数据大屏", to: "/console/big-screen", icon: <AreaChartOutlined /> },
-  { key: "metrics", label: "指标统计", to: "/console/metrics", icon: <BarChartOutlined /> },
 ];
 
 /** 页面管理工作台侧边栏：聚合页面搭建者模块入口（暂不提供 npm 包管理）。 */

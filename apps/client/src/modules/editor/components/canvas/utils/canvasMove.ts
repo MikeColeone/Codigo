@@ -1,10 +1,11 @@
-import type { ComponentNodeRecord } from "@codigo/schema";
+import type { ComponentNodeRecord, LayoutBlock } from "@codigo/schema";
 import {
   collectSiblingRects,
   parseCanvasSize,
   resolveCollisionFreeRect,
 } from "./collision";
 import { resolveSlotZoneFromPoint } from "./resolveSlotZone";
+import { findLayoutBlockAt } from "@/modules/editor/utils/layoutBlocks";
 
 export interface MovingComponentState {
   id: string;
@@ -33,6 +34,7 @@ interface ResolveMoveTargetOptions {
   clientX: number;
   clientY: number;
   canvasElement: HTMLDivElement | null;
+  layoutBlocks?: LayoutBlock[];
   movingComponent: MovingComponentState | null;
   getComponentById: (id: string) => ComponentNodeRecord | undefined | null;
 }
@@ -129,6 +131,7 @@ export function resolveMoveTarget({
   clientX,
   clientY,
   canvasElement,
+  layoutBlocks,
   movingComponent,
   getComponentById,
 }: ResolveMoveTargetOptions): CanvasMoveTarget | null {
@@ -185,32 +188,69 @@ export function resolveMoveTarget({
   const canvasRect = canvasElement?.getBoundingClientRect();
   const targetIndex = resolveInsertIndex(null, null, movingId, clientX, clientY);
   const size = getMovingElementSize(current, movingId);
+  const layoutBlock =
+    canvasRect && layoutBlocks?.length
+      ? findLayoutBlockAt(layoutBlocks, clientX - canvasRect.left, clientY - canvasRect.top)
+      : null;
   const safeRect =
     canvasRect &&
     resolveCollisionFreeRect(
       {
-        left: movingComponent
-          ? clientX - canvasRect.left - movingComponent.pointerOffsetX
-          : clientX - canvasRect.left,
-        top: movingComponent
-          ? clientY - canvasRect.top - movingComponent.pointerOffsetY
-          : clientY - canvasRect.top,
+        left:
+          (movingComponent
+            ? clientX - canvasRect.left - movingComponent.pointerOffsetX
+            : clientX - canvasRect.left) - (layoutBlock?.x ?? 0),
+        top:
+          (movingComponent
+            ? clientY - canvasRect.top - movingComponent.pointerOffsetY
+            : clientY - canvasRect.top) - (layoutBlock?.y ?? 0),
         width: size.width,
         height: size.height,
       },
-      collectSiblingRects(null, null, canvasRect, [movingId]),
-      getCollisionBounds(
-        canvasRect,
-        (movingComponent
-          ? clientY - canvasRect.top - movingComponent.pointerOffsetY
-          : clientY - canvasRect.top) + size.height,
-      ),
+      collectSiblingRects(null, null, canvasRect, [movingId])
+        .filter((item) => {
+          if (!layoutBlock) return true;
+          const x1 = item.left;
+          const y1 = item.top;
+          const x2 = item.left + item.width;
+          const y2 = item.top + item.height;
+          return !(
+            x2 <= layoutBlock.x ||
+            x1 >= layoutBlock.x + layoutBlock.width ||
+            y2 <= layoutBlock.y ||
+            y1 >= layoutBlock.y + layoutBlock.height
+          );
+        })
+        .map((item) => ({
+          ...item,
+          left: item.left - (layoutBlock?.x ?? 0),
+          top: item.top - (layoutBlock?.y ?? 0),
+        })),
+      layoutBlock
+        ? {
+            width: layoutBlock.width,
+            height: Math.max(
+              layoutBlock.height,
+              (movingComponent
+                ? clientY - canvasRect.top - movingComponent.pointerOffsetY
+                : clientY - canvasRect.top) -
+                layoutBlock.y +
+                size.height +
+                24,
+            ),
+          }
+        : getCollisionBounds(
+            canvasRect,
+            (movingComponent
+              ? clientY - canvasRect.top - movingComponent.pointerOffsetY
+              : clientY - canvasRect.top) + size.height,
+          ),
     );
   return {
     parentId: null,
     slot: null,
     index: targetIndex,
-    left: safeRect?.left ?? 0,
-    top: safeRect?.top ?? 0,
+    left: (safeRect?.left ?? 0) + (layoutBlock?.x ?? 0),
+    top: (safeRect?.top ?? 0) + (layoutBlock?.y ?? 0),
   };
 }

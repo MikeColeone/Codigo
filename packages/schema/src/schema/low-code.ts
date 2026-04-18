@@ -15,6 +15,17 @@ export type PageCategory = "admin";
  */
 export type PageLayoutMode = "absolute" | "grid";
 
+/**
+ * 描述后台壳在预览/发布时的布局形态（不影响画布组件树）。
+ */
+export type PageShellLayout =
+  | "leftRight"
+  | "topBottom"
+  | "leftTop"
+  | "topLeft"
+  | "breadcrumb"
+  | "none";
+
 export interface PageGridConfig {
   cols: number;
   rows: number;
@@ -44,6 +55,7 @@ export interface ILowCode {
   pageCategory?: PageCategory;
   layoutMode?: PageLayoutMode;
   grid?: PageGridConfig;
+  shellLayout?: PageShellLayout;
   visibility?: ReleaseVisibility;
   expire_at?: string | Date | null;
 }
@@ -51,11 +63,20 @@ export interface ILowCode {
 /**
  * 描述页面 schema 的版本号和组件树数据。
  */
+export interface LayoutBlock {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface IEditorPageSchema {
   id: string;
   name: string;
   path: string;
   components: ComponentNode[];
+  layoutBlocks?: LayoutBlock[];
 }
 
 export interface IPageSchema {

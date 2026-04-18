@@ -9,7 +9,8 @@ interface IStoreComponents {
   compConfigs: Record<string, ComponentNodeRecord>;
   sortableCompConfig: string[];
   currentCompConfig: string | null;
-  copyedCompConig: ComponentNode | null;
+  selectedCompIds: string[];
+  copyedCompConig: ComponentNode | ComponentNode[] | null;
   itemsExpandIndex: number;
   pages: IEditorPageSchema[];
   activePageId: string | null;
@@ -23,6 +24,7 @@ export function createEditorComponentsStore() {
     compConfigs: {},
     sortableCompConfig: [],
     currentCompConfig: null,
+    selectedCompIds: [],
     copyedCompConig: null,
     itemsExpandIndex: 0,
     pages: [],

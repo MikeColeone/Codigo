@@ -4,6 +4,7 @@ import { ulid } from "ulid";
 import type {
   ComponentNode,
   IEditorPageSchema,
+  LayoutBlock,
   PageCategory,
   PageGridConfig,
   PageLayoutMode,
@@ -113,6 +114,9 @@ export function createEditorComponentPageActions(
     storeComponents.compConfigs = normalized.compConfigs;
     storeComponents.sortableCompConfig = normalized.sortableCompConfig;
     storeComponents.currentCompConfig = normalized.sortableCompConfig[0] ?? null;
+    storeComponents.selectedCompIds = storeComponents.currentCompConfig
+      ? [storeComponents.currentCompConfig]
+      : [];
     storeComponents.activePageId = page.id;
   });
 
@@ -211,6 +215,28 @@ export function createEditorComponentPageActions(
     },
   );
 
+  const updateEditorPageLayoutBlocks = action((pageId: string, blocks: LayoutBlock[] | null) => {
+    if (!ensurePermission("edit_structure", "当前角色不能修改布局")) {
+      return;
+    }
+
+    ensureEditorPages();
+    persistActivePageSnapshot();
+    const nextPages = getPages.get().map((page) => {
+      if (page.id !== pageId) {
+        return page;
+      }
+      return {
+        ...page,
+        layoutBlocks: blocks?.length ? JSON.parse(JSON.stringify(blocks)) : undefined,
+      };
+    });
+
+    storeComponents.pages = nextPages;
+    broadcastReplaceAll();
+    addOperationLog("update_page", blocks?.length ? "布局切割" : "清除布局");
+  });
+
   /**
    * 清空当前页面的全部画布节点。
    */
@@ -228,6 +254,7 @@ export function createEditorComponentPageActions(
     storeComponents.compConfigs = {};
     storeComponents.sortableCompConfig = [];
     storeComponents.currentCompConfig = null;
+    storeComponents.selectedCompIds = [];
     storeComponents.pages = getPages.get().map((page) =>
       page.id === storeComponents.activePageId
         ? {
@@ -252,5 +279,6 @@ export function createEditorComponentPageActions(
     persistActivePageSnapshot,
     switchEditorPage,
     updateEditorPageMeta,
+    updateEditorPageLayoutBlocks,
   };
 }

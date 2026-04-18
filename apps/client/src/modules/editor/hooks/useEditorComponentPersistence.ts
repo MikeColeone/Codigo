@@ -19,6 +19,7 @@ interface EditorPageSettingsSnapshot {
   pageCategory?: TStorePage["pageCategory"];
   layoutMode?: TStorePage["layoutMode"];
   grid?: TStorePage["grid"];
+  shellLayout?: TStorePage["shellLayout"];
   deviceType?: TStorePage["deviceType"];
   canvasWidth?: number;
   canvasHeight?: number;
@@ -35,6 +36,7 @@ interface EditorComponentPersistenceContext {
     | "pageCategory"
     | "layoutMode"
     | "grid"
+    | "shellLayout"
     | "deviceType"
     | "canvasWidth"
     | "canvasHeight"
@@ -78,6 +80,7 @@ function hydratePageSettings(
     pageCategory: settings.pageCategory ?? "admin",
     layoutMode: normalizePageLayoutMode(settings.layoutMode),
     grid: settings.grid,
+    shellLayout: settings.shellLayout,
     deviceType: settings.deviceType ?? "pc",
     canvasWidth: settings.canvasWidth ?? 1280,
     canvasHeight: settings.canvasHeight ?? 900,
@@ -177,6 +180,9 @@ export function createEditorComponentPersistence(
         preferredCurrentCompId && normalized.compConfigs[preferredCurrentCompId]
           ? preferredCurrentCompId
           : (normalized.sortableCompConfig[0] ?? null);
+      storeComponents.selectedCompIds = storeComponents.currentCompConfig
+        ? [storeComponents.currentCompConfig]
+        : [];
     },
   );
 
@@ -197,6 +203,7 @@ export function createEditorComponentPersistence(
       pageCategory: pageStore.pageCategory,
       layoutMode: pageStore.layoutMode,
       grid: pageStore.grid,
+      shellLayout: pageStore.shellLayout,
       deviceType: pageStore.deviceType,
       canvasWidth: pageStore.canvasWidth,
       canvasHeight: pageStore.canvasHeight,
@@ -239,6 +246,7 @@ export function createEditorComponentPersistence(
       pageCategory: "admin",
       layoutMode,
       grid: data?.grid,
+      shellLayout: data?.shellLayout,
       deviceType: data?.deviceType ?? "pc",
       canvasWidth: data?.canvasWidth ?? 1280,
       canvasHeight: data?.canvasHeight ?? 900,

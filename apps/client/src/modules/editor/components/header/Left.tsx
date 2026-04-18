@@ -1,17 +1,20 @@
-import { CheckOutlined, DownOutlined, EditOutlined } from "@ant-design/icons";
+import { CheckOutlined, DownOutlined, EditOutlined, FileTextOutlined, BlockOutlined } from "@ant-design/icons";
 import { Dropdown, Input, Space } from "antd";
 import { useState } from "react";
 import type { ChangeEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { useEditorPage } from "@/modules/editor/hooks";
+import { useEditorPage, useLayoutManagerUI } from "@/modules/editor/hooks";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import EditorPageManager from "../pageManager";
+import EditorLayoutManager from "../layoutManager";
 
 export default function Left(props: { title: string }) {
   const { setPageTitle } = useEditorPage();
   const [isEditState, setIsEditState] = useState(false);
   const [isPageMenuOpen, setIsPageMenuOpen] = useState(false);
+  const [menuTab, setMenuTab] = useState<"pages" | "layout">("pages");
+  const layoutUI = useLayoutManagerUI();
   const navigate = useNavigate();
   const location = useLocation();
   const isFlowWorkspace = location.pathname.startsWith("/flow");
@@ -70,13 +73,58 @@ export default function Left(props: { title: string }) {
                 trigger={["click"]}
                 placement="bottomLeft"
                 open={isPageMenuOpen}
-                onOpenChange={setIsPageMenuOpen}
+                onOpenChange={(nextOpen, info: any) => {
+                  if (!nextOpen && layoutUI.isActive && info?.source !== "trigger") {
+                    return;
+                  }
+                  setIsPageMenuOpen(nextOpen);
+                  if (!nextOpen) {
+                    layoutUI.setActive(false);
+                    setMenuTab("pages");
+                  }
+                }}
                 dropdownRender={() => (
                   <div
                     className="p-2"
                     onClick={(event) => event.stopPropagation()}
                   >
-                    <EditorPageManager embedded variant="dropdown" />
+                    <div className="mb-2 flex items-center gap-1 rounded-md border border-[var(--ide-border)] bg-[var(--ide-control-bg)] p-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuTab("pages");
+                          layoutUI.setActive(false);
+                        }}
+                        className={`flex flex-1 items-center justify-center gap-1 rounded-sm px-2 py-1 text-[12px] transition-colors ${
+                          menuTab === "pages"
+                            ? "bg-[var(--ide-active)] text-[var(--ide-text)]"
+                            : "text-[var(--ide-text-muted)] hover:bg-[var(--ide-hover)] hover:text-[var(--ide-text)]"
+                        }`}
+                      >
+                        <FileTextOutlined className="text-[12px]" />
+                        <span>页面管理</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuTab("layout");
+                          layoutUI.setActive(true);
+                        }}
+                        className={`flex flex-1 items-center justify-center gap-1 rounded-sm px-2 py-1 text-[12px] transition-colors ${
+                          menuTab === "layout"
+                            ? "bg-[var(--ide-active)] text-[var(--ide-text)]"
+                            : "text-[var(--ide-text-muted)] hover:bg-[var(--ide-hover)] hover:text-[var(--ide-text)]"
+                        }`}
+                      >
+                        <BlockOutlined className="text-[12px]" />
+                        <span>布局管理</span>
+                      </button>
+                    </div>
+                    {menuTab === "pages" ? (
+                      <EditorPageManager embedded variant="dropdown" />
+                    ) : (
+                      <EditorLayoutManager embedded variant="dropdown" />
+                    )}
                   </div>
                 )}
               >
