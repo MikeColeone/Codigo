@@ -103,11 +103,11 @@ const SidebarLayoutTools = observer(function SidebarLayoutTools() {
           placeholder="输入新导航名称，例如：订单信息"
           onChange={(event) => setNextLabel(event.target.value)}
         />
-        <div className="flex gap-2">
-          <Button type="primary" block onClick={handleAppend}>
+        <div className="grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(160px,1fr))]">
+          <Button type="primary" className="w-full" onClick={handleAppend}>
             新增导航项
           </Button>
-          <Button block onClick={handleSync}>
+          <Button className="w-full" onClick={handleSync}>
             同步内容区
           </Button>
         </div>

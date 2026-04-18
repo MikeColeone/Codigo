@@ -74,8 +74,8 @@ export default function ViewGroupContainerListEditor() {
 
   return (
     <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-hover)] p-2">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="text-[11px] font-bold text-[var(--ide-text)]">容器列表</div>
           {config?.id ? (
             <Button
@@ -91,6 +91,7 @@ export default function ViewGroupContainerListEditor() {
         <Button
           size="small"
           type="primary"
+          className="ml-auto"
           onClick={() => {
             const newId = ulid();
             const next = [...containers, { id: newId, name: `视图${containers.length + 1}` }];
@@ -111,7 +112,7 @@ export default function ViewGroupContainerListEditor() {
             return (
               <div
                 key={item.id}
-                className="flex items-center gap-2 rounded-sm border border-[var(--ide-control-border)] bg-[var(--ide-control-bg)] p-2"
+                className="flex flex-col gap-2 rounded-sm border border-[var(--ide-control-border)] bg-[var(--ide-control-bg)] p-2"
               >
                 <Input
                   value={item.name}
@@ -122,43 +123,45 @@ export default function ViewGroupContainerListEditor() {
                     );
                     updateCurrentComponent({ containers: next });
                   }}
-                  className="flex-1"
+                  className="w-full min-w-0"
                   placeholder="视图名称"
                 />
-                <Button
-                  size="small"
-                  onClick={() => {
-                    void navigator.clipboard?.writeText(item.id);
-                  }}
-                >
-                  复制容器Id
-                </Button>
-                <Button
-                  size="small"
-                  onClick={() => updateCurrentComponent({ defaultActiveId: item.id })}
-                  disabled={isDefault}
-                >
-                  {isDefault ? "默认" : "设为默认"}
-                </Button>
-                <Button
-                  size="small"
-                  danger
-                  disabled={containers.length <= 1}
-                  onClick={() => {
-                    const fallbackId = resolveFallbackId(item.id);
-                    if (fallbackId && fallbackId !== item.id) {
-                      moveChildrenToSlot(item.id, fallbackId);
-                    }
-                    const next = containers.filter((it) => it.id !== item.id);
-                    updateCurrentComponent({
-                      containers: next.length ? next : [{ id: fallbackId, name: "视图1" }],
-                      defaultActiveId:
-                        defaultActiveId === item.id ? fallbackId : defaultActiveId,
-                    });
-                  }}
-                >
-                  删除
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      void navigator.clipboard?.writeText(item.id);
+                    }}
+                  >
+                    复制容器Id
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={() => updateCurrentComponent({ defaultActiveId: item.id })}
+                    disabled={isDefault}
+                  >
+                    {isDefault ? "默认" : "设为默认"}
+                  </Button>
+                  <Button
+                    size="small"
+                    danger
+                    disabled={containers.length <= 1}
+                    onClick={() => {
+                      const fallbackId = resolveFallbackId(item.id);
+                      if (fallbackId && fallbackId !== item.id) {
+                        moveChildrenToSlot(item.id, fallbackId);
+                      }
+                      const next = containers.filter((it) => it.id !== item.id);
+                      updateCurrentComponent({
+                        containers: next.length ? next : [{ id: fallbackId, name: "视图1" }],
+                        defaultActiveId:
+                          defaultActiveId === item.id ? fallbackId : defaultActiveId,
+                      });
+                    }}
+                  >
+                    删除
+                  </Button>
+                </div>
               </div>
             );
           })

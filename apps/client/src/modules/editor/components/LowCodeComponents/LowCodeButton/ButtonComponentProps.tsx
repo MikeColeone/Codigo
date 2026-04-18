@@ -33,10 +33,18 @@ export default function ButtonComponentProps(_props: IButtonComponentProps) {
         <Input />
       </FormPropLabel>
       <FormPropLabel name="type" prop={props.type} label="按钮类型：">
-        <Segmented options={typeOptions} />
+        <div className="w-full overflow-x-auto">
+          <div className="min-w-max">
+            <Segmented options={typeOptions} size="small" />
+          </div>
+        </div>
       </FormPropLabel>
       <FormPropLabel name="size" prop={props.size} label="按钮尺寸：">
-        <Segmented options={sizeOptions} />
+        <div className="w-full overflow-x-auto">
+          <div className="min-w-max">
+            <Segmented options={sizeOptions} size="small" />
+          </div>
+        </div>
       </FormPropLabel>
       <FormPropLabel
         name="danger"

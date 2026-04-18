@@ -39,28 +39,31 @@ export default function SidebarLayoutSectionRow(
 
   return (
     <div className="rounded-2xl border border-slate-200/80 bg-white/85 p-3">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-2">
         <Input
           value={label}
           onChange={(event) => setLabel(event.target.value)}
           onBlur={commitLabel}
           onPressEnter={commitLabel}
+          className="w-full min-w-0"
         />
-        <Button
-          disabled={props.isFirst}
-          onClick={() => props.onMoveUp(props.item.stateValue)}
-        >
-          上移
-        </Button>
-        <Button
-          disabled={props.isLast}
-          onClick={() => props.onMoveDown(props.item.stateValue)}
-        >
-          下移
-        </Button>
-        <Button danger onClick={() => props.onRemove(props.item.stateValue)}>
-          删除
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            disabled={props.isFirst}
+            onClick={() => props.onMoveUp(props.item.stateValue)}
+          >
+            上移
+          </Button>
+          <Button
+            disabled={props.isLast}
+            onClick={() => props.onMoveDown(props.item.stateValue)}
+          >
+            下移
+          </Button>
+          <Button danger onClick={() => props.onRemove(props.item.stateValue)}>
+            删除
+          </Button>
+        </div>
       </div>
 
       <div className="mt-2 text-[11px] leading-5 text-slate-500">
