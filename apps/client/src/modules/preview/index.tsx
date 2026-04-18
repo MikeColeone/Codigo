@@ -30,6 +30,7 @@ function resolvePreviewPage(
 
 const PreviewCanvas = observer(() => {
   const { getPages, loadPageData } = useEditorComponents();
+  const { store } = useStorePage();
   const [searchParams, setSearchParams] = useSearchParams();
   const hasInitializedRef = useRef(false);
   const pages = getPages.get();
@@ -335,33 +336,84 @@ const PreviewCanvas = observer(() => {
     });
   };
 
-  const canvas = (
-    <div
-      className="relative"
-      style={{
-        minHeight: `${Math.max(700, componentTree.length * 220)}px`,
-      }}
-    >
-      {componentTree.map(function renderTreeNode(node: ComponentNode) {
-        const renderedChildren =
-          node.children?.map((child) => renderTreeNode(child)) ?? [];
-        return (
-          <div
-            key={node.id}
-            className="absolute"
-            style={{
+  const canvas = (() => {
+    const layoutMode = store.layoutMode === "grid" ? "grid" : "absolute";
+    const gridCols = Math.max(1, store.grid?.cols ?? 12);
+    const gridRows = Math.max(1, store.grid?.rows ?? 12);
+    const gridGap = Math.max(0, store.grid?.gap ?? 0);
+    const minHeight = Math.max(700, store.canvasHeight, componentTree.length * 220);
+
+    const renderTreeNode = (
+      node: ComponentNode,
+      parent: ComponentNode | null,
+      isRootNode: boolean,
+    ) => {
+      const renderedChildren =
+        node.children?.map((child) => renderTreeNode(child, node, false)) ?? [];
+      const isAbsoluteNode =
+        node.styles?.position === "absolute" ||
+        node.styles?.left !== undefined ||
+        node.styles?.top !== undefined;
+      const parentUseGrid =
+        parent?.type === "viewGroup" &&
+        Boolean((parent.props as Record<string, unknown> | undefined)?.contentUseGrid);
+      const shouldUseGrid = layoutMode === "grid" && (isRootNode || parentUseGrid);
+
+      const wrapperStyle: Record<string, string | number | undefined> = shouldUseGrid
+        ? {
+            gridColumn: `${Math.max(1, Number(node.styles?.gridColumnStart ?? 1))} / span ${Math.max(1, Number(node.styles?.gridColumnSpan ?? 1))}`,
+            gridRow: `${Math.max(1, Number(node.styles?.gridRowStart ?? 1))} / span ${Math.max(1, Number(node.styles?.gridRowSpan ?? 1))}`,
+            position: "relative",
+            width: "100%",
+            height: "100%",
+          }
+        : isAbsoluteNode
+          ? {
               left: node.styles?.left as string | number | undefined,
               top: node.styles?.top as string | number | undefined,
-            }}
-          >
-            <div className="relative">
-              {generateComponent(node, undefined, renderedChildren, runtime)}
-            </div>
+              position: "absolute",
+              width: node.styles?.width as string | number | undefined,
+              height: node.styles?.height as string | number | undefined,
+            }
+          : {
+              position: "relative",
+              width: node.styles?.width as string | number | undefined,
+              height: node.styles?.height as string | number | undefined,
+            };
+
+      return (
+        <div
+          key={node.id}
+          className={!shouldUseGrid && isAbsoluteNode ? "absolute" : undefined}
+          style={wrapperStyle}
+        >
+          <div className="relative">
+            {generateComponent(node, undefined, renderedChildren, runtime)}
           </div>
-        );
-      })}
-    </div>
-  );
+        </div>
+      );
+    };
+
+    return (
+      <div
+        className="relative"
+        style={{
+          minHeight: `${minHeight}px`,
+          ...(layoutMode === "grid"
+            ? {
+                display: "grid",
+                gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`,
+                gridTemplateRows: `repeat(${gridRows}, minmax(0, 1fr))`,
+                gap: gridGap,
+                alignContent: "start",
+              }
+            : null),
+        }}
+      >
+        {componentTree.map((node) => renderTreeNode(node, null, true))}
+      </div>
+    );
+  })();
 
   return (
     pages.length ? (

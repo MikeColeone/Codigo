@@ -199,6 +199,18 @@ export const EditorViewport = observer(function EditorViewport(
     shouldCenterWorkspaceRef.current = true;
   }, [stageFrameWidth, stageFrameHeight, props.storePage.deviceType]);
 
+  function isEditableTarget(target: EventTarget | null) {
+    if (!(target instanceof Element)) {
+      return false;
+    }
+
+    return Boolean(
+      target.closest(
+        'input, textarea, select, option, button, a, [contenteditable=""], [contenteditable="true"]',
+      ),
+    );
+  }
+
   function resolveWorkspaceBounds() {
     const viewportWidth = workspaceViewportSize.width;
     const viewportHeight = workspaceViewportSize.height;
@@ -233,6 +245,12 @@ export const EditorViewport = observer(function EditorViewport(
     };
   }
 
+  function nudgeWorkspaceOffset(deltaX: number, deltaY: number) {
+    const current = workspaceOffsetRef.current;
+    const nextOffset = clampWorkspaceOffset(current.x + deltaX, current.y + deltaY);
+    applyWorkspaceOffset(nextOffset.x, nextOffset.y);
+  }
+
   useEffect(() => {
     if (
       !hasMeasuredWorkspaceViewport ||
@@ -257,6 +275,97 @@ export const EditorViewport = observer(function EditorViewport(
     workspaceHeight,
     workspaceViewportSize.height,
     workspaceViewportSize.width,
+    workspaceWidth,
+  ]);
+
+  useEffect(() => {
+    const target = workspaceViewportRef.current;
+    if (!target) {
+      return;
+    }
+
+    const onWheel = (event: WheelEvent) => {
+      if (props.storePage.editorMode !== "visual") {
+        return;
+      }
+
+      if (event.ctrlKey || event.metaKey) {
+        return;
+      }
+
+      shouldCenterWorkspaceRef.current = false;
+      nudgeWorkspaceOffset(-event.deltaX, -event.deltaY);
+
+      if (document.activeElement === document.body) {
+        target.focus({ preventScroll: true });
+      }
+
+      event.preventDefault();
+    };
+
+    target.addEventListener("wheel", onWheel, { passive: false, capture: true });
+    return () => {
+      target.removeEventListener("wheel", onWheel, { capture: true });
+    };
+  }, [
+    props.storePage.editorMode,
+    workspaceViewportSize.height,
+    workspaceViewportSize.width,
+    workspaceHeight,
+    workspaceWidth,
+  ]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (props.storePage.editorMode !== "visual") {
+        return;
+      }
+
+      const viewport = workspaceViewportRef.current;
+      if (!viewport) {
+        return;
+      }
+
+      const activeElement = document.activeElement;
+      const canHandle =
+        activeElement === document.body ||
+        (activeElement instanceof Node && viewport.contains(activeElement));
+      if (!canHandle) {
+        return;
+      }
+
+      if (
+        event.key !== "ArrowUp" &&
+        event.key !== "ArrowDown" &&
+        event.key !== "ArrowLeft" &&
+        event.key !== "ArrowRight"
+      ) {
+        return;
+      }
+
+      const step = event.shiftKey ? 96 : 24;
+      shouldCenterWorkspaceRef.current = false;
+
+      if (event.key === "ArrowUp") {
+        nudgeWorkspaceOffset(0, step);
+      } else if (event.key === "ArrowDown") {
+        nudgeWorkspaceOffset(0, -step);
+      } else if (event.key === "ArrowLeft") {
+        nudgeWorkspaceOffset(step, 0);
+      } else {
+        nudgeWorkspaceOffset(-step, 0);
+      }
+
+      event.preventDefault();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [
+    props.storePage.editorMode,
+    workspaceViewportSize.height,
+    workspaceViewportSize.width,
+    workspaceHeight,
     workspaceWidth,
   ]);
 
@@ -314,6 +423,10 @@ export const EditorViewport = observer(function EditorViewport(
   ) {
     if (props.storePage.editorMode !== "visual" || event.button !== 0) {
       return;
+    }
+
+    if (document.activeElement === document.body && !isEditableTarget(event.target)) {
+      workspaceViewportRef.current?.focus({ preventScroll: true });
     }
 
     if (!canStartWorkspacePan(event.target)) {
@@ -428,6 +541,7 @@ export const EditorViewport = observer(function EditorViewport(
           <div className="relative z-10 flex-1 overflow-hidden">
             <div
               ref={workspaceViewportRef}
+              tabIndex={0}
               className={`editor-stage-scroll relative h-full w-full overflow-hidden touch-none ${
                 isWorkspacePanning
                   ? "cursor-grabbing select-none"

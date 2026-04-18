@@ -64,9 +64,15 @@ function resolveReleasePage(schema: IPageSchema, requestedPath: string | null) {
 function ReleaseCanvas({
   nodes,
   onNavigatePage,
+  layoutMode,
+  grid,
+  canvasHeight,
 }: {
   nodes: ComponentNode[];
   onNavigatePage: (pagePath: string) => void;
+  layoutMode?: "absolute" | "grid";
+  grid?: { cols: number; rows: number; gap?: number } | null;
+  canvasHeight?: number;
 }) {
   const initialPageState = useMemo(() => resolveInitialPageState(nodes), [nodes]);
   const [pageState, setPageState] = useState(initialPageState);
@@ -147,32 +153,86 @@ function ReleaseCanvas({
     );
   }
 
+  const normalizedLayoutMode = layoutMode === "grid" ? "grid" : "absolute";
+  const gridCols = Math.max(1, grid?.cols ?? 12);
+  const gridRows = Math.max(1, grid?.rows ?? 12);
+  const gridGap = Math.max(0, grid?.gap ?? 0);
+  const minHeight = Math.max(700, canvasHeight ?? 0);
+
   return (
     <div
       className="relative"
       style={{
-        minHeight: `${Math.max(700, nodes.length * 220)}px`,
+        minHeight: `${minHeight}px`,
+        ...(normalizedLayoutMode === "grid"
+          ? {
+              display: "grid",
+              gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`,
+              gridTemplateRows: `repeat(${gridRows}, minmax(0, 1fr))`,
+              gap: gridGap,
+              alignContent: "start",
+            }
+          : null),
       }}
     >
-      {nodes.map(function renderTreeNode(node: ComponentNode) {
-        const renderedChildren =
-          node.children?.map((child) => renderTreeNode(child)) ?? [];
+      {(() => {
+        const renderTreeNode = (
+          node: ComponentNode,
+          parent: ComponentNode | null,
+          isRootNode: boolean,
+        ) => {
+          const renderedChildren =
+            node.children?.map((child) => renderTreeNode(child, node, false)) ?? [];
+          const isAbsoluteNode =
+            node.styles?.position === "absolute" ||
+            node.styles?.left !== undefined ||
+            node.styles?.top !== undefined;
+          const parentUseGrid =
+            parent?.type === "viewGroup" &&
+            Boolean(
+              (parent.props as Record<string, unknown> | undefined)?.contentUseGrid,
+            );
+          const shouldUseGrid =
+            normalizedLayoutMode === "grid" && (isRootNode || parentUseGrid);
 
-        return (
-          <div
-            key={node.id}
-            className="absolute"
-            style={{
-              left: node.styles?.left as string | number | undefined,
-              top: node.styles?.top as string | number | undefined,
-            }}
-          >
-            <div className="relative">
-              {generateComponent(node, undefined, renderedChildren, runtime)}
+          const wrapperStyle: Record<string, string | number | undefined> =
+            shouldUseGrid
+              ? {
+                  gridColumn: `${Math.max(1, Number(node.styles?.gridColumnStart ?? 1))} / span ${Math.max(1, Number(node.styles?.gridColumnSpan ?? 1))}`,
+                  gridRow: `${Math.max(1, Number(node.styles?.gridRowStart ?? 1))} / span ${Math.max(1, Number(node.styles?.gridRowSpan ?? 1))}`,
+                  position: "relative",
+                  width: "100%",
+                  height: "100%",
+                }
+              : isAbsoluteNode
+                ? {
+                    left: node.styles?.left as string | number | undefined,
+                    top: node.styles?.top as string | number | undefined,
+                    position: "absolute",
+                    width: node.styles?.width as string | number | undefined,
+                    height: node.styles?.height as string | number | undefined,
+                  }
+                : {
+                    position: "relative",
+                    width: node.styles?.width as string | number | undefined,
+                    height: node.styles?.height as string | number | undefined,
+                  };
+
+          return (
+            <div
+              key={node.id}
+              className={!shouldUseGrid && isAbsoluteNode ? "absolute" : undefined}
+              style={wrapperStyle}
+            >
+              <div className="relative">
+                {generateComponent(node, undefined, renderedChildren, runtime)}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        };
+
+        return nodes.map((node) => renderTreeNode(node, null, true));
+      })()}
     </div>
   );
 }
@@ -216,6 +276,8 @@ export default function Release() {
     Number(data?.canvasWidth) || (deviceType === "pc" ? 1024 : 380);
   const canvasHeight =
     Number(data?.canvasHeight) || (deviceType === "pc" ? 768 : 700);
+  const layoutMode = data?.layoutMode === "grid" ? "grid" : "absolute";
+  const grid = data?.grid ?? null;
 
   const previewUrl = useMemo(() => {
     if (typeof window === "undefined") {
@@ -292,6 +354,9 @@ export default function Release() {
     return (
       <ReleaseCanvas
         nodes={activeNodes}
+        layoutMode={layoutMode}
+        grid={grid}
+        canvasHeight={canvasHeight}
         onNavigatePage={(pagePath) => {
           setSearchParams((prev) => {
             const nextParams = new URLSearchParams(prev);
