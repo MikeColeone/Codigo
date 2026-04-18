@@ -4,12 +4,10 @@ import {
   AppstoreOutlined,
   SettingOutlined,
   RobotOutlined,
-  TeamOutlined,
 } from "@ant-design/icons";
 import ComponentFields from "./ComponentFields";
 import GlobalFields from "./GlobalFields";
 import AIChatPanel from "./AIChatPanel";
-import PermissionPanel from "./PermissionPanel";
 import { useEditorComponents, useEditorPage } from "@/modules/editor/hooks";
 
 export default function EditorRightPanel() {
@@ -50,17 +48,6 @@ export default function EditorRightPanel() {
         </Tooltip>
       ),
       children: <AIChatPanel />,
-    },
-    {
-      key: "permission",
-      label: (
-        <Tooltip title="协作权限" placement="bottom">
-          <div className="flex h-8 w-8 items-center justify-center rounded-sm transition-all">
-            <TeamOutlined className="text-base" />
-          </div>
-        </Tooltip>
-      ),
-      children: <PermissionPanel />,
     },
   ];
 

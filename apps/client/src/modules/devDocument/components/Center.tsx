@@ -1,5 +1,5 @@
-﻿import { useNavigate } from "react-router-dom";
-import { Button, Card, Tag } from "antd";
+import { useNavigate } from "react-router-dom";
+import { Button, Card } from "antd";
 
 const features = [
   {
@@ -7,7 +7,7 @@ const features = [
     desc: "所见即所得的拖拽式编辑体验，支持组件自由布局与样式配置。",
     icon: (
       <svg
-        className="h-6 w-6 text-emerald-500"
+        className="h-6 w-6 text-[var(--ide-accent)]"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -26,7 +26,7 @@ const features = [
     desc: "灵活的属性面板，支持基础属性、样式、事件交互的精细化控制。",
     icon: (
       <svg
-        className="h-6 w-6 text-emerald-500"
+        className="h-6 w-6 text-[var(--ide-accent)]"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -45,7 +45,7 @@ const features = [
     desc: "一键预览页面效果，支持生成代码与发布上线，无缝衔接生产环境。",
     icon: (
       <svg
-        className="h-6 w-6 text-emerald-500"
+        className="h-6 w-6 text-[var(--ide-accent)]"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -70,7 +70,7 @@ const features = [
     desc: "支持静态数据与API数据源绑定，实现动态数据展示与交互。",
     icon: (
       <svg
-        className="h-6 w-6 text-emerald-500"
+        className="h-6 w-6 text-[var(--ide-accent)]"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -115,15 +115,16 @@ export default function Center() {
   const navigate = useNavigate();
 
   return (
-    <main className="flex-1 bg-white">
+    <main className="flex-1 bg-[var(--ide-bg)]">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-slate-50 py-20 sm:py-32">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
+      <section className="relative overflow-hidden bg-[var(--ide-bg)] py-16 sm:py-24">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--ide-grid-line)_1px,transparent_1px),linear-gradient(to_bottom,var(--ide-grid-line)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:linear-gradient(180deg,var(--ide-bg),rgba(0,0,0,0))]" />
         <div className="relative mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">
-            Codigo <span className="text-emerald-500">Low-Code</span> Platform
+          <h1 className="text-4xl font-extrabold tracking-tight text-[var(--ide-text)] sm:text-5xl md:text-6xl">
+            Codigo <span className="text-[var(--ide-accent)]">Low-Code</span>{" "}
+            Platform
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-600">
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-[var(--ide-text-muted)]">
             专为开发者打造的低代码开发平台。
             <br />
             以极简的拖拽操作，构建复杂的企业级应用，释放生产力。
@@ -132,14 +133,14 @@ export default function Center() {
             <Button
               type="primary"
               size="large"
-              className="h-12 bg-emerald-500 px-8 text-base hover:bg-emerald-600"
+              className="!h-10 !rounded-sm !px-6 !text-sm"
               onClick={() => navigate("/editor")}
             >
               开始体验
             </Button>
             <Button
               size="large"
-              className="h-12 px-8 text-base"
+              className="!h-10 !rounded-sm !px-6 !text-sm"
               onClick={() =>
                 document
                   .getElementById("architecture")
@@ -156,10 +157,10 @@ export default function Center() {
       <section id="architecture" className="py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+            <h2 className="text-3xl font-bold tracking-tight text-[var(--ide-text)]">
               技术架构
             </h2>
-            <p className="mt-4 text-lg text-slate-600">
+            <p className="mt-4 text-lg text-[var(--ide-text-muted)]">
               采用现代前端技术栈，构建稳健、高效的低代码引擎
             </p>
           </div>
@@ -167,14 +168,16 @@ export default function Center() {
             {techStack.map((tech) => (
               <Card
                 key={tech.name}
-                className="min-w-[160px] text-center shadow-sm hover:shadow-md transition-shadow cursor-default"
+                className="min-w-[160px] cursor-default text-center shadow-[var(--ide-panel-shadow)]"
               >
-                <div className="text-xl font-bold text-slate-800">
+                <div className="text-xl font-bold text-[var(--ide-text)]">
                   {tech.name}
                 </div>
-                <Tag color={tech.color} className="mt-2 mr-0">
-                  {tech.type}
-                </Tag>
+                <div className="mt-2">
+                  <span className="inline-flex items-center rounded-full border border-[var(--ide-border)] bg-[var(--ide-hover)] px-2.5 py-0.5 text-xs text-[var(--ide-text-muted)]">
+                    {tech.type}
+                  </span>
+                </div>
               </Card>
             ))}
           </div>
@@ -182,13 +185,13 @@ export default function Center() {
       </section>
 
       {/* Core Functions Section */}
-      <section className="bg-slate-50 py-20">
+      <section className="bg-[var(--ide-sidebar-bg)] py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+            <h2 className="text-3xl font-bold tracking-tight text-[var(--ide-text)]">
               核心功能
             </h2>
-            <p className="mt-4 text-lg text-slate-600">
+            <p className="mt-4 text-lg text-[var(--ide-text-muted)]">
               全流程覆盖，从设计到发布的一站式体验
             </p>
           </div>
@@ -196,15 +199,15 @@ export default function Center() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="relative rounded-2xl border border-slate-200 bg-white p-8 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+                className="relative rounded-md border border-[var(--ide-border)] bg-[var(--ide-control-bg)] p-6 shadow-[var(--ide-panel-shadow)] transition-colors hover:bg-[var(--ide-hover)]"
               >
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50">
+                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-sm border border-[var(--ide-control-border)] bg-[var(--ide-control-bg)]">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold text-slate-900">
+                <h3 className="text-base font-semibold text-[var(--ide-text)]">
                   {feature.title}
                 </h3>
-                <p className="mt-2 text-slate-600">{feature.desc}</p>
+                <p className="mt-2 text-sm text-[var(--ide-text-muted)]">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -215,10 +218,10 @@ export default function Center() {
       <section className="py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+            <h2 className="text-3xl font-bold tracking-tight text-[var(--ide-text)]">
               技术亮点
             </h2>
-            <p className="mt-4 text-lg text-slate-600">
+            <p className="mt-4 text-lg text-[var(--ide-text-muted)]">
               不仅仅是快，更是对质量的极致追求
             </p>
           </div>
@@ -226,13 +229,13 @@ export default function Center() {
             {highlights.map((highlight, index) => (
               <div
                 key={index}
-                className="group relative overflow-hidden rounded-2xl bg-emerald-500 p-8 text-white shadow-lg transition-transform hover:scale-105"
+                className="group relative overflow-hidden rounded-md border border-[var(--ide-border)] bg-[var(--ide-control-bg)] p-6 shadow-[var(--ide-panel-shadow)] transition-colors hover:bg-[var(--ide-hover)]"
               >
-                <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10 blur-2xl transition-all group-hover:bg-white/20"></div>
-                <h3 className="relative z-10 text-2xl font-bold">
+                <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-[var(--ide-active)] blur-2xl transition-opacity group-hover:opacity-70" />
+                <h3 className="relative z-10 text-lg font-semibold text-[var(--ide-text)]">
                   {highlight.title}
                 </h3>
-                <p className="relative z-10 mt-4 text-emerald-50">
+                <p className="relative z-10 mt-3 text-sm text-[var(--ide-text-muted)]">
                   {highlight.desc}
                 </p>
               </div>
@@ -243,7 +246,6 @@ export default function Center() {
     </main>
   );
 }
-
 
 
 

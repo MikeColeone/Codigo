@@ -1,8 +1,8 @@
 import { SearchOutlined } from "@ant-design/icons";
-import { Collapse, Empty, Input } from "antd";
+import { Empty, Input } from "antd";
 import { getComponentContainerMeta } from "@codigo/materials";
 import type { DragEvent, FC } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   useEditorComponents,
   useEditorPage,
@@ -73,44 +73,54 @@ const EditorComponent: FC<EditorComponentMeta> = ({ icon, name, type }) => {
 
 export default function ComponentList() {
   const [keyword, setKeyword] = useState("");
+  const [activeSectionKey, setActiveSectionKey] = useState<string>("");
   const { store: storePage } = useEditorPage();
   const normalizedKeyword = keyword.trim().toLowerCase();
 
-  const filteredSections = useMemo(
-    () =>
-      getEditorComponentSections(storePage.pageCategory)
-        .map((section) => ({
-          ...section,
-          items: normalizedKeyword
-            ? section.items.filter((item) =>
-                `${item.name} ${item.type}`
-                  .toLowerCase()
-                  .includes(normalizedKeyword),
-              )
-            : section.items,
-        }))
-        .filter((section) => section.items.length > 0),
-    [normalizedKeyword, storePage.pageCategory],
-  );
+  const sections = useMemo(() => {
+    const commonItems = editorComponentCatalog.filter(
+      (item) =>
+        item.quickInsert &&
+        !item.hiddenFromPalette &&
+        (!item.categories?.length || item.categories.includes(storePage.pageCategory)),
+    );
+    const baseSections = getEditorComponentSections(storePage.pageCategory);
+    const result = [
+      ...(commonItems.length
+        ? [
+            {
+              key: "common",
+              label: "常用",
+              items: commonItems,
+            },
+          ]
+        : []),
+      ...baseSections,
+    ];
 
-  const collapseItems = filteredSections.map((section) => ({
-    key: section.key,
-    label: (
-      <div className="flex items-center justify-between pr-2">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ide-text)]">{section.label}</span>
-        <span className="text-[10px] text-[var(--ide-text-muted)]">
-          {section.items.length}
-        </span>
-      </div>
-    ),
-    children: (
-      <div className="grid grid-cols-2 gap-1.5">
-        {section.items.map((item) => (
-          <EditorComponent {...item} key={item.type} />
-        ))}
-      </div>
-    ),
-  }));
+    return result.map((section) => ({
+      ...section,
+      items: normalizedKeyword
+        ? section.items.filter((item) =>
+            `${item.name} ${item.type}`.toLowerCase().includes(normalizedKeyword),
+          )
+        : section.items,
+    }));
+  }, [normalizedKeyword, storePage.pageCategory]);
+
+  useEffect(() => {
+    const firstAvailable = sections.find((s) => s.items.length)?.key ?? sections[0]?.key ?? "";
+    if (!activeSectionKey || !sections.some((s) => s.key === activeSectionKey)) {
+      setActiveSectionKey(firstAvailable);
+      return;
+    }
+    const current = sections.find((s) => s.key === activeSectionKey);
+    if (!current?.items.length) {
+      setActiveSectionKey(firstAvailable);
+    }
+  }, [activeSectionKey, sections]);
+
+  const activeSection = sections.find((s) => s.key === activeSectionKey) ?? sections[0];
 
   return (
     <div className="flex h-full flex-col bg-[var(--ide-sidebar-bg)]">
@@ -126,23 +136,64 @@ export default function ComponentList() {
         />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3 scrollbar-thin scrollbar-thumb-[var(--ide-border)] hover:scrollbar-thumb-[var(--ide-text-muted)] scrollbar-track-transparent">
-        {collapseItems.length ? (
-          <Collapse
-            defaultActiveKey={filteredSections.map((section) => section.key)}
-            ghost
-            items={collapseItems}
-            expandIconPosition="end"
-            className="[&_.ant-collapse-item]:mb-1 [&_.ant-collapse-item]:border-b [&_.ant-collapse-item]:border-[var(--ide-border)] [&_.ant-collapse-header]:!items-center [&_.ant-collapse-header]:!px-2 [&_.ant-collapse-header]:!py-1.5 [&_.ant-collapse-header]:text-[12px] [&_.ant-collapse-content-box]:!px-1 [&_.ant-collapse-content-box]:!pb-2 [&_.ant-collapse-content-box]:!pt-1"
-          />
-        ) : (
-          <div className="border border-dashed border-[var(--ide-border)] bg-[var(--ide-hover)] py-10">
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={<span className="text-[var(--ide-text-muted)]">无匹配物料</span>}
-            />
+      <div className="min-h-0 flex-1 overflow-hidden px-2 pb-3">
+        <div className="flex h-full min-h-0 gap-2">
+          <div className="w-[76px] shrink-0 border-r border-[var(--ide-border)] pr-2">
+            <div className="h-full overflow-y-auto py-1 scrollbar-thin scrollbar-thumb-[var(--ide-border)] hover:scrollbar-thumb-[var(--ide-text-muted)] scrollbar-track-transparent">
+              {sections.map((section) => {
+                const isActive = section.key === activeSectionKey;
+                const disabled = section.items.length === 0;
+                return (
+                  <button
+                    key={section.key}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => setActiveSectionKey(section.key)}
+                    className={`mb-1 flex w-full items-center justify-between rounded-md px-2 py-1 text-left text-[11px] transition-colors ${
+                      disabled
+                        ? "cursor-not-allowed text-[var(--ide-text-muted)] opacity-40"
+                        : isActive
+                          ? "bg-[var(--ide-active)] text-[var(--ide-text)]"
+                          : "text-[var(--ide-text-muted)] hover:bg-[var(--ide-hover)] hover:text-[var(--ide-text)]"
+                    }`}
+                  >
+                    <span className="truncate">{section.label}</span>
+                    <span className="ml-1 text-[10px] opacity-80">{section.items.length}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        )}
+
+          <div className="min-w-0 flex-1">
+            <div className="h-full overflow-y-auto pb-1 scrollbar-thin scrollbar-thumb-[var(--ide-border)] hover:scrollbar-thumb-[var(--ide-text-muted)] scrollbar-track-transparent">
+              {activeSection?.items?.length ? (
+                <div className="pb-2">
+                  <div className="mb-2 flex items-center justify-between pr-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ide-text)]">
+                      {activeSection.label}
+                    </span>
+                    <span className="text-[10px] text-[var(--ide-text-muted)]">
+                      {activeSection.items.length}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {activeSection.items.map((item) => (
+                      <EditorComponent {...item} key={item.type} />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="border border-dashed border-[var(--ide-border)] bg-[var(--ide-hover)] py-10">
+                  <Empty
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    description={<span className="text-[var(--ide-text-muted)]">无匹配物料</span>}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
