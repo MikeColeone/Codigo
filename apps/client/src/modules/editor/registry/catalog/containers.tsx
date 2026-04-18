@@ -11,19 +11,20 @@ export const containerEditorComponents: EditorComponentMeta[] = [
     icon: <LayoutOutlined />,
     sectionKey: "container",
     propsEditor: ContainerComponentProps,
+    hiddenFromPalette: true,
   },
   {
     type: "twoColumn",
     name: "双栏布局",
     icon: <LayoutOutlined />,
-    sectionKey: "container",
+    sectionKey: "basic",
     propsEditor: TwoColumnComponentProps,
   },
   {
     type: "viewGroup",
-    name: "容器组",
+    name: "视图组",
     icon: <LayoutOutlined />,
-    sectionKey: "container",
+    sectionKey: "basic",
     propsEditor: ViewGroupComponentProps,
   },
 ];

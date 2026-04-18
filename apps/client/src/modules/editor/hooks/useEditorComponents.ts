@@ -1,5 +1,4 @@
-import { action, computed, toJS } from "mobx";
-import { trackUndo } from "mobx-shallow-undo";
+import { action, computed, makeAutoObservable, observable, toJS } from "mobx";
 import { message } from "antd";
 import type { IEditorPageSchema } from "@codigo/schema";
 import type { TemplatePreset } from "@/modules/templateCenter/types/templates";
@@ -26,6 +25,127 @@ import { useEditorPage } from "./useEditorPage";
 import { useEditorPermission } from "./useEditorPermission";
 
 const storeComponents = createEditorComponentsStore();
+
+type OperationHistoryEntry = {
+  id: string;
+  label: string;
+  createdAt: number;
+  snapshot: TEditorComponentsStore;
+};
+
+const UNDOABLE_HISTORY_EVENTS = new Set<string>([
+  "add_component",
+  "move_component",
+  "remove_component",
+  "update_component",
+  "update_style",
+  "update_page",
+  "ai_replace",
+]);
+
+function formatHistoryLabel(event: string, detail: string) {
+  switch (event) {
+    case "add_component":
+      return `新增：${detail}`;
+    case "move_component":
+      return `移动：${detail}`;
+    case "remove_component":
+      return `删除：${detail}`;
+    case "update_component":
+      return `修改：${detail}`;
+    case "update_style":
+      return `样式：${detail}`;
+    case "update_page":
+      return `页面：${detail}`;
+    case "ai_replace":
+      return `AI 替换：${detail}`;
+    default:
+      return `${event}:${detail}`;
+  }
+}
+
+const operationHistoryStore = makeAutoObservable(
+  {
+    entries: [] as OperationHistoryEntry[],
+    cursor: -1,
+    maxSize: 80,
+    get canUndo() {
+      return this.cursor > 0;
+    },
+    get canRedo() {
+      return this.cursor >= 0 && this.cursor < this.entries.length - 1;
+    },
+    ensureInitialized(snapshot: TEditorComponentsStore) {
+      if (this.entries.length) {
+        return;
+      }
+      const now = Date.now();
+      this.entries = [
+        {
+          id: `${now}_${Math.random().toString(36).slice(2, 8)}`,
+          label: "初始化",
+          createdAt: now,
+          snapshot,
+        },
+      ];
+      this.cursor = 0;
+    },
+    reset(snapshot: TEditorComponentsStore, label = "初始化") {
+      const now = Date.now();
+      this.entries = [
+        {
+          id: `${now}_${Math.random().toString(36).slice(2, 8)}`,
+          label,
+          createdAt: now,
+          snapshot,
+        },
+      ];
+      this.cursor = 0;
+    },
+    commit(snapshot: TEditorComponentsStore, label: string) {
+      this.ensureInitialized(snapshot);
+      const now = Date.now();
+      const nextEntries = this.entries.slice(0, this.cursor + 1);
+      nextEntries.push({
+        id: `${now}_${Math.random().toString(36).slice(2, 8)}`,
+        label,
+        createdAt: now,
+        snapshot,
+      });
+      const overflow = Math.max(0, nextEntries.length - this.maxSize);
+      this.entries = overflow ? nextEntries.slice(overflow) : nextEntries;
+      this.cursor = this.entries.length - 1;
+    },
+    stepUndo() {
+      if (!this.canUndo) {
+        return null;
+      }
+      this.cursor -= 1;
+      return this.entries[this.cursor]?.snapshot ?? null;
+    },
+    stepRedo() {
+      if (!this.canRedo) {
+        return null;
+      }
+      this.cursor += 1;
+      return this.entries[this.cursor]?.snapshot ?? null;
+    },
+    jump(index: number) {
+      if (!Number.isFinite(index)) {
+        return null;
+      }
+      const targetIndex = Math.max(0, Math.min(this.entries.length - 1, index));
+      const entry = this.entries[targetIndex];
+      if (!entry) {
+        return null;
+      }
+      this.cursor = targetIndex;
+      return entry.snapshot;
+    },
+  },
+  { entries: observable.shallow },
+  { autoBind: true },
+);
 
 /**
  * 构建广播 replace_all 所需的完整 payload。
@@ -61,10 +181,28 @@ export function useEditorComponents() {
     store: permissionStore,
   } = useEditorPermission();
 
+  const addOperationLogWithHistory = (event: any, detail: string) => {
+    addOperationLog(event, detail);
+    const eventKey = String(event);
+    if (!UNDOABLE_HISTORY_EVENTS.has(eventKey)) {
+      return;
+    }
+    operationHistoryStore.commit(
+      toJS(storeComponents) as TEditorComponentsStore,
+      formatHistoryLabel(eventKey, detail),
+    );
+  };
+
   /**
    * 设置当前选中的组件。
    */
   const setCurrentComponent = action((id: string) => {
+    const config = storeComponents.compConfigs[id];
+    if (config?.type === "container") {
+      const nextId = config.childIds?.[0] ?? config.parentId ?? null;
+      storeComponents.currentCompConfig = nextId;
+      return;
+    }
     storeComponents.currentCompConfig = id;
   });
 
@@ -126,7 +264,7 @@ export function useEditorComponents() {
     syncLayoutMode,
     syncSchema,
   } = createEditorComponentStructure({
-    addOperationLog,
+    addOperationLog: addOperationLogWithHistory,
     broadcastNodeChange,
     broadcastReplaceAll,
     ensurePermission,
@@ -144,7 +282,7 @@ export function useEditorComponents() {
     switchEditorPage,
     updateEditorPageMeta,
   } = createEditorComponentPageActions({
-    addOperationLog,
+    addOperationLog: addOperationLogWithHistory,
     broadcastReplaceAll,
     ensurePermission,
     insertNodeTree,
@@ -176,7 +314,7 @@ export function useEditorComponents() {
     updateCurrentComponentEvents,
     updateCurrentComponentStyles,
   } = createEditorComponentMutations({
-    addOperationLog,
+    addOperationLog: addOperationLogWithHistory,
     broadcastNodeChange,
     ensurePermission,
     getCurrentComponent,
@@ -212,11 +350,12 @@ export function useEditorComponents() {
     if (!ensurePermission("edit_content", "当前角色不能撤销操作")) {
       return;
     }
-    if (!storeComponentsUndoer.hasUndo) {
+    const snapshot = operationHistoryStore.stepUndo();
+    if (!snapshot) {
       message.warning("没有可撤销的操作");
       return;
     }
-    storeComponentsUndoer.undo();
+    _replace(snapshot);
     addOperationLog("undo", "画布");
   });
 
@@ -227,11 +366,12 @@ export function useEditorComponents() {
     if (!ensurePermission("edit_content", "当前角色不能重做操作")) {
       return;
     }
-    if (!storeComponentsUndoer.hasRedo) {
+    const snapshot = operationHistoryStore.stepRedo();
+    if (!snapshot) {
       message.warning("没有可重做的操作");
       return;
     }
-    storeComponentsUndoer.redo();
+    _replace(snapshot);
     addOperationLog("redo", "画布");
   });
 
@@ -256,7 +396,7 @@ export function useEditorComponents() {
     removeCurrentComponent,
     replaceByCode,
   } = createEditorComponentCanvasActions({
-    addOperationLog,
+    addOperationLog: addOperationLogWithHistory,
     broadcastNodeChange,
     broadcastReplaceAll,
     ensurePermission,
@@ -274,7 +414,7 @@ export function useEditorComponents() {
     loadPageData,
     storeInLocalStorage,
   } = createEditorComponentPersistence({
-    addOperationLog,
+    addOperationLog: addOperationLogWithHistory,
     ensurePermission,
     pageStore,
     setCodeFramework,
@@ -290,7 +430,7 @@ export function useEditorComponents() {
     syncSidebarPanels,
     updateSidebarSectionLabel,
   } = createEditorSidebarLayoutActions({
-    addOperationLog,
+    addOperationLog: addOperationLogWithHistory,
     broadcastReplaceAll,
     ensurePermission,
     insertNodeTree,
@@ -336,12 +476,41 @@ export function useEditorComponents() {
 
     updatePage(nextPageSettings);
     broadcastReplaceAll();
-    addOperationLog("update_page", `应用模板:${template.name}`);
+    addOperationLogWithHistory("update_page", `应用模板:${template.name}`);
     message.success(`已应用“${template.name}”模板，当前工作区已切换为多页面后台骨架`);
     return true;
   });
 
   ensureEditorPages();
+  operationHistoryStore.ensureInitialized(toJS(storeComponents) as TEditorComponentsStore);
+
+  const loadPageDataWithHistory = async (...args: Parameters<typeof loadPageData>) => {
+    const result = await loadPageData(...args);
+    operationHistoryStore.reset(toJS(storeComponents) as TEditorComponentsStore, "加载页面");
+    return result;
+  };
+
+  const initFromServerDataWithHistory = (...args: Parameters<typeof initFromServerData>) => {
+    const result = initFromServerData(...args);
+    operationHistoryStore.reset(
+      toJS(storeComponents) as TEditorComponentsStore,
+      "初始化页面",
+    );
+    return result;
+  };
+
+  const rollbackToHistory = action((index: number) => {
+    if (!ensurePermission("edit_content", "当前角色不能回滚操作")) {
+      return;
+    }
+    const snapshot = operationHistoryStore.jump(index);
+    if (!snapshot) {
+      return;
+    }
+    _replace(snapshot);
+    const targetLabel = operationHistoryStore.entries[operationHistoryStore.cursor]?.label;
+    addOperationLog("undo", targetLabel ? `回滚到：${targetLabel}` : "回滚到指定操作");
+  });
 
   return {
     applyTemplateToWorkspace,
@@ -370,8 +539,10 @@ export function useEditorComponents() {
     setItemsExpandIndex,
     undo,
     redo,
-    hasUndo: storeComponentsUndoer.hasUndo,
-    hasRedo: storeComponentsUndoer.hasRedo,
+    hasUndo: operationHistoryStore.canUndo,
+    hasRedo: operationHistoryStore.canRedo,
+    operationHistory: operationHistoryStore,
+    rollbackToHistory,
     moveComponent,
     moveUpComponent,
     moveDownComponent,
@@ -382,9 +553,9 @@ export function useEditorComponents() {
     moveExistingNode,
     getCurrentComponentIndex,
     storeInLocalStorage,
-    loadPageData,
-    initFromServerData,
-    initPageData: initFromServerData,
+    loadPageData: loadPageDataWithHistory,
+    initFromServerData: initFromServerDataWithHistory,
+    initPageData: initFromServerDataWithHistory,
     serializeSchema: () => serializeStore(storeComponents),
     insertNodeIntoContainer,
     appendSidebarSection,
@@ -396,11 +567,3 @@ export function useEditorComponents() {
     syncLayoutMode,
   };
 }
-
-const storeComponentsUndoer = trackUndo(
-  () => toJS(storeComponents),
-  (value) => {
-    const { _replace } = useEditorComponents();
-    _replace(value);
-  },
-);

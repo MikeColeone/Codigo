@@ -2,6 +2,19 @@ import { useKeyPress } from "ahooks";
 import { message } from "antd";
 import { useEditorComponents } from "./useEditorComponents";
 
+export const EDITOR_COMPONENT_SHORTCUTS: Array<{
+  keys: string[][];
+  label: string;
+}> = [
+  { keys: [["↑"]], label: "上移选中组件" },
+  { keys: [["↓"]], label: "下移选中组件" },
+  { keys: [["Delete"], ["Backspace"]], label: "删除选中组件" },
+  { keys: [["Ctrl", "C"], ["⌘", "C"]], label: "复制选中组件" },
+  { keys: [["Ctrl", "V"], ["⌘", "V"]], label: "粘贴组件" },
+  { keys: [["Ctrl", "Z"], ["⌘", "Z"]], label: "撤销" },
+  { keys: [["Ctrl", "Shift", "Z"], ["⌘", "Shift", "Z"]], label: "重做" },
+];
+
 /**
  * 注册 editor 域内的组件快捷键。
  */

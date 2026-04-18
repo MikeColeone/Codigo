@@ -33,6 +33,9 @@ export const EditorOutlineTree = observer(function EditorOutlineTree() {
   const componentTree = getComponentTree.get();
 
   function renderTree(node: ComponentNode, depth = 0): ReactNode {
+    if (node.type === "container") {
+      return node.children?.map((child) => renderTree(child, depth)) ?? null;
+    }
     const isActive = node.id === currentConfigId;
     const componentMeta = findEditorComponent(node.type);
 

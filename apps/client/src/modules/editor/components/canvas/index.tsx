@@ -195,6 +195,9 @@ const EditorCanvas: FC<{
     if (!isDirectWrapperHit(event, conf.id)) {
       return;
     }
+    if (getComponentById(conf.id)?.type === "container") {
+      return;
+    }
     if (isCurrentComponent(conf)) {
       return;
     }
@@ -203,6 +206,9 @@ const EditorCanvas: FC<{
 
   function handleComponentClick(event: ReactMouseEvent, conf: { id: string }) {
     if (!isDirectWrapperHit(event, conf.id)) {
+      return;
+    }
+    if (getComponentById(conf.id)?.type === "container") {
       return;
     }
     if (isCurrentComponent(conf)) {

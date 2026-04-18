@@ -21,6 +21,7 @@ import EditorCanvas from "../canvas";
 import { SandboxCanvas } from "../canvas/SandboxCanvas";
 import { useEditorPanelLayout } from "./useEditorPanelLayout";
 import { WebIDEFrame } from "./WebIDEFrame";
+import { EditorStatusBarActions } from "./EditorStatusBarActions";
 import { LEFT_PANEL_RAIL_WIDTH } from "./layout";
 import type { TStorePage } from "@/shared/stores";
 import type { TEditorComponentsStore } from "@/modules/editor/stores";
@@ -442,7 +443,15 @@ export const EditorViewport = observer(function EditorViewport(
       return true;
     }
 
-    return !target.closest(".component-warpper");
+    const wrapper = target.closest(".component-warpper") as HTMLElement | null;
+    if (!wrapper) {
+      return true;
+    }
+    const wrapperId = wrapper.dataset.id;
+    if (!wrapperId) {
+      return false;
+    }
+    return props.storeComps.compConfigs[wrapperId]?.type === "container";
   }
 
   function handleWorkspaceMouseDown(
@@ -648,6 +657,7 @@ export const EditorViewport = observer(function EditorViewport(
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <EditorStatusBarActions />
           <div className="flex items-center gap-1.5 hover:bg-white/10 px-1 cursor-default">
             <span>Powered by Codigo</span>
           </div>
