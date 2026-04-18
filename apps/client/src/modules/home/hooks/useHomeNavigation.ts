@@ -6,7 +6,7 @@ import { useStoreAuth } from "@/shared/hooks/useStoreAuth";
 
 const navigationItems = [
   { label: "应用管理", path: "/app-management?tab=published" },
-  { label: "页面管理", path: "/console" },
+  { label: "后台管理", path: "/console" },
   { label: "开发文档", path: "/doc" },
 ] as const;
 

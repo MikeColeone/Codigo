@@ -1,6 +1,6 @@
 import { useTitle } from "ahooks";
 
-/** 管理后台占位页：用于暂未实现的后台模块。 */
+/** 页面管理工作台占位页：用于暂未实现的工作台模块。 */
 export default function AdminPlaceholder(props: { title: string; desc?: string }) {
   useTitle(`Codigo - ${props.title}`);
 
@@ -17,4 +17,3 @@ export default function AdminPlaceholder(props: { title: string; desc?: string }
     </div>
   );
 }
-

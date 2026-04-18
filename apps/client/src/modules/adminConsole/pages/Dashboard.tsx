@@ -4,9 +4,9 @@ import { useTitle } from "ahooks";
 import { useNavigate } from "react-router-dom";
 import { useStoreAuth } from "@/shared/hooks";
 
-/** 管理后台概览页：提供常用入口与项目状态摘要。 */
+/** 页面搭建者工作台概览页：提供常用入口与项目状态摘要。 */
 export default function AdminDashboard() {
-  useTitle("Codigo - 管理后台");
+  useTitle("Codigo - 页面管理");
   const navigate = useNavigate();
   const { store: storeAuth } = useStoreAuth();
 
@@ -18,7 +18,7 @@ export default function AdminDashboard() {
             欢迎回来，{storeAuth.details?.username ?? "用户"}
           </div>
           <h2 className="mt-0.5 truncate text-[14px] font-semibold text-[var(--ide-text)]">
-            管理工作台
+            页面管理工作台
           </h2>
         </div>
         <div className="flex items-center gap-2">
@@ -70,7 +70,7 @@ export default function AdminDashboard() {
 
             <button
               className="group flex items-center justify-between rounded-sm border border-[var(--ide-control-border)] bg-[var(--ide-sidebar-bg)] px-3 py-2 text-left transition-colors hover:bg-[var(--ide-hover)]"
-              onClick={() => navigate("/admin/metrics")}
+              onClick={() => navigate("/console/metrics")}
             >
               <div className="min-w-0">
                 <div className="text-[12px] font-medium text-[var(--ide-text)]">
@@ -121,12 +121,12 @@ export default function AdminDashboard() {
           </div>
           <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {[
-              { label: "基础设置", to: "/admin/settings" },
-              { label: "权限设置", to: "/admin/permissions" },
-              { label: "角色管理", to: "/admin/roles" },
-              { label: "版本管理", to: "/admin/versions" },
-              { label: "代码片段", to: "/admin/snippets" },
-              { label: "数据大屏", to: "/admin/big-screen" },
+              { label: "基础设置", to: "/console/settings" },
+              { label: "权限设置", to: "/console/permissions" },
+              { label: "角色管理", to: "/console/roles" },
+              { label: "版本管理", to: "/console/versions" },
+              { label: "代码片段", to: "/console/snippets" },
+              { label: "数据大屏", to: "/console/big-screen" },
             ].map((item) => (
               <button
                 key={item.to}
@@ -149,11 +149,10 @@ export default function AdminDashboard() {
           <ul className="mt-2 space-y-1 text-[11px] text-[var(--ide-text-muted)]">
             <li>先创建/编辑页面，再发布生成可分享链接。</li>
             <li>指标统计依赖表单组件；若为空请先在编辑器中创建表单。</li>
-            <li>权限与角色模块将用于后续管理后台的 RBAC 配置。</li>
+            <li>权限与角色模块将用于后续页面搭建者的 RBAC 配置。</li>
           </ul>
         </section>
       </div>
     </div>
   );
 }
-

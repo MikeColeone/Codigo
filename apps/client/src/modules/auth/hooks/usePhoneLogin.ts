@@ -14,11 +14,10 @@ export function usePhoneLogin() {
     onSuccess: async (res) => {
       await login(res.data);
       const redirect = resolveSafeRedirect(searchParams.get("redirect"));
-      nav(redirect ?? "/admin");
+      nav(redirect ?? "/console");
     },
   });
 }
-
 
 
 

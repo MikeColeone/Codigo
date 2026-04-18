@@ -4,7 +4,7 @@ import { observer } from "mobx-react-lite";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useStoreAuth } from "@/shared/hooks";
 
-/** 管理后台路由守卫：要求登录，必要时拉取用户信息。 */
+/** 页面管理工作台路由守卫：要求登录，必要时拉取用户信息。 */
 export const AdminRouteGuard = observer(
   ({ children }: { children: React.ReactNode }) => {
     const { store: storeAuth, fetchUserInfo } = useStoreAuth();
@@ -51,4 +51,3 @@ export const AdminRouteGuard = observer(
     return <>{children}</>;
   },
 );
-
