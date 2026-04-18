@@ -19,6 +19,7 @@ import type { TEditorComponentsStore } from "@/modules/editor/stores";
 import { useCanvasDragMove } from "./hooks/useCanvasDragMove";
 import { useCanvasDrop } from "./hooks/useCanvasDrop";
 import { useCanvasResize } from "./hooks/useCanvasResize";
+import { GridDashedOverlay } from "./GridDashedOverlay";
 
 interface ComponentWrapperProps {
   id: string;
@@ -214,6 +215,15 @@ const EditorCanvas: FC<{
           : null),
       }}
     >
+      {storePage.layoutMode === "grid" && storePage.showGridDashedLines && (
+        <GridDashedOverlay
+          containerRef={canvasRef}
+          cols={Math.max(1, storePage.grid?.cols ?? 12)}
+          rows={Math.max(1, storePage.grid?.rows ?? 12)}
+          gap={Math.max(0, storePage.grid?.gap ?? 0)}
+        />
+      )}
+
       {getComponentTree.get().map(function renderTreeNode(node: ComponentNode) {
         const renderedChildren =
           node.children?.map((child: ComponentNode) => renderTreeNode(child)) ??

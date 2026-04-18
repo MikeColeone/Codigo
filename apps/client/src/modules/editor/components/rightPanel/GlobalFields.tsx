@@ -4,16 +4,19 @@ import {
   GlobalOutlined,
   LayoutOutlined,
 } from "@ant-design/icons";
-import { Form, Input, InputNumber, Select } from "antd";
+import { Form, Input, InputNumber, Select, Switch } from "antd";
 import { observer } from "mobx-react-lite";
 import type { FC } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { useEditorPage } from "@/modules/editor/hooks";
 import type { TStorePage } from "@/shared/stores";
 import { getBuiltinEChartsThemeOptions } from "@codigo/materials";
 
 const GlobalFields: FC<{ store: TStorePage }> = observer(({ store }) => {
-  const { updatePage } = useEditorPage();
+  const [searchParams] = useSearchParams();
+  const pageId = Number(searchParams.get("id"));
+  const { updatePage, setGridDashedLinesVisible } = useEditorPage();
   //todo: 优化图表主题选项 暂时没有统一option
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartThemeOptions = getBuiltinEChartsThemeOptions() as any;
@@ -125,6 +128,21 @@ const GlobalFields: FC<{ store: TStorePage }> = observer(({ store }) => {
               max={64}
               className="w-full !bg-[var(--ide-control-bg)]"
             />
+          ),
+        },
+        {
+          label: "显示栅格虚线",
+          hidden: store.layoutMode !== "grid",
+          node: (
+            <div className="flex items-center justify-end">
+              <Switch
+                size="small"
+                checked={store.showGridDashedLines}
+                onChange={(checked) =>
+                  setGridDashedLinesVisible(checked, pageId || undefined)
+                }
+              />
+            </div>
           ),
         },
       ],

@@ -20,11 +20,16 @@ import type {
 
 const storePage = createStorePage();
 const OUTLINE_TREE_STORAGE_KEY = "editor:outline-tree";
+const GRID_DASHED_LINES_STORAGE_KEY = "editor:grid-dashed-lines";
 
 setDefaultEChartsTheme(storePage.chartTheme || undefined);
 
 function getOutlineTreeStorageKey(pageId: number) {
   return `${OUTLINE_TREE_STORAGE_KEY}:${pageId}`;
+}
+
+function getGridDashedLinesStorageKey(pageId: number) {
+  return `${GRID_DASHED_LINES_STORAGE_KEY}:${pageId}`;
 }
 
 /**
@@ -100,6 +105,31 @@ export function useStorePage() {
 
     const savedValue = localStorage.getItem(getOutlineTreeStorageKey(pageId));
     storePage.showOutlineTree = savedValue ? savedValue === "true" : true;
+  });
+
+  /**
+   * 设置栅格布局下画布虚线显隐（仅编辑器偏好，本地持久化）。
+   * @param visible - 是否显示虚线
+   * @param pageId - 页面 id
+   */
+  const setGridDashedLinesVisible = action(
+    (visible: boolean, pageId?: number) => {
+      storePage.showGridDashedLines = visible;
+
+      if (pageId && Number.isFinite(pageId) && pageId > 0) {
+        localStorage.setItem(getGridDashedLinesStorageKey(pageId), String(visible));
+      }
+    },
+  );
+
+  const hydrateGridDashedLinesVisible = action((pageId?: number | null) => {
+    if (!pageId || !Number.isFinite(pageId) || pageId <= 0) {
+      storePage.showGridDashedLines = true;
+      return;
+    }
+
+    const savedValue = localStorage.getItem(getGridDashedLinesStorageKey(pageId));
+    storePage.showGridDashedLines = savedValue ? savedValue === "true" : true;
   });
 
   const setWorkspace = action((workspace: PageWorkspaceResponse | null) => {
@@ -227,6 +257,8 @@ export function useStorePage() {
     setEditorMode,
     setOutlineTreeVisible,
     hydrateOutlineTreeVisible,
+    setGridDashedLinesVisible,
+    hydrateGridDashedLinesVisible,
     setWorkspace,
     setWorkspaceExplorer,
     setWorkspaceSession,

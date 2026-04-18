@@ -36,6 +36,7 @@ interface IStorePage {
   codeFramework: CodeFramework;
   editorMode: EditorMode;
   showOutlineTree: boolean;
+  showGridDashedLines: boolean;
   chartTheme: EChartsThemeSetting;
   workspace: PageWorkspaceResponse | null;
   workspaceExplorer: PageWorkspaceExplorerResponse | null;
@@ -65,6 +66,7 @@ export function createStorePage() {
     codeFramework: "react",
     editorMode: "visual",
     showOutlineTree: true,
+    showGridDashedLines: true,
     chartTheme: "codigoTheme",
     workspace: null,
     workspaceExplorer: null,
