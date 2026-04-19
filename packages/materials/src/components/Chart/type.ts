@@ -81,8 +81,8 @@ export const chartComponentDefaultConfig: TChartComponentConfigResult = {
     isHidden: false,
   },
   color: {
-    value: "#2563eb",
-    defaultValue: "#2563eb",
+    value: "#0f6cbd",
+    defaultValue: "#0f6cbd",
     isHidden: false,
   },
 };

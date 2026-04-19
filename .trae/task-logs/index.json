@@ -1,5 +1,60 @@
 [
   {
+    "taskId": "TASK20260419103505",
+    "title": "画布选中交互与蓝色描边统一",
+    "scope": "repository",
+    "author": "Trae Agent",
+    "timestamp": "2026-04-19T02:35:05.695Z",
+    "gitBranch": "main",
+    "gitCommit": "56414a4",
+    "markdownPath": ".trae/task-logs/2026-04-19/TASK20260419103505-task.md",
+    "snapshotPath": ".trae/task-logs/2026-04-19/TASK20260419103505-task.json"
+  },
+  {
+    "taskId": "TASK20260419102958",
+    "title": "表单组件配色统一到 IDE 蓝系",
+    "scope": "repository",
+    "author": "Trae Agent",
+    "timestamp": "2026-04-19T02:29:58.929Z",
+    "gitBranch": "main",
+    "gitCommit": "56414a4",
+    "markdownPath": ".trae/task-logs/2026-04-19/TASK20260419102958-ide.md",
+    "snapshotPath": ".trae/task-logs/2026-04-19/TASK20260419102958-ide.json"
+  },
+  {
+    "taskId": "TASK20260419102859",
+    "title": "修复缩放句柄仅拖拽时可见",
+    "scope": "repository",
+    "author": "Trae Agent",
+    "timestamp": "2026-04-19T02:28:59.448Z",
+    "gitBranch": "main",
+    "gitCommit": "56414a4",
+    "markdownPath": ".trae/task-logs/2026-04-19/TASK20260419102859-task.md",
+    "snapshotPath": ".trae/task-logs/2026-04-19/TASK20260419102859-task.json"
+  },
+  {
+    "taskId": "TASK20260419102158",
+    "title": "修复画布需长按才出现缩放句柄",
+    "scope": "repository",
+    "author": "Trae Agent",
+    "timestamp": "2026-04-19T02:21:58.174Z",
+    "gitBranch": "main",
+    "gitCommit": "56414a4",
+    "markdownPath": ".trae/task-logs/2026-04-19/TASK20260419102158-task.md",
+    "snapshotPath": ".trae/task-logs/2026-04-19/TASK20260419102158-task.json"
+  },
+  {
+    "taskId": "TASK20260419101947",
+    "title": "统一物料配色为 IDE 蓝系",
+    "scope": "repository",
+    "author": "Trae Agent",
+    "timestamp": "2026-04-19T02:19:47.063Z",
+    "gitBranch": "main",
+    "gitCommit": "56414a4",
+    "markdownPath": ".trae/task-logs/2026-04-19/TASK20260419101947-ide.md",
+    "snapshotPath": ".trae/task-logs/2026-04-19/TASK20260419101947-ide.json"
+  },
+  {
     "taskId": "TASK20260419101334",
     "title": "修复基础组件缩放仅占位不变",
     "scope": "repository",

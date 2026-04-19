@@ -160,6 +160,102 @@ body,
   border-color: var(--ide-accent) !important;
 }
 
+.studio-root .ant-form-item-label > label {
+  color: var(--ide-text-muted) !important;
+}
+
+.studio-root .ant-form-item-extra,
+.studio-root .ant-form-item-explain,
+.studio-root .ant-form-item-explain-connected {
+  color: var(--ide-text-muted) !important;
+}
+
+.studio-root .ant-input-affix-wrapper {
+  border-radius: 2px !important;
+  background-color: var(--ide-control-bg) !important;
+  border-color: var(--ide-control-border) !important;
+  box-shadow: none !important;
+}
+
+.studio-root .ant-input-affix-wrapper .ant-input {
+  background-color: transparent !important;
+}
+
+.studio-root .ant-input::placeholder,
+.studio-root .ant-input-affix-wrapper input::placeholder,
+.studio-root .ant-select-selection-placeholder {
+  color: color-mix(in srgb, var(--ide-text-muted) 80%, transparent) !important;
+}
+
+.studio-root .ant-select-dropdown {
+  background-color: var(--ide-control-bg) !important;
+  border: 1px solid var(--ide-control-border) !important;
+  box-shadow: var(--ide-panel-shadow) !important;
+}
+
+.studio-root .ant-select-item {
+  color: var(--ide-text) !important;
+}
+
+.studio-root .ant-select-item-option-active:not(.ant-select-item-option-disabled),
+.studio-root
+  .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background-color: var(--ide-hover) !important;
+}
+
+.studio-root .ant-select-arrow {
+  color: var(--ide-text-muted) !important;
+}
+
+.studio-root .ant-picker {
+  border-radius: 2px !important;
+  background-color: var(--ide-control-bg) !important;
+  border-color: var(--ide-control-border) !important;
+  box-shadow: none !important;
+}
+
+.studio-root .ant-picker input {
+  color: var(--ide-text) !important;
+}
+
+.studio-root .ant-picker .ant-picker-suffix,
+.studio-root .ant-picker .ant-picker-clear {
+  color: var(--ide-text-muted) !important;
+}
+
+.studio-root .ant-radio-wrapper,
+.studio-root .ant-checkbox-wrapper {
+  color: var(--ide-text) !important;
+}
+
+.studio-root .ant-radio-checked .ant-radio-inner {
+  border-color: var(--ide-accent) !important;
+}
+
+.studio-root .ant-radio-checked .ant-radio-inner::after {
+  background-color: var(--ide-accent) !important;
+}
+
+.studio-root .ant-checkbox-checked .ant-checkbox-inner {
+  background-color: var(--ide-accent) !important;
+  border-color: var(--ide-accent) !important;
+}
+
+.studio-root .ant-checkbox-indeterminate .ant-checkbox-inner::after {
+  background-color: var(--ide-accent) !important;
+}
+
+.studio-root .ant-input:focus,
+.studio-root .ant-input-affix-wrapper:focus,
+.studio-root .ant-input-affix-wrapper-focused,
+.studio-root .ant-select-focused .ant-select-selector,
+.studio-root .ant-picker-focused,
+.studio-root .ant-input-number:focus,
+.studio-root .ant-input-number-focused {
+  border-color: var(--ide-accent) !important;
+  box-shadow: none !important;
+}
+
 .studio-root .ant-tabs-nav::before {
   border-bottom: 1px solid var(--ide-border) !important;
 }

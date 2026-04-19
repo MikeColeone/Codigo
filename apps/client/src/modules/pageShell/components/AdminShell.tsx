@@ -44,7 +44,7 @@ export function AdminShell({
 
   if (layout === "topBottom" || layout === "breadcrumb") {
     return (
-      <div className="h-full w-full flex flex-col bg-slate-50">
+      <div className="h-full w-full flex flex-col bg-[var(--ide-bg)]">
         <TopNav
           title={title}
           roots={treeRoots}
@@ -70,7 +70,7 @@ export function AdminShell({
   if (layout === "topLeft") {
     const activeTop = resolveActiveTopNode(treeRoots, activePagePath);
     return (
-      <div className="h-full w-full flex flex-col bg-slate-50">
+      <div className="h-full w-full flex flex-col bg-[var(--ide-bg)]">
         <TopNav
           title={title}
           roots={treeRoots}
@@ -100,19 +100,21 @@ export function AdminShell({
   if (layout === "leftTop") {
     const navInteractiveClass = interactive ? "" : "pointer-events-none select-none";
     return (
-      <div className="h-full w-full flex flex-col bg-slate-50">
-        <header className={`h-14 shrink-0 border-b border-slate-200 bg-white ${navInteractiveClass}`}>
+      <div className="h-full w-full flex flex-col bg-[var(--ide-bg)]">
+        <header
+          className={`h-14 shrink-0 border-b border-[var(--ide-border)] bg-[var(--ide-header-bg)] ${navInteractiveClass}`}
+        >
           <div className="h-full px-4 flex items-center justify-between gap-3">
             <div className="min-w-0 flex items-center gap-3">
-              <div className="shrink-0 h-8 w-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-semibold">
+              <div className="shrink-0 h-8 w-8 rounded-lg bg-[var(--ide-accent)] text-[var(--ide-statusbar-text)] flex items-center justify-center font-semibold">
                 C
               </div>
               <div className="min-w-0">
-                <div className="truncate text-sm font-semibold text-slate-900">{title}</div>
-                <div className="truncate text-[11px] text-slate-500">Workspace</div>
+                <div className="truncate text-sm font-semibold text-[var(--ide-text)]">{title}</div>
+                <div className="truncate text-[11px] text-[var(--ide-text-muted)]">Workspace</div>
               </div>
             </div>
-            <div className="text-[11px] text-slate-500">预览/发布壳布局</div>
+            <div className="text-[11px] text-[var(--ide-text-muted)]">预览/发布壳布局</div>
           </div>
         </header>
         <div className="flex-1 min-h-0 flex">
@@ -131,7 +133,7 @@ export function AdminShell({
   }
 
   return (
-    <div className="h-full w-full flex bg-slate-50">
+    <div className="h-full w-full flex bg-[var(--ide-bg)]">
       <SidebarNav
         roots={treeRoots}
         activePagePath={activePagePath}
@@ -145,4 +147,3 @@ export function AdminShell({
     </div>
   );
 }
-

@@ -65,9 +65,9 @@ const ComponentWrapper: FC<ComponentWrapperProps> = ({
         layout !== "flow",
       "pointer-events-none absolute inset-0 z-[999] rounded-[20px] transition-all duration-200":
         layout === "flow",
-      "group-hover:border-[2px] group-hover:border-emerald-400 group-hover:shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]":
+      "group-hover:border-[2px] group-hover:border-blue-400 group-hover:shadow-[inset_0_0_20px_rgba(59,130,246,0.1)]":
         !isCurrentComponent && !isDragable,
-      "border-[2px] border-emerald-500 shadow-[inset_0_0_20px_rgba(16,185,129,0.2)]":
+      "border-[2px] border-blue-500 shadow-[inset_0_0_20px_rgba(59,130,246,0.2)]":
         isCurrentComponent,
     });
   }, [isCurrentComponent, isDragable, layout]);
@@ -88,56 +88,56 @@ const ComponentWrapper: FC<ComponentWrapperProps> = ({
         <>
           <button
             type="button"
-            className="absolute -top-1.5 -left-1.5 z-[1001] flex h-3 w-3 items-center justify-center rounded-full border border-white bg-emerald-500 shadow-[0_6px_16px_rgba(16,185,129,0.35)] cursor-nw-resize"
+            className="absolute -top-1.5 -left-1.5 z-[1001] flex h-3 w-3 items-center justify-center rounded-full border border-white bg-blue-500 shadow-[0_6px_16px_rgba(59,130,246,0.35)] cursor-nw-resize"
             onMouseDown={(event) => onResizeMouseDown(event, "nw", layout)}
           >
             <span className="h-1 w-1 rounded-full bg-white" />
           </button>
           <button
             type="button"
-            className="absolute -top-1.5 left-1/2 z-[1001] -translate-x-1/2 flex h-3 w-3 items-center justify-center rounded-full border border-white bg-emerald-500 shadow-[0_6px_16px_rgba(16,185,129,0.35)] cursor-n-resize"
+            className="absolute -top-1.5 left-1/2 z-[1001] -translate-x-1/2 flex h-3 w-3 items-center justify-center rounded-full border border-white bg-blue-500 shadow-[0_6px_16px_rgba(59,130,246,0.35)] cursor-n-resize"
             onMouseDown={(event) => onResizeMouseDown(event, "n", layout)}
           >
             <span className="h-1 w-1 rounded-full bg-white" />
           </button>
           <button
             type="button"
-            className="absolute -top-1.5 -right-1.5 z-[1001] flex h-3 w-3 items-center justify-center rounded-full border border-white bg-emerald-500 shadow-[0_6px_16px_rgba(16,185,129,0.35)] cursor-ne-resize"
+            className="absolute -top-1.5 -right-1.5 z-[1001] flex h-3 w-3 items-center justify-center rounded-full border border-white bg-blue-500 shadow-[0_6px_16px_rgba(59,130,246,0.35)] cursor-ne-resize"
             onMouseDown={(event) => onResizeMouseDown(event, "ne", layout)}
           >
             <span className="h-1 w-1 rounded-full bg-white" />
           </button>
           <button
             type="button"
-            className="absolute top-1/2 -left-1.5 z-[1001] -translate-y-1/2 flex h-3 w-3 items-center justify-center rounded-full border border-white bg-emerald-500 shadow-[0_6px_16px_rgba(16,185,129,0.35)] cursor-w-resize"
+            className="absolute top-1/2 -left-1.5 z-[1001] -translate-y-1/2 flex h-3 w-3 items-center justify-center rounded-full border border-white bg-blue-500 shadow-[0_6px_16px_rgba(59,130,246,0.35)] cursor-w-resize"
             onMouseDown={(event) => onResizeMouseDown(event, "w", layout)}
           >
             <span className="h-1 w-1 rounded-full bg-white" />
           </button>
           <button
             type="button"
-            className="absolute top-1/2 -right-1.5 z-[1001] -translate-y-1/2 flex h-3 w-3 items-center justify-center rounded-full border border-white bg-emerald-500 shadow-[0_6px_16px_rgba(16,185,129,0.35)] cursor-e-resize"
+            className="absolute top-1/2 -right-1.5 z-[1001] -translate-y-1/2 flex h-3 w-3 items-center justify-center rounded-full border border-white bg-blue-500 shadow-[0_6px_16px_rgba(59,130,246,0.35)] cursor-e-resize"
             onMouseDown={(event) => onResizeMouseDown(event, "e", layout)}
           >
             <span className="h-1 w-1 rounded-full bg-white" />
           </button>
           <button
             type="button"
-            className="absolute -bottom-1.5 -left-1.5 z-[1001] flex h-3 w-3 items-center justify-center rounded-full border border-white bg-emerald-500 shadow-[0_6px_16px_rgba(16,185,129,0.35)] cursor-sw-resize"
+            className="absolute -bottom-1.5 -left-1.5 z-[1001] flex h-3 w-3 items-center justify-center rounded-full border border-white bg-blue-500 shadow-[0_6px_16px_rgba(59,130,246,0.35)] cursor-sw-resize"
             onMouseDown={(event) => onResizeMouseDown(event, "sw", layout)}
           >
             <span className="h-1 w-1 rounded-full bg-white" />
           </button>
           <button
             type="button"
-            className="absolute -bottom-1.5 left-1/2 z-[1001] -translate-x-1/2 flex h-3 w-3 items-center justify-center rounded-full border border-white bg-emerald-500 shadow-[0_6px_16px_rgba(16,185,129,0.35)] cursor-s-resize"
+            className="absolute -bottom-1.5 left-1/2 z-[1001] -translate-x-1/2 flex h-3 w-3 items-center justify-center rounded-full border border-white bg-blue-500 shadow-[0_6px_16px_rgba(59,130,246,0.35)] cursor-s-resize"
             onMouseDown={(event) => onResizeMouseDown(event, "s", layout)}
           >
             <span className="h-1 w-1 rounded-full bg-white" />
           </button>
           <button
             type="button"
-            className="absolute -bottom-1.5 -right-1.5 z-[1001] flex h-3 w-3 items-center justify-center rounded-full border border-white bg-emerald-500 shadow-[0_6px_16px_rgba(16,185,129,0.35)] cursor-se-resize"
+            className="absolute -bottom-1.5 -right-1.5 z-[1001] flex h-3 w-3 items-center justify-center rounded-full border border-white bg-blue-500 shadow-[0_6px_16px_rgba(59,130,246,0.35)] cursor-se-resize"
             onMouseDown={(event) => onResizeMouseDown(event, "se", layout)}
           >
             <span className="h-1 w-1 rounded-full bg-white" />
@@ -251,15 +251,31 @@ const EditorCanvas: FC<{
     return null;
   }
 
-  function isDirectWrapperHit(event: ReactMouseEvent, id: string) {
+  function resolveClosestWrapper(
+    event: ReactMouseEvent,
+  ): HTMLElement | null {
+    const composedPath = (
+      event.nativeEvent as unknown as { composedPath?: () => EventTarget[] }
+    ).composedPath?.();
+    const wrapperInPath = composedPath?.find((item) => {
+      return (
+        item instanceof HTMLElement &&
+        item.classList.contains("component-warpper")
+      );
+    });
+    if (wrapperInPath instanceof HTMLElement) {
+      return wrapperInPath;
+    }
+
     const targetElement = resolveEventTargetElement(event.target);
     if (!targetElement) {
-      return false;
+      return null;
     }
-    const closestWrapper = targetElement.closest(".component-warpper") as
-      | HTMLElement
-      | null;
-    return closestWrapper?.dataset.id === id;
+    return targetElement.closest(".component-warpper") as HTMLElement | null;
+  }
+
+  function isDirectWrapperHit(event: ReactMouseEvent, id: string) {
+    return resolveClosestWrapper(event)?.dataset.id === id;
   }
 
   function isSelectedComponent(conf: { id: string }) {
@@ -274,9 +290,6 @@ const EditorCanvas: FC<{
     if (event.button !== 0) {
       return;
     }
-    if (!isDirectWrapperHit(event, conf.id)) {
-      return;
-    }
     if (getComponentById(conf.id)?.type === "container") {
       return;
     }
@@ -287,9 +300,6 @@ const EditorCanvas: FC<{
   }
 
   function handleComponentClick(event: ReactMouseEvent, conf: { id: string }) {
-    if (!isDirectWrapperHit(event, conf.id)) {
-      return;
-    }
     if (getComponentById(conf.id)?.type === "container") {
       return;
     }
@@ -302,11 +312,7 @@ const EditorCanvas: FC<{
   }
 
   function handleCanvasClick(event: ReactMouseEvent<HTMLDivElement>) {
-    const targetElement = resolveEventTargetElement(event.target);
-    if (!targetElement) {
-      return;
-    }
-    const wrapper = targetElement.closest(".component-warpper") as HTMLElement | null;
+    const wrapper = resolveClosestWrapper(event);
     if (!wrapper) {
       clearCurrentComponent();
       return;

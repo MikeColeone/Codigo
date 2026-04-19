@@ -13,6 +13,7 @@ import { AdminRouteGuard } from "@/modules/adminConsole/components/AdminRouteGua
 import AdminDashboard from "@/modules/adminConsole/pages/Dashboard";
 import AdminPermissions from "@/modules/adminConsole/pages/Permissions";
 import AdminPlaceholder from "@/modules/adminConsole/pages/Placeholder";
+import { IdeThemeLayout } from "@/app/layouts/IdeThemeLayout";
 
 export const router = createHashRouter([
   {
@@ -41,15 +42,27 @@ export const router = createHashRouter([
   },
   {
     path: "/preview",
-    element: <Preview />,
+    element: (
+      <IdeThemeLayout className="h-full w-full overflow-hidden">
+        <Preview />
+      </IdeThemeLayout>
+    ),
   },
   {
     path: "/release",
-    element: <Release />,
+    element: (
+      <IdeThemeLayout className="h-full w-full overflow-hidden">
+        <Release />
+      </IdeThemeLayout>
+    ),
   },
   {
     path: "/release/:id",
-    element: <Release />,
+    element: (
+      <IdeThemeLayout className="h-full w-full overflow-hidden">
+        <Release />
+      </IdeThemeLayout>
+    ),
   },
   {
     element: <StudioLayout />,

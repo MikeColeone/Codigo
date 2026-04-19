@@ -27,13 +27,13 @@ export const qrcodeComponentDefaultConfig: TQrcodeComponentConfigResult = {
     isHidden: false,
   },
   bgColor: {
-    value: "white",
-    defaultValue: "white",
+    value: "#ffffff",
+    defaultValue: "#ffffff",
     isHidden: false,
   },
   color: {
-    value: "black",
-    defaultValue: "black",
+    value: "#0f6cbd",
+    defaultValue: "#0f6cbd",
     isHidden: false,
   },
   errorLevel: {

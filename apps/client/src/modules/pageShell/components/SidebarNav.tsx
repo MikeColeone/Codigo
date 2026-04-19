@@ -47,7 +47,9 @@ export function SidebarNav({
           type="button"
           onClick={() => onSelectPagePath(page.path)}
           className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-            isActive ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"
+            isActive
+              ? "bg-[var(--ide-active)] text-[var(--ide-text)]"
+              : "text-[var(--ide-text)] hover:bg-[var(--ide-hover)]"
           }`}
           style={{ paddingLeft: 12 + depth * 12 }}
         >
@@ -80,13 +82,15 @@ export function SidebarNav({
       >
         <summary
           className={`list-none flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors cursor-pointer ${
-            isActiveGroup ? "bg-slate-100 text-slate-900" : "text-slate-700 hover:bg-slate-100"
+            isActiveGroup
+              ? "bg-[var(--ide-active)] text-[var(--ide-text)]"
+              : "text-[var(--ide-text)] hover:bg-[var(--ide-hover)]"
           }`}
           style={{ paddingLeft: 12 + depth * 12 }}
         >
           <span className="truncate font-medium">{node.label}</span>
           <span
-            className={`ml-2 inline-flex h-5 w-5 items-center justify-center rounded text-xs text-slate-400 transition-transform ${
+            className={`ml-2 inline-flex h-5 w-5 items-center justify-center rounded text-xs text-[var(--ide-text-muted)] transition-transform ${
               isOpen ? "rotate-90" : ""
             }`}
           >
@@ -100,8 +104,8 @@ export function SidebarNav({
               onClick={() => onSelectPagePath(overviewPage.path)}
               className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
                 isActiveLeaf
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-700 hover:bg-slate-100"
+                  ? "bg-[var(--ide-active)] text-[var(--ide-text)]"
+                  : "text-[var(--ide-text)] hover:bg-[var(--ide-hover)]"
               }`}
               style={{ paddingLeft: 24 + depth * 12 }}
             >
@@ -116,14 +120,14 @@ export function SidebarNav({
 
   return (
     <aside
-      className={`h-full w-56 shrink-0 border-r border-slate-200 bg-white flex flex-col ${navInteractiveClass} ${className}`}
+      className={`h-full w-56 shrink-0 border-r border-[var(--ide-border)] bg-[var(--ide-sidebar-bg)] flex flex-col ${navInteractiveClass} ${className}`}
     >
       {header ? (
-        <div className="h-12 px-4 flex items-center justify-between border-b border-slate-200">
+        <div className="h-12 px-4 flex items-center justify-between border-b border-[var(--ide-border)]">
           <div className="min-w-0">
-            <div className="truncate text-sm font-semibold text-slate-900">{header.title}</div>
+            <div className="truncate text-sm font-semibold text-[var(--ide-text)]">{header.title}</div>
             {header.subtitle ? (
-              <div className="truncate text-[11px] text-slate-500">{header.subtitle}</div>
+              <div className="truncate text-[11px] text-[var(--ide-text-muted)]">{header.subtitle}</div>
             ) : null}
           </div>
         </div>
@@ -135,8 +139,8 @@ export function SidebarNav({
             onClick={() => onSelectPagePath(extraTopPage.path)}
             className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
               extraTopPage.path === activePagePath
-                ? "bg-slate-900 text-white"
-                : "text-slate-700 hover:bg-slate-100"
+                ? "bg-[var(--ide-active)] text-[var(--ide-text)]"
+                : "text-[var(--ide-text)] hover:bg-[var(--ide-hover)]"
             }`}
           >
             {extraTopPage.name}
@@ -147,4 +151,3 @@ export function SidebarNav({
     </aside>
   );
 }
-
