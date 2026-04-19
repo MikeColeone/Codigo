@@ -38,7 +38,29 @@ export interface PageGridConfig {
 export type ReleaseVisibility = "public" | "private";
 
 /**
- * 描述低代码页面实体的基础信息。
+ * 低代码页面实体的核心协议。
+ *
+ * 用于描述页面在存储、编辑、预览与发布链路中的基础元数据，
+ * 是跨端共享的页面基础信息结构。
+ *
+ * 字段说明：
+ * - `id: number` 页面唯一标识。
+ * - `account_id: number` 页面所属账号 ID。
+ * - `page_name: string` 页面名称。
+ * - `components: string[]` 页面组件列表，通常存储组件序列化结果。
+ * - `schema_version?: number` 页面 schema 版本号。
+ * - `tdk: string` 页面 TDK 信息。
+ * - `desc: string` 页面描述信息。
+ * - `deviceType?: "mobile" | "pc"` 页面目标设备类型。
+ * - `canvasWidth?: number` 画布宽度。
+ * - `canvasHeight?: number` 画布高度。
+ * - `lockEditing?: boolean` 是否锁定编辑。
+ * - `pageCategory?: PageCategory` 页面业务分类。
+ * - `layoutMode?: PageLayoutMode` 页面布局模式。
+ * - `grid?: PageGridConfig` 栅格布局配置。
+ * - `shellLayout?: PageShellLayout` 预览或发布时的页面壳布局。
+ * - `visibility?: ReleaseVisibility` 发布可见范围。
+ * - `expire_at?: string | Date | null` 发布过期时间。
  */
 export interface ILowCode {
   id: number;
@@ -51,7 +73,7 @@ export interface ILowCode {
   deviceType?: "mobile" | "pc";
   canvasWidth?: number;
   canvasHeight?: number;
-  lockEditing?: boolean; // 编辑锁状态
+  lockEditing?: boolean;
   pageCategory?: PageCategory;
   layoutMode?: PageLayoutMode;
   grid?: PageGridConfig;

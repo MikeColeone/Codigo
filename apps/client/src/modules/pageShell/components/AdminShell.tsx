@@ -127,7 +127,6 @@ export function AdminShell({
                 <div className="truncate text-[11px] text-[var(--ide-text-muted)]">Workspace</div>
               </div>
             </div>
-            <div className="text-[11px] text-[var(--ide-text-muted)]">预览/发布壳布局</div>
           </div>
         </header>
         <div className="flex-1 min-h-0 flex">
