@@ -1,5 +1,16 @@
 [
   {
+    "taskId": "TASK20260419081118",
+    "title": "修复画布平移误触发选中提示",
+    "scope": "repository",
+    "author": "Trae Agent",
+    "timestamp": "2026-04-19T00:11:18.609Z",
+    "gitBranch": "main",
+    "gitCommit": "01cd142",
+    "markdownPath": ".trae/task-logs/2026-04-19/TASK20260419081118-task.md",
+    "snapshotPath": ".trae/task-logs/2026-04-19/TASK20260419081118-task.json"
+  },
+  {
     "taskId": "TASK20260418153208",
     "title": "替换 Vite 默认站点图标",
     "scope": "repository",
