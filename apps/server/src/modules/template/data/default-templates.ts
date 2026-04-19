@@ -1,7 +1,9 @@
 import type { TemplatePreset } from '@codigo/schema';
+import { adminAnalyticsScreenTemplate } from 'src/modules/template/data/admin-analytics-screen';
 import { adminConsoleStandardTemplate } from 'src/modules/template/data/admin-console-standard';
 
 export const DEFAULT_TEMPLATE_PRESETS: TemplatePreset[] = [
+  adminAnalyticsScreenTemplate,
   adminConsoleStandardTemplate,
   {
     key: 'admin-console-basic',

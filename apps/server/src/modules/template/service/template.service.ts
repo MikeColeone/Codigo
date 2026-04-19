@@ -23,6 +23,7 @@ export class TemplateService {
   ) {}
 
   private readonly defaultTemplateVersions: Record<string, number> = {
+    'admin-analytics-screen': 1,
     'admin-console-standard': 5,
     'admin-console-basic': 3,
   };

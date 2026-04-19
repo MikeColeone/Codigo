@@ -66,7 +66,7 @@ export default function AdminSidebar() {
       </nav>
       <div className="border-t border-[var(--ide-border)] p-2">
         <div className="text-[11px] leading-5 text-[var(--ide-text-muted)]">
-          建议先从“使用手册”了解流程，再进入“编辑器”搭建页面。
+          建议先从“使用手册”了解流程
         </div>
       </div>
     </div>
