@@ -39,12 +39,6 @@ export function HomeHeroSection() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </button>
-            <button
-              className="inline-flex items-center justify-center rounded-sm border border-[var(--ide-control-border)] bg-[var(--ide-control-bg)] px-6 py-3 text-sm font-medium text-[var(--ide-text)] transition-colors hover:bg-[var(--ide-hover)]"
-              onClick={openDashboard}
-            >
-              查看数据看板
-            </button>
           </div>
         </div>
 

@@ -109,18 +109,22 @@ describe("Home plazas", () => {
     expect(router.state.location.search).toBe("?templateId=1");
   });
 
-  it("opens material docs panel via route params and shows description", async () => {
+  it("navigates to dev docs when clicking material in plaza", async () => {
     const user = userEvent.setup();
-    const router = createMemoryRouter([{ path: "/", element: <Home /> }], {
-      initialEntries: ["/?view=materials"],
-    });
+    const router = createMemoryRouter(
+      [
+        { path: "/", element: <Home /> },
+        { path: "/doc", element: <div>doc</div> },
+      ],
+      { initialEntries: ["/?view=materials"] },
+    );
 
     render(<RouterProvider router={router} />);
 
     await screen.findByText("物料广场");
     await user.click(screen.getByRole("button", { name: "Button" }));
-    expect(router.state.location.search).toContain("type=button");
-    expect(await screen.findByText("按钮组件，可配合事件编排触发动作链路。")).toBeInTheDocument();
-    expect(screen.getByText("button · v0.0.1")).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/doc");
+    expect(router.state.location.search).toContain("page=materials");
+    expect(router.state.location.search).toContain("section=materials-button");
   });
 });

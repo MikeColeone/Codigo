@@ -7,15 +7,10 @@ export default function DevDoc() {
 
   return (
     <TopNavLayout>
-      <div className="h-full overflow-y-auto">
-        <section className="mx-auto w-full max-w-7xl px-6 pb-14 pt-10">
-          <Center />
-        </section>
-      </div>
+      <Center variant="page" />
     </TopNavLayout>
   );
 }
-
 
 
 

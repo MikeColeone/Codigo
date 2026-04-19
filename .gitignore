@@ -44,3 +44,6 @@ tempdist/
 
 # worktrees
 .worktrees
+
+# log
+.trae/task-logs/*

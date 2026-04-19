@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { builtinComponentDefinitions } from "@codigo/materials";
 
 type DocBlock =
   | {
@@ -159,6 +160,272 @@ function Section({ id, title, blocks }: { id: string; title: string; blocks: Doc
 }
 
 const DOC_PAGES: DocPage[] = [
+  {
+    key: "user-guide",
+    title: "使用指南",
+    summary: "从使用者视角理解：模板、页面、编辑器、发布与后台配置。",
+    sections: [
+      {
+        key: "overview",
+        title: "这是什么",
+        blocks: [
+          {
+            type: "p",
+            text: "Codigo 面向“后台/管理系统”场景做页面搭建：编辑器负责页面内容与交互能力；后台工作台负责权限、版本与运营类配置；发布端负责对外访问与分享。",
+          },
+          {
+            type: "callout",
+            tone: "info",
+            title: "推荐入口",
+            text: "首次体验建议先从“模板广场”应用模板，再进入编辑器；协作权限从后台工作台的“权限设置”统一管理。",
+          },
+        ],
+      },
+      {
+        key: "create",
+        title: "创建与编辑页面",
+        blocks: [
+          {
+            type: "steps",
+            items: [
+              {
+                title: "从模板开始",
+                text: "在模板广场选择一个模板并应用到工作区；模板是多页面集合（pages + activePagePath）。",
+              },
+              {
+                title: "进入编辑器",
+                text: "编辑器用于拖拽物料、调整布局、配置样式与事件编排。",
+              },
+              {
+                title: "管理子页面",
+                text: "页面入口集中在编辑器头部标题下拉：支持树形展示与子页面层级（a/b/c）。",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: "publish",
+        title: "预览与发布",
+        blocks: [
+          {
+            type: "steps",
+            items: [
+              {
+                title: "预览",
+                text: "用于快速检查当前编辑内容的视觉与交互。",
+              },
+              {
+                title: "发布并分享",
+                text: "发布后会生成分享链接；公开且未过期时可匿名访问，私密仅发布者可访问。",
+              },
+              {
+                title: "权限设置",
+                text: "协作成员与权限在后台工作台“权限设置”统一管理，编辑器头部保留分享入口。",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    key: "dev-guide",
+    title: "开发指南",
+    summary: "面向仓库贡献：本地启动、调试、质量检查与常见开发约定。",
+    sections: [
+      {
+        key: "workflow",
+        title: "本地开发工作流",
+        blocks: [
+          {
+            type: "steps",
+            items: [
+              {
+                title: "安装依赖",
+                code: ["pnpm install"].join("\n"),
+              },
+              {
+                title: "按需启动",
+                text: "推荐按功能域最小启动：开发 client UI 先跑 client；涉及接口再加 server。",
+                code: ["pnpm run run:client", "pnpm run run:server"].join("\n"),
+              },
+              {
+                title: "质量自检",
+                code: ["pnpm run lint:apps", "pnpm run typecheck:apps"].join("\n"),
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: "rules",
+        title: "边界与协作规则",
+        blocks: [
+          {
+            type: "p",
+            text: "强约束：apps 可以依赖 packages；packages 禁止依赖 apps；apps/client、apps/server、apps/ide 之间禁止源码互相依赖。",
+          },
+          {
+            type: "code",
+            title: "Rules",
+            code: [".trae/rules/BASIC_RULES.md", ".trae/rules/USER_GUIDE.md"].join("\n"),
+          },
+        ],
+      },
+    ],
+  },
+  {
+    key: "materials-maintain",
+    title: "物料维护",
+    summary: "如何新增/修改物料组件：注册、默认配置、渲染与编辑器可用性。",
+    sections: [
+      {
+        key: "where",
+        title: "物料在哪里",
+        blocks: [
+          {
+            type: "p",
+            text: "物料的单一事实源在 packages/materials（运行时 React 物料与 registry）。编辑器作为消费方，不在 apps/client 里定义物料协议。",
+          },
+          {
+            type: "code",
+            title: "Key Paths",
+            code: [
+              "packages/materials",
+              "packages/schema",
+              "apps/client/src/modules/editor/registry",
+            ].join("\n"),
+          },
+        ],
+      },
+      {
+        key: "add",
+        title: "新增一个物料的最小步骤",
+        blocks: [
+          {
+            type: "steps",
+            items: [
+              {
+                title: "在 materials 中实现组件与默认配置",
+                text: "确保定义 type/name/description/defaultConfig/render 等信息，且不耦合 apps/client 的业务代码。",
+              },
+              {
+                title: "注册到物料列表",
+                text: "保证能被 runtime/编辑器消费到；如涉及协议字段扩展，优先在 @codigo/schema 定义类型。",
+              },
+              {
+                title: "在物料广场与开发文档补充说明",
+                text: "至少补齐：用途、容器能力、插槽、常见搭配与注意事项。",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    key: "templates-maintain",
+    title: "模板维护",
+    summary: "模板中心（templateCenter）与多页面模板预设的维护方式。",
+    sections: [
+      {
+        key: "concepts",
+        title: "模板预设结构",
+        blocks: [
+          {
+            type: "p",
+            text: "模板预设是多页面集合：TemplatePreset 使用 pages + activePagePath。应用模板时会替换整个工作区页面集合。",
+          },
+          {
+            type: "callout",
+            tone: "warn",
+            title: "布局归一化",
+            text: "应用模板时需要使用模板的 pageSettings/layoutMode/grid 进行归一化，避免后续 recover/syncLayoutMode 导致重排错乱。",
+          },
+        ],
+      },
+      {
+        key: "where",
+        title: "相关模块",
+        blocks: [
+          {
+            type: "code",
+            title: "Key Paths",
+            code: [
+              "apps/client/src/modules/templateCenter",
+              "apps/client/src/modules/editor",
+              "packages/materials",
+              "packages/render",
+            ].join("\n"),
+          },
+        ],
+      },
+    ],
+  },
+  {
+    key: "tech-stack",
+    title: "技术栈",
+    summary: "前后端与工程化的关键技术选择（按模块组织）。",
+    sections: [
+      {
+        key: "frontend",
+        title: "前端",
+        blocks: [
+          {
+            type: "steps",
+            items: [
+              {
+                title: "React + React Router",
+                text: "应用路由与视图组织。",
+              },
+              {
+                title: "Tailwind CSS",
+                text: "基于 IDE 主题变量进行一致的样式表达。",
+              },
+              {
+                title: "Ant Design（局部）",
+                text: "管理端/表格类高密度 UI。",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: "backend",
+        title: "后端",
+        blocks: [
+          {
+            type: "steps",
+            items: [
+              {
+                title: "NestJS + TypeORM",
+                text: "模块化 API 与数据层。",
+              },
+              {
+                title: "Socket.io",
+                text: "协同通信：room_users_update / sync_lock_status / sync_component 等事件流。",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: "tooling",
+        title: "工程化",
+        blocks: [
+          {
+            type: "steps",
+            items: [
+              { title: "pnpm workspace", text: "Monorepo 包管理。" },
+              { title: "turbo", text: "任务编排与缓存。" },
+              { title: "TypeScript", text: "类型系统与构建约束。" },
+            ],
+          },
+        ],
+      },
+    ],
+  },
   {
     key: "getting-started",
     title: "快速开始",
@@ -416,20 +683,96 @@ const DOC_PAGES: DocPage[] = [
   },
 ];
 
-export default function Center() {
+export default function Center({ variant = "page" }: { variant?: "page" | "embedded" }) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState("");
+  const isPage = variant === "page";
+
+  const patchSearchParams = (patch: Record<string, string | null | undefined>) => {
+    const next = new URLSearchParams(searchParams);
+    Object.entries(patch).forEach(([key, value]) => {
+      if (value === null || value === undefined || value === "") {
+        next.delete(key);
+        return;
+      }
+      next.set(key, value);
+    });
+    setSearchParams(next);
+  };
+
+  const materialsDocPage = useMemo<DocPage>(() => {
+    const sections: DocSection[] = builtinComponentDefinitions
+      .map((item) => {
+        const type = String(item.type);
+        const name = String(item.name);
+        const isContainer = Boolean(item.isContainer);
+        const slots = item.slots ?? [];
+        return {
+          key: type,
+          title: name,
+          blocks: [
+            {
+              type: "p",
+              text: item.description ? String(item.description) : "暂无描述",
+            },
+            {
+              type: "callout",
+              tone: "info",
+              title: "组件标识（type）",
+              text: type,
+            },
+            {
+              type: "callout",
+              tone: isContainer ? "info" : "warn",
+              title: "容器能力",
+              text: isContainer
+                ? "该物料支持承载子节点（容器）。"
+                : "该物料不承载子节点（非容器）。",
+            },
+            {
+              type: "steps",
+              items: [
+                {
+                  title: "使用方式",
+                  text: "在编辑器中从物料面板拖拽到画布；再通过右侧配置区设置样式与事件。",
+                },
+                {
+                  title: "插槽（Slots）",
+                  text: slots.length
+                    ? `该组件包含 ${slots.length} 个插槽：${slots
+                        .map((s) => `${s.title ?? s.name}(${s.name})${s.multiple ? "·multiple" : ""}`)
+                        .join("、")}`
+                    : "该组件没有插槽。",
+                },
+              ],
+            },
+          ],
+        };
+      })
+      .sort((a, b) => a.title.localeCompare(b.title));
+
+    return {
+      key: "materials",
+      title: "物料参考",
+      summary: "内置物料的说明索引。点击物料广场条目会跳转到对应说明。",
+      sections,
+    };
+  }, []);
+
+  const docPages = useMemo(() => {
+    return [...DOC_PAGES, materialsDocPage];
+  }, [materialsDocPage]);
 
   const filteredPages = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return DOC_PAGES;
-    return DOC_PAGES.filter((p) => p.title.toLowerCase().includes(q));
-  }, [query]);
+    if (!q) return docPages;
+    return docPages.filter((p) => p.title.toLowerCase().includes(q));
+  }, [docPages, query]);
 
   const activePageKey = searchParams.get("page") ?? "getting-started";
   const activePage =
-    DOC_PAGES.find((p) => p.key === activePageKey) ?? DOC_PAGES[0]!;
+    docPages.find((p) => p.key === activePageKey) ?? docPages[0]!;
 
   const activeSectionKey = searchParams.get("section");
   useEffect(() => {
@@ -447,11 +790,41 @@ export default function Center() {
   }, [activePage]);
 
   return (
-    <main className="relative w-full bg-[var(--ide-bg)]">
+    <main
+      className={cx(
+        "relative w-full bg-[var(--ide-bg)]",
+        isPage && "h-full overflow-hidden",
+      )}
+    >
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(1200px_600px_at_10%_0%,color-mix(in_oklab,var(--ide-accent)_18%,transparent),transparent_60%),radial-gradient(900px_500px_at_90%_10%,color-mix(in_oklab,var(--ide-active)_25%,transparent),transparent_62%)]" />
 
-      <div className="relative grid grid-cols-12 gap-0">
-        <aside className="col-span-12 border-b border-[var(--ide-border)] py-4 sm:col-span-4 sm:border-b-0 sm:border-r sm:py-8 lg:col-span-3">
+      <div
+        className={cx(
+          "relative",
+          isPage ? "h-full" : "rounded-2xl border border-[var(--ide-border)] shadow-[var(--ide-panel-shadow)]",
+        )}
+      >
+        <div
+          className={cx(
+            "mx-auto w-full",
+            isPage ? "h-full max-w-7xl px-6" : "max-w-none",
+          )}
+        >
+          <div
+            className={cx(
+              "grid gap-0",
+              "lg:grid-cols-[280px_minmax(0,1fr)_240px]",
+              isPage && "h-full",
+            )}
+          >
+            <aside
+              className={cx(
+                "border-b border-[var(--ide-border)] bg-[var(--ide-control-bg)]/40 py-4 backdrop-blur sm:border-b-0 sm:border-r sm:py-8",
+                isPage
+                  ? "h-full overflow-y-auto"
+                  : "sm:sticky sm:top-[calc(var(--header-height)+18px)] sm:max-h-[calc(100vh-var(--header-height)-36px)] sm:overflow-y-auto",
+              )}
+            >
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="text-sm font-semibold tracking-tight text-[var(--ide-text)]">
@@ -525,7 +898,7 @@ export default function Center() {
                     "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ide-accent)]",
                   )}
                   onClick={() => {
-                    setSearchParams({ page: p.key });
+                    patchSearchParams({ page: p.key, section: null });
                   }}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -549,9 +922,14 @@ export default function Center() {
           <div className="mt-6 rounded-lg border border-[var(--ide-border)] bg-[var(--ide-control-bg)] p-3 text-xs text-[var(--ide-text-muted)] shadow-[var(--ide-panel-shadow)]">
             本页面为“站内文档体验”版式示例，内容会持续补齐与迭代。
           </div>
-        </aside>
+            </aside>
 
-        <div className="col-span-12 py-6 sm:col-span-8 sm:py-8 lg:col-span-7 lg:px-10">
+            <div
+              className={cx(
+                "bg-[color:color-mix(in_oklab,var(--ide-bg)_72%,var(--ide-control-bg))] py-6 sm:py-8 lg:px-10",
+                isPage ? "h-full overflow-y-auto" : "",
+              )}
+            >
           <div className="rounded-2xl border border-[var(--ide-border)] bg-[color:color-mix(in_oklab,var(--ide-bg)_70%,var(--ide-control-bg))] p-5 shadow-[var(--ide-panel-shadow)] sm:p-6">
             <div className="text-xs font-medium text-[var(--ide-text-muted)]">
               Codigo / Docs
@@ -574,10 +952,14 @@ export default function Center() {
               />
             ))}
           </div>
-        </div>
+            </div>
 
-        <aside className="hidden border-l border-[var(--ide-border)] py-8 pl-6 lg:col-span-2 lg:block">
-          <div className="sticky top-[calc(var(--header-height)+24px)]">
+            <aside
+              className={cx(
+                "hidden border-l border-[var(--ide-border)] bg-[var(--ide-control-bg)]/30 py-8 pl-6 backdrop-blur lg:block",
+                isPage ? "h-full overflow-y-auto" : "sticky top-[calc(var(--header-height)+18px)] max-h-[calc(100vh-var(--header-height)-36px)] overflow-y-auto",
+              )}
+            >
             <div className="text-xs font-semibold tracking-wide text-[var(--ide-text-muted)]">
               本页目录
             </div>
@@ -592,21 +974,20 @@ export default function Center() {
                     "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ide-accent)]",
                   )}
                   onClick={() => {
-                    setSearchParams({ page: activePage.key, section: item.id });
+                    patchSearchParams({ page: activePage.key, section: item.id });
                   }}
                 >
                   {item.title}
                 </button>
               ))}
             </div>
+            </aside>
           </div>
-        </aside>
+        </div>
       </div>
     </main>
   );
 }
-
-
 
 
 

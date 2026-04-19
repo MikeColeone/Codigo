@@ -2,6 +2,16 @@
 
 本章的时序图用于描述“调用链路 + 关键分支 + 异常处理策略”。图稿以 Mermaid 形式嵌入正文，同时建议将相同源码复制到 `.docs/diagrams/` 以便复用与自动渲染。
 
+对应图稿源码索引：
+- `.docs/diagrams/seq-login-password.mmd`
+- `.docs/diagrams/seq-page-release.mmd`
+- `.docs/diagrams/seq-get-release.mmd`
+- `.docs/diagrams/seq-workspace-sync-write.mmd`
+- `.docs/diagrams/seq-collaboration-socketio.mmd`
+- `.docs/diagrams/seq-resources-upload.mmd`
+- `.docs/diagrams/seq-template-ensure-defaults.mmd`
+- `.docs/diagrams/seq-admin-guard-chain.mmd`
+
 ## 5.1 登录（账号密码）
 
 ```mermaid

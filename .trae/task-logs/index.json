@@ -1,5 +1,27 @@
 [
   {
+    "taskId": "TASK20260419094625",
+    "title": "Improve dev docs layout & materials links",
+    "scope": "repository",
+    "author": "Trae Agent",
+    "timestamp": "2026-04-19T01:46:25.777Z",
+    "gitBranch": "main",
+    "gitCommit": "c458f15",
+    "markdownPath": ".trae/task-logs/2026-04-19/TASK20260419094625-improve-dev-docs-layout-materials-links.md",
+    "snapshotPath": ".trae/task-logs/2026-04-19/TASK20260419094625-improve-dev-docs-layout-materials-links.json"
+  },
+  {
+    "taskId": "TASK20260419093826",
+    "title": "Fix materials plaza click",
+    "scope": "repository",
+    "author": "Trae Agent",
+    "timestamp": "2026-04-19T01:38:26.073Z",
+    "gitBranch": "main",
+    "gitCommit": "c458f15",
+    "markdownPath": ".trae/task-logs/2026-04-19/TASK20260419093826-fix-materials-plaza-click.md",
+    "snapshotPath": ".trae/task-logs/2026-04-19/TASK20260419093826-fix-materials-plaza-click.json"
+  },
+  {
     "taskId": "TASK20260419081118",
     "title": "修复画布平移误触发选中提示",
     "scope": "repository",

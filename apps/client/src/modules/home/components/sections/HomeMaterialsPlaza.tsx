@@ -1,6 +1,6 @@
 import { builtinComponentDefinitions } from "@codigo/materials";
 import { useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { MaterialDocPanel } from "./materialsPlaza/MaterialDocPanel";
 import { MaterialsList } from "./materialsPlaza/MaterialsList";
 
@@ -13,6 +13,7 @@ export type MaterialMeta = {
 };
 
 export function HomeMaterialsPlaza() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedType = searchParams.get("type");
 
@@ -38,10 +39,9 @@ export function HomeMaterialsPlaza() {
   }, [materials, selectedType]);
 
   const openMaterial = (type: string) => {
-    const next = new URLSearchParams(searchParams);
-    next.set("view", "materials");
-    next.set("type", type);
-    setSearchParams(next);
+    navigate(
+      `/doc?page=materials&section=${encodeURIComponent(`materials-${type}`)}`,
+    );
   };
 
   const clearSelection = () => {
@@ -61,7 +61,7 @@ export function HomeMaterialsPlaza() {
           物料广场
         </h2>
         <p className="max-w-2xl text-sm leading-6 text-[var(--ide-text-muted)]">
-          点击物料即可进入开发文档，查看物料说明与容器能力。
+          点击物料将跳转到开发文档的对应条目，查看详细说明。
         </p>
       </div>
 

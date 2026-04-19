@@ -73,7 +73,7 @@ export function MaterialDocPanel({ material, onBack }: MaterialDocPanelProps) {
             选择一个物料
           </div>
           <div className="text-sm leading-6 text-[var(--ide-text-muted)]">
-            从左侧列表点击任意物料，即可在这里查看开发文档与描述信息。
+            从左侧列表点击任意物料，即可在这里查看物料说明与描述信息。
           </div>
         </div>
       )}

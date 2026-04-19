@@ -16,9 +16,8 @@ export function HomeDevDocSection() {
       </div>
 
       <div className="mt-8">
-        <Center />
+        <Center variant="embedded" />
       </div>
     </section>
   );
 }
-

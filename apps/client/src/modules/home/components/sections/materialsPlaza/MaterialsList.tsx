@@ -52,7 +52,11 @@ export function MaterialsList({
             <button
               key={material.type}
               type="button"
-              onClick={() => onSelect(material.type)}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onSelect(material.type);
+              }}
               className={`rounded-md border bg-[var(--ide-control-bg)] p-4 text-left shadow-[var(--ide-panel-shadow)] transition-colors ${
                 isActive
                   ? "border-[var(--ide-accent)]"
@@ -95,4 +99,3 @@ export function MaterialsList({
     </div>
   );
 }
-
