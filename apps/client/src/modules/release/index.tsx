@@ -299,6 +299,7 @@ export default function Release() {
   }, [location.pathname, location.search]);
 
   const shouldUseAdminShell = Array.isArray(schema.pages) && schema.pages.length > 0;
+  const shouldStretchShellContent = shouldUseAdminShell && deviceType !== "mobile";
   const shouldShowInitialLoading = isValidPageId && loading && !data && !error;
 
   if (shouldShowInitialLoading) {
@@ -395,39 +396,50 @@ export default function Release() {
           title={data?.page_name || "管理后台"}
           layout={shellLayout}
         >
-          <div
-            ref={containerRef}
-            className={`h-full w-full flex items-center justify-center ${
-              deviceType === "mobile" ? "p-3" : "p-0"
-            }`}
-          >
-            <div className="relative" style={{ width: scaledWidth, height: scaledHeight }}>
+          {shouldStretchShellContent ? (
+            <div className="h-full w-full overflow-auto bg-white text-left">
               <div
-                className={`bg-white text-left overflow-y-auto overflow-x-hidden scrollbar-hide ${
-                  deviceType === "mobile"
-                    ? "rounded-[30px] border-[8px] border-slate-800 shadow-2xl"
-                    : "rounded-none border-0 shadow-none"
-                }`}
-                style={{
-                  width: canvasWidth,
-                  height: canvasHeight,
-                  transform: `scale(${scale})`,
-                  transformOrigin: "top left",
-                }}
+                className="min-h-full"
+                style={{ minWidth: canvasWidth, minHeight: canvasHeight }}
               >
-                {deviceType === "mobile" && (
-                  <div className="sticky top-0 z-50 flex h-6 items-center justify-between bg-black/90 px-4 font-mono text-[10px] text-white">
-                    <span>9:41</span>
-                    <div className="flex gap-1">
-                      <div className="h-3 w-3 rounded-full bg-white/20" />
-                      <div className="h-3 w-3 rounded-full bg-white/20" />
-                    </div>
-                  </div>
-                )}
                 {content}
               </div>
             </div>
-          </div>
+          ) : (
+            <div
+              ref={containerRef}
+              className={`h-full w-full flex items-center justify-center ${
+                deviceType === "mobile" ? "p-3" : "p-0"
+              }`}
+            >
+              <div className="relative" style={{ width: scaledWidth, height: scaledHeight }}>
+                <div
+                  className={`bg-white text-left overflow-y-auto overflow-x-hidden scrollbar-hide ${
+                    deviceType === "mobile"
+                      ? "rounded-[30px] border-[8px] border-slate-800 shadow-2xl"
+                      : "rounded-none border-0 shadow-none"
+                  }`}
+                  style={{
+                    width: canvasWidth,
+                    height: canvasHeight,
+                    transform: `scale(${scale})`,
+                    transformOrigin: "top left",
+                  }}
+                >
+                  {deviceType === "mobile" && (
+                    <div className="sticky top-0 z-50 flex h-6 items-center justify-between bg-black/90 px-4 font-mono text-[10px] text-white">
+                      <span>9:41</span>
+                      <div className="flex gap-1">
+                        <div className="h-3 w-3 rounded-full bg-white/20" />
+                        <div className="h-3 w-3 rounded-full bg-white/20" />
+                      </div>
+                    </div>
+                  )}
+                  {content}
+                </div>
+              </div>
+            </div>
+          )}
         </AdminShell>
 
         <FloatButton icon={<CaretLeftOutlined />} onClick={() => nav(-1)} />

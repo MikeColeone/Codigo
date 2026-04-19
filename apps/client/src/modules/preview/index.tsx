@@ -422,6 +422,7 @@ export default observer(function Preview() {
     [pages, requestedPagePath],
   );
   const shouldUseAdminShell = pages.length > 0;
+  const shouldStretchShellContent = shouldUseAdminShell && store.deviceType !== "mobile";
   const { containerRef, scale, scaledWidth, scaledHeight } = useFitScale({
     contentWidth: store.canvasWidth,
     contentHeight: store.canvasHeight,
@@ -437,7 +438,16 @@ export default observer(function Preview() {
     });
   };
 
-  const content = (
+  const content = shouldStretchShellContent ? (
+    <div className="h-full w-full overflow-auto bg-white text-left">
+      <div
+        className="min-h-full"
+        style={{ minWidth: store.canvasWidth, minHeight: store.canvasHeight }}
+      >
+        <PreviewCanvas />
+      </div>
+    </div>
+  ) : (
     <div
       ref={containerRef}
       className={`h-full w-full flex items-center justify-center ${
