@@ -84,6 +84,7 @@ const ComponentWrapper: FC<ComponentWrapperProps> = ({
       data-slot={slot ?? "root"}
     >
       <div className={classNames} />
+      <div className="absolute inset-0 z-[1000] bg-transparent" />
       {isCurrentComponent && canDrag && (
         <>
           <button
@@ -223,6 +224,7 @@ const EditorCanvas: FC<{
   const { handleResizeComponentStart } = useCanvasResize({
     canEditStructure,
     canvasRef,
+    getComponentTypeById: (id) => getComponentById(id)?.type,
     setCurrentComponent,
     updateComponentPosition,
     updateComponentSize,
@@ -323,6 +325,7 @@ const EditorCanvas: FC<{
     if (event.button !== 0) {
       return;
     }
+    canvasRef.current?.focus({ preventScroll: true });
     const wrapper = resolveClosestWrapper(event);
     const wrapperId = wrapper?.dataset.id;
     if (!wrapperId) {
@@ -374,6 +377,7 @@ const EditorCanvas: FC<{
   return (
     <div
       ref={canvasRef}
+      tabIndex={-1}
       className="relative min-h-[700px] bg-white"
       onClick={handleCanvasClick}
       onMouseDownCapture={handleCanvasMouseDownCapture}

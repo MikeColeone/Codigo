@@ -3,11 +3,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import { collectSiblingRects } from "../utils/collision";
 import { getPositioningRect } from "../utils/canvasMove";
+import { resolveMinSizeByType } from "@/modules/editor/utils/componentSizing";
 
 interface ResizeComponentState {
   id: string;
   handle: "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
   allowPositionChange: boolean;
+  minWidth: number;
+  minHeight: number;
   startX: number;
   startY: number;
   origLeft: number;
@@ -21,6 +24,7 @@ interface ResizeComponentState {
 interface UseCanvasResizeOptions {
   canEditStructure: boolean;
   canvasRef: RefObject<HTMLDivElement | null>;
+  getComponentTypeById?: (id: string) => string | undefined | null;
   setCurrentComponent: (id: string) => void;
   updateComponentPosition: (
     id: string,
@@ -45,6 +49,7 @@ interface UseCanvasResizeOptions {
 export function useCanvasResize({
   canEditStructure,
   canvasRef,
+  getComponentTypeById,
   setCurrentComponent,
   updateComponentPosition,
   updateComponentSize,
@@ -80,11 +85,14 @@ export function useCanvasResize({
 
       const rect = wrapperElement.getBoundingClientRect();
       const positioningRect = getPositioningRect(wrapperElement, canvasRef.current);
+      const minSize = resolveMinSizeByType(getComponentTypeById?.(id));
       setCurrentComponent(id);
       setResizingComponent({
         id,
         handle,
         allowPositionChange: layout !== "flow",
+        minWidth: minSize.minWidth,
+        minHeight: minSize.minHeight,
         startX: event.clientX,
         startY: event.clientY,
         origLeft: positioningRect ? rect.left - positioningRect.left : 0,
@@ -104,7 +112,7 @@ export function useCanvasResize({
       event.preventDefault();
       event.stopPropagation();
     },
-    [canEditStructure, setCurrentComponent],
+    [canEditStructure, getComponentTypeById, setCurrentComponent],
   );
 
   const resolveNextRect = useCallback(
@@ -114,8 +122,8 @@ export function useCanvasResize({
       positioningRect: DOMRect | null,
       siblingRects: Array<{ left: number; top: number; width: number; height: number }>,
     ) => {
-      const minWidth = 80;
-      const minHeight = 40;
+      const minWidth = component.minWidth;
+      const minHeight = component.minHeight;
       const dx = event.clientX - component.startX;
       const dy = event.clientY - component.startY;
       const origRight = component.origLeft + component.origWidth;

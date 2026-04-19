@@ -9,6 +9,7 @@ import type {
 } from "@codigo/schema";
 import type { TEditorComponentsStore } from "@/modules/editor/stores";
 import { getDefaultWidthByType } from "@/modules/editor/utils/pageLayout";
+import { resolveMinSizeByType } from "@/modules/editor/utils/componentSizing";
 
 interface EditorComponentMutationsContext {
   storeComponents: TEditorComponentsStore;
@@ -270,8 +271,9 @@ export function createEditorComponentMutations(
         currentComponent.styles = {};
       }
 
-      const nextWidth = Math.max(80, Math.round(width));
-      const nextHeight = Math.max(40, Math.round(height));
+      const minSize = resolveMinSizeByType(currentComponent.type);
+      const nextWidth = Math.max(minSize.minWidth, Math.round(width));
+      const nextHeight = Math.max(minSize.minHeight, Math.round(height));
 
       const isRootNode = !currentComponent.parentId;
       const parent = currentComponent.parentId
