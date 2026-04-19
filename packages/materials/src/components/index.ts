@@ -24,6 +24,7 @@ export * from "./Empty";
 export * from "./RichText";
 export * from "./Qrcode";
 export * from "./Alert";
+export * from "./GeoMap";
 
 export * from "./Input";
 export * from "./TextArea";

@@ -24,8 +24,10 @@ export * from "./LowCodeEmpty";
 export * from "./LowCodeRichText";
 export * from "./LowCodeQrcode";
 export * from "./LowCodeAlert";
+export * from "./LowCodeGeoMap";
 
 export * from "./LowCodeInput";
+export * from "./LowCodeTextArea";
 export * from "./LowCodeRadio";
 export * from "./LowCodeCheckbox";
 export * from "./LowCodeChart";

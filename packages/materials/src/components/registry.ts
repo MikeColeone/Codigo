@@ -24,6 +24,7 @@ import {
   RichTextComponent as LowCodeRichText,
   QrcodeComponent as LowCodeQrcode,
   AlertComponent as LowCodeAlert,
+  GeoMapComponent as LowCodeGeoMap,
   InputComponent as LowCodeInput,
   TextAreaComponent as LowCodeTextArea,
   RadioComponent as LowCodeRadio,
@@ -230,6 +231,13 @@ export const builtinComponentDefinitions: BuiltinComponentDefinition[] = [
     description: "提示/告警组件，用于展示状态说明或风险提示。",
     defaultConfig: {} as any,
     render: LowCodeAlert,
+  },
+  {
+    type: "geoMap",
+    name: "GeoMap",
+    description: "地图组件，用于展示区域分布、标记点和坐标信息。",
+    defaultConfig: {} as any,
+    render: LowCodeGeoMap,
   },
   {
     type: "input",

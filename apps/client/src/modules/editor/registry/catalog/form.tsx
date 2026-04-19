@@ -7,6 +7,7 @@ import {
 import { CheckboxComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeCheckbox";
 import { InputComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeInput";
 import { RadioComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeRadio";
+import { TextAreaComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeTextArea";
 import type { EditorComponentMeta } from "../types";
 
 export const formEditorComponents: EditorComponentMeta[] = [
@@ -22,7 +23,7 @@ export const formEditorComponents: EditorComponentMeta[] = [
     name: "文本域",
     icon: <FormOutlined />,
     sectionKey: "form",
-    propsEditor: InputComponentProps,
+    propsEditor: TextAreaComponentProps,
   },
   {
     type: "radio",

@@ -1,4 +1,4 @@
-import { ColorPicker, Input, Segmented } from "antd";
+import { ColorPicker, Input, InputNumber, Segmented } from "antd";
 import { useMemo } from "react";
 
 import type {
@@ -9,7 +9,7 @@ import {
   fillComponentPropsByConfig,
   qrcodeComponentDefaultConfig,
 } from "@codigo/materials";
-import { FormContainer, FormPropLabel } from "../utils/components";
+import { FormContainer, FormPropLabel, UploadEditOrChooiseInput } from "../utils/components";
 import { useEditorComponents } from "@/modules/editor/hooks";
 
 type PickerColor = {
@@ -27,8 +27,6 @@ export default function QrcodeComponentProps(_props: IQrcodeComponentProps) {
     changedValues: TQrcodeComponentConfig["props"],
   ) {
     if (changedValues["bgColor"] !== undefined) {
-      console.log(changedValues["bgColor"]);
-
       updateCurrentComponent({
         bgColor: `#${(
           changedValues["bgColor"] as unknown as PickerColor
@@ -55,6 +53,12 @@ export default function QrcodeComponentProps(_props: IQrcodeComponentProps) {
       </FormPropLabel>
       <FormPropLabel prop={props.color} name="color" label="二维码颜色：">
         <ColorPicker showText />
+      </FormPropLabel>
+      <FormPropLabel prop={props.icon} name="icon" label="中心图标：">
+        <UploadEditOrChooiseInput propName="icon" type="image" />
+      </FormPropLabel>
+      <FormPropLabel prop={props.iconSize} name="iconSize" label="图标尺寸：">
+        <InputNumber min={8} max={48} className="!w-full" />
       </FormPropLabel>
       <FormPropLabel
         prop={props.errorLevel}

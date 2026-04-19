@@ -31,6 +31,7 @@
 
 - **apps/client（编辑器与工作台）**
   - 职责：页面搭建、组件编排、发布/预览、协作者与权限入口、画布渲染与交互。
+  - 物料约束：编辑器 `registry/catalog` 需与 `@codigo/materials` 已注册物料保持一一对齐；右侧属性面板按组件类型挂接专属 props editor，事件配置统一走 `onClick -> ActionConfig[]`。
   - 对外协议：REST（对接 `apps/server` 的 `/api/*`）、WebSocket（对接 `/collaboration`）。
   - 关键依赖：`@codigo/schema`（协议与类型）、`@codigo/materials`（运行时物料）、`@codigo/render`、`@codigo/editor-sandbox`。
 - **apps/admin（系统管理前端）**
@@ -89,8 +90,8 @@ flowchart TB
 ## 3.5 接口边界与解耦原则
 
 - **单一事实源**：跨端类型/协议统一由 `@codigo/schema` 提供，避免“前后端各自维护一套字段/枚举”的双源。
+- **物料一致性**：新增/替换物料时，需要同步更新 `@codigo/materials` 注册、`apps/client` 组件目录与 `registry/catalog` 映射；例如 `geoMap` 地图物料同时承载运行时渲染、右侧属性面板与模板预设消费。
 - **领域边界清晰**：Admin 域只承接治理能力；编辑器域（client）不承接后台治理业务逻辑。
 - **依赖倒置**：
   - 应用层依赖抽象（协议/类型/接口），基础设施实现（DB/Redis/OSS）在后端模块内部封装。
   - 前端对后端只依赖稳定的 REST 合约与错误码，不依赖后端实现细节。
-

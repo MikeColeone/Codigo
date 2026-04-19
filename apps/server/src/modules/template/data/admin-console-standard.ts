@@ -2116,20 +2116,81 @@ function createSparklineHtml() {
   `;
 }
 
-function createWorldMapHtml() {
-  return `
-    <div style="height:100%;padding:18px 18px 12px;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#7c889b;text-transform:uppercase;">Revenue by location</div>
-      <svg width="100%" height="245" viewBox="0 0 640 245" xmlns="http://www.w3.org/2000/svg" style="margin-top:12px;">
-        <rect x="0" y="0" width="640" height="245" rx="12" fill="#ffffff"/>
-        <path d="M68 86c18-22 42-34 76-36l30 8 28-6 14 18 50 12 24-12 56 8 40-18 52 12 48 34-8 36-38 18-74-6-46 12-38-8-40 8-66-12-44 4-40-18-34-34 10-20z" fill="#9ec8ff" stroke="#82b8ff" stroke-width="2"/>
-        <path d="M340 52l22-14 18 10 6 18-20 8-24-8z" fill="#e6eaef"/>
-        <circle cx="170" cy="92" r="5" fill="#1f4ec9"/>
-        <circle cx="436" cy="118" r="5" fill="#1f4ec9"/>
-        <circle cx="512" cy="154" r="5" fill="#1f4ec9"/>
-      </svg>
-    </div>
-  `;
+function createRevenueByLocationMap(): TemplateComponent {
+  return withStyles(
+    {
+      type: 'geoMap',
+      props: {
+        title: 'Revenue by location',
+        subtitle: 'Highlighted markets and marker points stay editable from the right panel.',
+        interactionHint: 'Select a marker and click the map to update coordinates.',
+        backgroundColor: '#ffffff',
+        oceanColor: '#f5f7fb',
+        defaultRegionColor: '#dbeafe',
+        regionBorderColor: '#94b7ff',
+        markerColor: '#2356d8',
+        showLabels: true,
+        showLegend: true,
+        optionText: '',
+        markers: [
+          {
+            id: 'revenue-location-ny',
+            name: 'New York',
+            longitude: -74.006,
+            latitude: 40.7128,
+            value: '$12.4k',
+            color: '#2356d8',
+            size: 16,
+          },
+          {
+            id: 'revenue-location-berlin',
+            name: 'Berlin',
+            longitude: 13.405,
+            latitude: 52.52,
+            value: '$8.2k',
+            color: '#6f52ed',
+            size: 15,
+          },
+          {
+            id: 'revenue-location-singapore',
+            name: 'Singapore',
+            longitude: 103.8198,
+            latitude: 1.3521,
+            value: '$6.7k',
+            color: '#22c55e',
+            size: 14,
+          },
+        ],
+        highlightRegions: [
+          {
+            id: 'revenue-region-1',
+            regionKey: 'north-america',
+            label: 'North America',
+            value: '$42.6k',
+            color: '#cfe1ff',
+          },
+          {
+            id: 'revenue-region-2',
+            regionKey: 'europe',
+            label: 'Europe',
+            value: '$28.1k',
+            color: '#dfe6ff',
+          },
+          {
+            id: 'revenue-region-3',
+            regionKey: 'asia',
+            label: 'Asia',
+            value: '$31.8k',
+            color: '#d8f2e3',
+          },
+        ],
+      },
+    },
+    {
+      width: '100%',
+      height: '100%',
+    },
+  );
 }
 
 function createSimpleTableHtml(
@@ -2478,7 +2539,7 @@ function createVuesticDashboardReplicaPage(): TemplatePagePreset {
         top: 760,
         width: 936,
         height: 360,
-        children: [placeHtml(createWorldMapHtml(), { left: 0, top: 0, width: 936, height: 360 })],
+        children: [placeAbs(createRevenueByLocationMap(), { left: 0, top: 0, width: 936, height: 360 })],
       }),
       createReplicaPanel({
         left: 972,

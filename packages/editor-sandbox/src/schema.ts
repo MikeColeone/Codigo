@@ -25,6 +25,7 @@ export const supportedComponentTypes: TComponentTypes[] = [
   "checkbox",
   "empty",
   "alert",
+  "geoMap",
 ];
 
 export function extractSchemaText(source: string) {

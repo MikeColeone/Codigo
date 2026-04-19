@@ -30,6 +30,12 @@
 - 违规根因：只关注了模板预设与壳层 UI 改造，没有同步检查 `template.preset` 的数据库列类型；`simple-json` 在 MySQL 下实际落为 `TEXT`，容量不足以承载新的大体积模板 JSON。
 - 修正方案：凡是显著增大 schema/preset/json 体积的改动，提交前必须同时核对对应实体字段的数据库映射与容量上限；大对象统一优先使用 `LONGTEXT` 或显式 JSON 列，不再默认沿用 `simple-json`。
 
+## React 19 下直接使用 `react-quill` 导致属性面板崩溃
+
+- 问题现象：点击模板中的富文本组件时，属性面板挂载 `react-quill` 直接抛出 `findDOMNode is not a function`，导致路由错误页接管界面。
+- 违规根因：在 React 19 环境中继续直接挂载依赖 `findDOMNode` 的旧封装组件，没有先校验第三方编辑器与当前 React 主版本的兼容性。
+- 修正方案：富文本属性面板改为直接基于 `Quill` 实例手动挂载，避开 `react-quill` 的不兼容生命周期；后续引入编辑器类依赖前，先验证其对当前 React 主版本的兼容声明与运行时行为。
+
 后续一旦出现逻辑错误、架构违规或代码回退，必须立即补充以下内容：
 
 ## 标题

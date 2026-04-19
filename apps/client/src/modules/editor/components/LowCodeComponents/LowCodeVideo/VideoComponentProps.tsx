@@ -19,6 +19,10 @@ export default function VideoComponentProps(_props: IVideoComponentProps) {
         <UploadEditOrChooiseInput propName="src" type="video" />
       </FormPropLabel>
 
+      <FormPropLabel prop={props.poster} name="poster" label="封面图片：">
+        <UploadEditOrChooiseInput propName="poster" type="image" />
+      </FormPropLabel>
+
       <FormPropLabel
         prop={props.startTime}
         name="startTime"

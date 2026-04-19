@@ -86,6 +86,7 @@ export function createEditorComponentCreation(
       case "barChart":
       case "lineChart":
       case "pieChart":
+      case "geoMap":
         return `${getDefaultHeightByType(type)}px`;
       default:
         return undefined;
@@ -223,7 +224,8 @@ export function createEditorComponentCreation(
     if (
       template.type === "barChart" ||
       template.type === "lineChart" ||
-      template.type === "pieChart"
+      template.type === "pieChart" ||
+      template.type === "geoMap"
     ) {
       return Math.max(120, getDefaultHeightByType(template.type));
     }

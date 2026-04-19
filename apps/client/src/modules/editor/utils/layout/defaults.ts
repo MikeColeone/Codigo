@@ -21,6 +21,7 @@ export function getDefaultWidthByType(type: TComponentTypes): string {
     case "image":
     case "swiper":
     case "richText":
+    case "geoMap":
       return "420px";
     case "input":
     case "button":
@@ -49,6 +50,7 @@ export function getDefaultHeightByType(type: TComponentTypes): number {
     case "barChart":
     case "lineChart":
     case "pieChart":
+    case "geoMap":
       return 300;
     case "table":
     case "dataTable":

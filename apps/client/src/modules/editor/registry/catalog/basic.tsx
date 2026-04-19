@@ -10,6 +10,8 @@ import {
   FontSizeOutlined,
   FundViewOutlined,
   MinusOutlined,
+  PlayCircleOutlined,
+  QrcodeOutlined,
   SplitCellsOutlined,
   TableOutlined,
   UnorderedListOutlined,
@@ -29,11 +31,13 @@ import { ImageComponentProps } from "@/modules/editor/components/LowCodeComponen
 import { ListComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeList";
 import { PageHeaderComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodePageHeader";
 import { QueryFilterComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeQueryFilter";
+import { QrcodeComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeQrcode";
 import { RichTextComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeRichText";
 import { SplitComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeSplit";
 import { StatCardComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeStatCard";
 import { SwiperComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeSwiper";
 import { TextComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeText";
+import { VideoComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeVideo";
 import type { EditorComponentMeta } from "../types";
 
 export const basicEditorComponents: EditorComponentMeta[] = [
@@ -124,6 +128,13 @@ export const basicEditorComponents: EditorComponentMeta[] = [
     quickInsert: true,
   },
   {
+    type: "video",
+    name: "视频",
+    icon: <PlayCircleOutlined />,
+    sectionKey: "basic",
+    propsEditor: VideoComponentProps,
+  },
+  {
     type: "avatar",
     name: "头像",
     icon: <UserOutlined />,
@@ -152,6 +163,13 @@ export const basicEditorComponents: EditorComponentMeta[] = [
     icon: <FontColorsOutlined />,
     sectionKey: "basic",
     propsEditor: RichTextComponentProps,
+  },
+  {
+    type: "qrcode",
+    name: "二维码",
+    icon: <QrcodeOutlined />,
+    sectionKey: "basic",
+    propsEditor: QrcodeComponentProps,
   },
   {
     type: "empty",

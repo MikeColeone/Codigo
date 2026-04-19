@@ -1,11 +1,13 @@
 import {
   BarChartOutlined,
   DashboardOutlined,
+  GlobalOutlined,
   LineChartOutlined,
   PieChartOutlined,
   TableOutlined,
 } from "@ant-design/icons";
 import { ChartComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeChart";
+import { GeoMapComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeGeoMap";
 import { StatisticComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeStatistic";
 import { TableComponentProps } from "@/modules/editor/components/LowCodeComponents/LowCodeTable";
 import type { EditorComponentMeta } from "../types";
@@ -47,19 +49,10 @@ export const reportEditorComponents: EditorComponentMeta[] = [
     propsEditor: ChartComponentProps,
   },
   {
-    type: "radarChart",
-    name: "雷达图",
-    icon: <PieChartOutlined />,
+    type: "geoMap",
+    name: "地图",
+    icon: <GlobalOutlined />,
     sectionKey: "report",
-    propsEditor: ChartComponentProps,
-    hiddenFromPalette: true,
-  },
-  {
-    type: "funnelChart",
-    name: "漏斗图",
-    icon: <BarChartOutlined />,
-    sectionKey: "report",
-    propsEditor: ChartComponentProps,
-    hiddenFromPalette: true,
+    propsEditor: GeoMapComponentProps,
   },
 ];

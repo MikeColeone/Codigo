@@ -44,12 +44,12 @@ export const qrcodeComponentDefaultConfig: TQrcodeComponentConfigResult = {
   icon: {
     value: "",
     defaultValue: "",
-    isHidden: true,
+    isHidden: false,
   },
   iconSize: {
     value: 12,
     defaultValue: 12,
-    isHidden: true,
+    isHidden: false,
   },
   size: {
     value: 160,

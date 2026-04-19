@@ -28,6 +28,7 @@ export type TComponentTypes =
   | "checkbox"
   | "empty"
   | "alert"
+  | "geoMap"
   | "barChart"
   | "lineChart"
   | "pieChart"
