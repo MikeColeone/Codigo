@@ -128,8 +128,8 @@ if (workspaceOrArchitectureChanged) {
   errors.push(
     ...requireDocsChange(
       changedFiles,
-      [/^\.trae\/rules\/ARTCH\.md$/, /^\.docs\/architecture\/01-overview\.md$/],
-      '架构/依赖变更检测：修改了 workspace/turbo/package.json，但未更新 .trae/rules/ARTCH.md 或 .docs/architecture/01-overview.md',
+      [/^\.trae\/rules\/ARCH\.md$/, /^\.docs\/architecture\/01-overview\.md$/],
+      '架构/依赖变更检测：修改了 workspace/turbo/package.json，但未更新 .trae/rules/ARCH.md 或 .docs/architecture/01-overview.md',
     ),
   );
 }

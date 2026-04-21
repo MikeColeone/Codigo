@@ -8,6 +8,8 @@
 - `retros/`：问题复盘与 bad case 记录。
 - `task-logs/`：任务执行日志与索引。
 
+其中 `rules/PAPER/` 专门存放论文写作相关的规则提示词，避免与工程协作规则混杂。
+
 ## 快速入口
 
 - 上下文交接：`.trae/context/SESSION_HANDOFF.md`

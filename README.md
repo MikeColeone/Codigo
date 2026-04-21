@@ -53,7 +53,8 @@ pnpm run test
 
 - 架构边界与依赖方向：见 `.trae/rules/BASIC_RULES.md`
 - 协作与风格约束：见 `.trae/rules/USER_GUIDE.md`
-- 项目包与目录职责：见 `.trae/rules/ARTCH.md`
+- 项目包与目录职责：见 `.trae/rules/ARCH.md`
+- 论文写作规则（润色/翻译/审查/配图）：见 `.trae/rules/PAPER/INDEX.md`
 
 ## 研发工作日志
 
