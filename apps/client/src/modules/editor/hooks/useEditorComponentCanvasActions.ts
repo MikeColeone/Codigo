@@ -54,7 +54,6 @@ export function createEditorComponentCanvasActions(
     broadcastNodeChange,
     broadcastReplaceAll,
     ensurePermission,
-    getCurrentComponent,
     getSiblingIds,
     insertNodeTree,
     pageStore,

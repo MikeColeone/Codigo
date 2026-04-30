@@ -23,7 +23,7 @@ type MapPickDetail = {
 };
 
 export default function GeoMapComponentProps(_props: IGeoMapComponentProps) {
-  const { updateCurrentComponent, updateCurrentCompConfigWithArray, getCurrentComponentConfig, store } =
+  const { updateCurrentCompConfigWithArray, getCurrentComponentConfig, store } =
     useEditorComponents();
   const [targetMarkerId, setTargetMarkerId] = useState<string | null>(null);
   const props = useMemo(() => {
@@ -61,13 +61,13 @@ export default function GeoMapComponentProps(_props: IGeoMapComponentProps) {
         key: "markers",
         index: targetIndex,
         field: "longitude",
-        value: detail.longitude,
+        value: String(detail.longitude),
       });
       updateCurrentCompConfigWithArray({
         key: "markers",
         index: targetIndex,
         field: "latitude",
-        value: detail.latitude,
+        value: String(detail.latitude),
       });
       message.success(`已写入坐标：${detail.longitude}, ${detail.latitude}`);
     };

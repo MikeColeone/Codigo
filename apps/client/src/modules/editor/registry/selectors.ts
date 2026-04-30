@@ -7,6 +7,7 @@ const sectionLabelMap: Record<EditorComponentSectionKey, string> = {
   basic: "基础",
   form: "表单",
   report: "报表",
+  container: "容器",
 };
 
 const sectionOrder: EditorComponentSectionKey[] = [

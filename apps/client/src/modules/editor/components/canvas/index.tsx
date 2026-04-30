@@ -310,6 +310,8 @@ const EditorCanvas: FC<{
   function isDirectWrapperHit(event: ReactMouseEvent, id: string) {
     return resolveClosestWrapper(event)?.dataset.id === id;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  void isDirectWrapperHit;
 
   function isSelectedComponent(conf: { id: string }) {
     if (isCurrentComponent(conf)) {
@@ -529,9 +531,9 @@ const EditorCanvas: FC<{
             onPointerDownCapture={(event) =>
               handleComponentPointerDownCapture(event, node)
             }
-            onPointerDown={(event) => handleDragComponentStart(event, node.id)}
+            onPointerDown={(event) => handleDragComponentStart(event as unknown as ReactPointerEvent<HTMLDivElement>, node.id)}
             onResizeMouseDown={(event, handle, wrapperLayout) =>
-              handleResizeComponentStart(event, node.id, handle, wrapperLayout)
+              handleResizeComponentStart(event as unknown as ReactPointerEvent<HTMLDivElement>, node.id, handle, wrapperLayout)
             }
             onClick={(event) => handleComponentClick(event, node)}
             isCurrentComponent={isSelectedComponent(node)}

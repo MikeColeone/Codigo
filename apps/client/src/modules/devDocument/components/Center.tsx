@@ -28,10 +28,42 @@ type DocBlock =
       code: string;
     };
 
+type DocBlockInput =
+  | {
+      type: "p";
+      text: string;
+    }
+  | {
+      type: "shot";
+      title: string;
+      caption?: string;
+    }
+  | {
+      type: "callout";
+      tone: "info" | "warn";
+      title: string;
+      text: string;
+    }
+  | {
+      type: "steps";
+      items: Array<{ title: string; text?: string; code?: string }>;
+    }
+  | {
+      type: "code";
+      title?: string;
+      code: string;
+    };
+
 type DocSection = {
   key: string;
   title: string;
   blocks: DocBlock[];
+};
+
+type DocSectionInput = {
+  key: string;
+  title: string;
+  blocks: DocBlockInput[];
 };
 
 type DocPage = {
@@ -196,7 +228,7 @@ function Section({ id, title, blocks }: { id: string; title: string; blocks: Doc
   );
 }
 
-const DOC_PAGES: DocPage[] = [
+const DOC_PAGES: { key: string; title: string; summary: string; sections: DocSectionInput[] }[] = [
   {
     key: "overview",
     title: "产品概述",
@@ -648,7 +680,7 @@ export default function Center({ variant = "page" }: { variant?: "page" | "embed
 
   const materialsDocPage = useMemo<DocPage>(() => {
     
-    const sections: DocSection[] = builtinComponentDefinitions
+    const sections = builtinComponentDefinitions
       .map((item) => {
         const type = String(item.type);
         const name = String(item.name);
@@ -659,43 +691,44 @@ export default function Center({ variant = "page" }: { variant?: "page" | "embed
               .map((s) => (s.title ?? s.name) + (s.multiple ? "（可放多个）" : ""))
               .join("、")
           : "";
+        const blocks: DocBlock[] = [
+          {
+            type: "shot",
+            title: `${name}（示例）`,
+            caption: "截图占位：建议替换为该物料在编辑器/发布端的真实显示效果。",
+          },
+          {
+            type: "p",
+            text: item.description ? String(item.description) : "暂无描述",
+          },
+          {
+            type: "callout",
+            tone: isContainer ? "info" : "warn",
+            title: "容器能力",
+            text: isContainer
+              ? "该物料可以放入其它组件作为内容（容器）。"
+              : "该物料主要用于展示自身内容，不用于承载子内容（非容器）。",
+          },
+          {
+            type: "steps",
+            items: [
+              {
+                title: "使用方式",
+                text: "编辑器 → 物料面板 → 搜索并找到该物料 → 拖拽到画布 → 右侧配置区调整内容与样式。",
+              },
+              {
+                title: "可放内容的位置（插槽）",
+                text: slots.length
+                  ? `该物料包含 ${slots.length} 个可放内容的位置：${slotSummary}。`
+                  : "该物料没有可放内容的位置。",
+              },
+            ],
+          },
+        ];
         return {
           key: type,
           title: name,
-          blocks: [
-            {
-              type: "shot",
-              title: `${name}（示例）`,
-              caption: "截图占位：建议替换为该物料在编辑器/发布端的真实显示效果。",
-            },
-            {
-              type: "p",
-              text: item.description ? String(item.description) : "暂无描述",
-            },
-            {
-              type: "callout",
-              tone: isContainer ? "info" : "warn",
-              title: "容器能力",
-              text: isContainer
-                ? "该物料可以放入其它组件作为内容（容器）。"
-                : "该物料主要用于展示自身内容，不用于承载子内容（非容器）。",
-            },
-            {
-              type: "steps",
-              items: [
-                {
-                  title: "使用方式",
-                  text: "编辑器 → 物料面板 → 搜索并找到该物料 → 拖拽到画布 → 右侧配置区调整内容与样式。",
-                },
-                {
-                  title: "可放内容的位置（插槽）",
-                  text: slots.length
-                    ? `该物料包含 ${slots.length} 个可放内容的位置：${slotSummary}。`
-                    : "该物料没有可放内容的位置。",
-                },
-              ],
-            },
-          ],
+          blocks,
         };
       })
       .sort((a, b) => a.title.localeCompare(b.title));

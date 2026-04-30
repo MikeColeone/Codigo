@@ -100,7 +100,7 @@ function isPlainTemplateContainer(props: Record<string, any> | undefined) {
 function stripPlainTemplateContainers(
   components: IEditorPageSchema["components"],
 ): IEditorPageSchema["components"] {
-  const walk = (node: IEditorPageSchema["components"][number]) => {
+  const walk = (node: IEditorPageSchema["components"][number]): IEditorPageSchema["components"] => {
     const children = (node.children ?? []).flatMap(walk);
     if (node.type === "container" && isPlainTemplateContainer(node.props)) {
       return children;

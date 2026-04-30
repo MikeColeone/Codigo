@@ -40,12 +40,6 @@ export function AdminShell({
   useEffect(() => {
     setOpenPaths(derivedOpenPaths);
   }, [derivedOpenPaths]);
-  const activePage = activePagePath ? pagePathIndex.get(activePagePath) ?? null : null;
-  const activeSegments = (activePagePath?.split("/").filter(Boolean) ?? []).map((segment) =>
-    segment
-      .replace(/[-_]+/g, " ")
-      .replace(/\b\w/g, (char) => char.toUpperCase()),
-  );
   const isAuthLikePage =
     activePagePath?.startsWith("auth/") ||
     activePagePath === "auth" ||

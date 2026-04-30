@@ -4,7 +4,8 @@ import type { FC, ReactNode } from "react";
 export type EditorComponentSectionKey =
   | "basic"
   | "form"
-  | "report";
+  | "report"
+  | "container";
 
 export interface EditorComponentMeta {
   type: TComponentTypes;

@@ -3,7 +3,7 @@ import { HomePreviewCard } from "./HomePreviewCard";
 
 /** 渲染首页首屏营销信息与核心行动按钮。 */
 export function HomeHeroSection() {
-  const { openAppManagement, openDashboard } = useHomeNavigation();
+  const { openAppManagement } = useHomeNavigation();
 
   return (
     <section className="mx-auto w-full max-w-7xl px-6 pb-20 pt-10">

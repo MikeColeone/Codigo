@@ -11,7 +11,6 @@ import AppManagementSectionContent from "./components/sections/AppManagementSect
 const AppManagement = observer(() => {
   const navigate = useNavigate();
   const {
-    avatarUrl,
     currentTab,
     handleOpenPublishedPage,
     handleOpenTemplatePreview,
@@ -22,15 +21,12 @@ const AppManagement = observer(() => {
     localDraftMeta,
     myPageData,
     myPageLoading,
-    openLogin,
     previewLoading,
     previewState,
     publicLoading,
     publicPages,
     setPreviewState,
     templates,
-    userMenuItems,
-    username,
   } = useAppManagementController();
   const { metrics, navigationItems } = useAppManagementViewModel({
     isLoggedIn,
