@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 import { MenuOutlined } from "@ant-design/icons";
 import { Dropdown, Modal } from "antd";
-import { createElement, useEffect, useMemo, useState } from "react";
+import { createElement, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Profile from "@/modules/profile";
 import LoginOrRegister from "@/modules/auth";
@@ -11,27 +11,9 @@ import { HomeUserEntry } from "./home-user-entry";
 /** 渲染首页顶部导航条。 */
 function HomeHeader() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
-  const [isLoginModalVisible, setIsLoginModalVisible] = useState(false);
   const modalParam = searchParams.get("modal");
   const hasProfileModalParam = modalParam === "profile";
   const hasLoginModalParam = modalParam === "login";
-
-  useEffect(() => {
-    if (hasProfileModalParam) {
-      setIsProfileModalVisible(true);
-      return;
-    }
-    setIsProfileModalVisible(false);
-  }, [hasProfileModalParam]);
-
-  useEffect(() => {
-    if (hasLoginModalParam) {
-      setIsLoginModalVisible(true);
-      return;
-    }
-    setIsLoginModalVisible(false);
-  }, [hasLoginModalParam]);
 
   const {
     avatarUrl,
@@ -44,13 +26,11 @@ function HomeHeader() {
     username,
   } = useHomeNavigation({
     onOpenProfile: () => {
-      setIsProfileModalVisible(true);
       const nextParams = new URLSearchParams(searchParams);
       nextParams.set("modal", "profile");
       setSearchParams(nextParams, { replace: true });
     },
     onOpenLogin: () => {
-      setIsLoginModalVisible(true);
       const nextParams = new URLSearchParams(searchParams);
       nextParams.set("modal", "login");
       setSearchParams(nextParams, { replace: true });
@@ -119,16 +99,15 @@ function HomeHeader() {
 
       <Modal
         title="个人中心"
-        open={isProfileModalVisible}
+        open={hasProfileModalParam}
         onCancel={() => {
-          setIsProfileModalVisible(false);
           const nextParams = new URLSearchParams(searchParams);
           nextParams.delete("modal");
           setSearchParams(nextParams, { replace: true });
         }}
         footer={null}
         width={600}
-        destroyOnClose
+        destroyOnHidden
         centered
         styles={{
           body: { padding: 0, maxHeight: "80vh", overflowY: "auto" },
@@ -137,7 +116,6 @@ function HomeHeader() {
         <Profile
           isModal={true}
           onUpdateSuccess={() => {
-            setIsProfileModalVisible(false);
             const nextParams = new URLSearchParams(searchParams);
             nextParams.delete("modal");
             setSearchParams(nextParams, { replace: true });
@@ -147,9 +125,8 @@ function HomeHeader() {
 
       <Modal
         title="登录"
-        open={isLoginModalVisible}
+        open={hasLoginModalParam}
         onCancel={() => {
-          setIsLoginModalVisible(false);
           const nextParams = new URLSearchParams(searchParams);
           nextParams.delete("modal");
           nextParams.delete("redirect");
@@ -157,7 +134,7 @@ function HomeHeader() {
         }}
         footer={null}
         width={520}
-        destroyOnClose
+        destroyOnHidden
         centered
         styles={{
           body: { padding: 0, maxHeight: "80vh", overflowY: "auto" },

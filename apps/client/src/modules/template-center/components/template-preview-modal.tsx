@@ -21,7 +21,7 @@ export function TemplatePreviewModal({
 }: TemplatePreviewModalProps) {
   return (
     <Modal
-      destroyOnClose
+      destroyOnHidden
       footer={null}
       open={open}
       title={title}

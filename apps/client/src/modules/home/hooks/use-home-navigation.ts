@@ -13,7 +13,6 @@ const navigationItems = [
   { label: "后台管理", path: "/console" },
 ] as const;
 
-/** 提供首页导航与账户入口动作。 */
 export function useHomeNavigation(options?: {
   onOpenProfile?: () => void;
   onOpenLogin?: () => void;
