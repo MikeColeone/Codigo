@@ -14,10 +14,13 @@ describe('AdminService', () => {
     createQueryBuilder: jest.fn(),
   };
   const pageRepository = {
+    count: jest.fn(),
+    countBy: jest.fn(),
     findOneBy: jest.fn(),
     createQueryBuilder: jest.fn(),
   };
   const componentRepository = {
+    count: jest.fn(),
     findOneBy: jest.fn(),
     createQueryBuilder: jest.fn(),
   };
@@ -25,14 +28,21 @@ describe('AdminService', () => {
     createQueryBuilder: jest.fn(),
   };
   const pageCollaboratorRepository = {
+    count: jest.fn(),
     createQueryBuilder: jest.fn(),
   };
   const operationLogRepository = {
     createQueryBuilder: jest.fn(),
   };
   const pageVersionRepository = {
+    count: jest.fn(),
     find: jest.fn(),
     createQueryBuilder: jest.fn(),
+  };
+  const templateRepository = {
+    count: jest.fn(),
+    countBy: jest.fn(),
+    find: jest.fn(),
   };
 
   let service: AdminService;
@@ -56,6 +66,7 @@ describe('AdminService', () => {
       pageCollaboratorRepository as never,
       operationLogRepository as never,
       pageVersionRepository as never,
+      templateRepository as never,
     );
   });
 

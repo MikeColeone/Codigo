@@ -10,8 +10,10 @@ import { StudioLayout } from "@/app/layouts/studio-layout";
 import { EditorRouteGuard } from "@/modules/editor/components/editor-route-guard";
 import AdminLayout from "@/modules/admin-console/components/admin-layout";
 import { AdminRouteGuard } from "@/modules/admin-console/components/admin-route-guard";
+import AdminBigScreen from "@/modules/admin-console/pages/big-screen";
 import AdminDashboard from "@/modules/admin-console/pages/dashboard";
 import AdminPermissions from "@/modules/admin-console/pages/permissions";
+import AdminSettings from "@/modules/admin-console/pages/settings";
 import AdminPlaceholder from "@/modules/admin-console/pages/placeholder";
 import { IdeThemeLayout } from "@/app/layouts/ide-theme-layout";
 
@@ -90,12 +92,10 @@ export const router = createHashRouter([
     ),
     children: [
       { index: true, element: <AdminDashboard /> },
-      { path: "settings", element: <AdminPlaceholder title="基础设置" /> },
+      { path: "settings", element: <AdminSettings /> },
       { path: "permissions", element: <AdminPermissions /> },
-      { path: "roles", element: <AdminPlaceholder title="角色管理" /> },
       { path: "versions", element: <AdminPlaceholder title="版本管理" /> },
-      { path: "snippets", element: <AdminPlaceholder title="代码管理" /> },
-      { path: "big-screen", element: <AdminPlaceholder title="数据大屏" /> },
+      { path: "big-screen", element: <AdminBigScreen /> },
     ],
   },
   {

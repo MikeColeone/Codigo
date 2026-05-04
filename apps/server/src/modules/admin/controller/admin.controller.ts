@@ -12,7 +12,11 @@ import {
   ParseEnumPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { type AdminPermission, type GlobalRole } from '@codigo/schema';
+import {
+  type AdminBigScreenOverviewResponse,
+  type AdminPermission,
+  type GlobalRole,
+} from '@codigo/schema';
 import { AdminPermissions } from 'src/core/guard/admin-permissions.decorator';
 import { AdminPermissionGuard } from 'src/core/guard/admin-permission.guard';
 import { AdminService } from 'src/modules/admin/service/admin.service';
@@ -109,6 +113,14 @@ export class AdminController {
   @AdminPermissions('PAGE_MANAGE')
   deletePage(@Param('id', ParseIntPipe) id: number) {
     return this.adminService.deletePage(id);
+  }
+
+  @Get('big-screen')
+  @Roles('USER', 'ADMIN', 'SUPER_ADMIN')
+  getBigScreenOverview(
+    @getUserMess() currentUser: TCurrentUser,
+  ): Promise<AdminBigScreenOverviewResponse> {
+    return this.adminService.getBigScreenOverview(currentUser);
   }
 
   @Get('components/stats')

@@ -10,7 +10,6 @@ type DocBlock =
   | {
       type: "shot";
       title: string;
-      caption?: string;
     }
   | {
       type: "callout";
@@ -36,7 +35,6 @@ type DocBlockInput =
   | {
       type: "shot";
       title: string;
-      caption?: string;
     }
   | {
       type: "callout";
@@ -178,11 +176,6 @@ function Section({ id, title, blocks }: { id: string; title: string; blocks: Doc
                     </div>
                   </div>
                 </div>
-                {b.caption ? (
-                  <div className="text-xs leading-5 text-[var(--ide-text-muted)]">
-                    {b.caption}
-                  </div>
-                ) : null}
               </div>
             );
           }
@@ -245,7 +238,6 @@ const DOC_PAGES: { key: string; title: string; summary: string; sections: DocSec
           {
             type: "shot",
             title: "首页 / 导航入口",
-            caption: "截图占位：建议替换为你实际部署环境的首页截图（包含“模板广场 / 物料广场 / 使用手册”等入口）。",
           },
           {
             type: "callout",
@@ -314,7 +306,6 @@ const DOC_PAGES: { key: string; title: string; summary: string; sections: DocSec
           {
             type: "shot",
             title: "模板广场 / 模板卡片",
-            caption: "截图占位：展示模板卡片的“预览 / 使用模板”按钮。",
           },
           {
             type: "steps",
@@ -348,7 +339,6 @@ const DOC_PAGES: { key: string; title: string; summary: string; sections: DocSec
           {
             type: "shot",
             title: "编辑器 / 画布与右侧配置区",
-            caption: "截图占位：建议包含画布、选中组件后的配置面板与顶部工具栏。",
           },
           {
             type: "steps",
@@ -376,7 +366,6 @@ const DOC_PAGES: { key: string; title: string; summary: string; sections: DocSec
           {
             type: "shot",
             title: "预览 / 发布 / 分享链接",
-            caption: "截图占位：建议包含“发布成功后的链接与可见性设置”。",
           },
           {
             type: "steps",
@@ -454,7 +443,6 @@ const DOC_PAGES: { key: string; title: string; summary: string; sections: DocSec
           {
             type: "shot",
             title: "物料广场 / 物料列表",
-            caption: "截图占位：建议展示物料卡片与搜索框。",
           },
           {
             type: "steps",
@@ -508,7 +496,6 @@ const DOC_PAGES: { key: string; title: string; summary: string; sections: DocSec
           {
             type: "shot",
             title: "编辑器 / 物料面板与画布",
-            caption: "截图占位：建议展示拖拽物料到画布的过程。",
           },
           {
             type: "steps",
@@ -533,7 +520,6 @@ const DOC_PAGES: { key: string; title: string; summary: string; sections: DocSec
           {
             type: "shot",
             title: "编辑器 / 页面管理下拉",
-            caption: "截图占位：建议展示树形页面列表与新增页面入口。",
           },
           {
             type: "steps",
@@ -575,7 +561,6 @@ const DOC_PAGES: { key: string; title: string; summary: string; sections: DocSec
           {
             type: "shot",
             title: "后台工作台 / 权限设置",
-            caption: "截图占位：建议包含成员列表、权限项与保存按钮。",
           },
           {
             type: "callout",
@@ -695,7 +680,6 @@ export default function Center({ variant = "page" }: { variant?: "page" | "embed
           {
             type: "shot",
             title: `${name}（示例）`,
-            caption: "截图占位：建议替换为该物料在编辑器/发布端的真实显示效果。",
           },
           {
             type: "p",
@@ -832,7 +816,7 @@ export default function Center({ variant = "page" }: { variant?: "page" | "embed
               )}
               onClick={() => navigate("/editor")}
             >
-              打开编辑器
+              editor
             </button>
           </div>
 
@@ -906,17 +890,7 @@ export default function Center({ variant = "page" }: { variant?: "page" | "embed
               );
             })}
           </nav>
-
-          <div
-            className={cx(
-              "mt-6 rounded-lg border border-[var(--ide-border)] bg-[var(--ide-control-bg)] p-3 text-xs text-[var(--ide-text-muted)] shadow-[var(--ide-panel-shadow)]",
-              !isPage && "mx-4",
-            )}
-          >
-            本手册用于帮助非技术用户完成日常操作；截图为占位示例，建议替换为实际界面截图。
-          </div>
             </aside>
-
             <div
               className={cx(
                 "min-w-0 px-6 py-6 sm:py-8 lg:px-10",

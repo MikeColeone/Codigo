@@ -8,7 +8,6 @@ export interface AdminBigScreenSummary {
   publishedTemplateCount: number;
   materialTypeCount: number;
   materialInstanceCount: number;
-  activeUserCount: number;
   collaboratorCount: number;
   collaborationPageCount: number;
   publicSiteCount: number;
@@ -16,6 +15,8 @@ export interface AdminBigScreenSummary {
   expiringSiteCount: number;
   versionCount: number;
   averageComponentsPerSite: number;
+  pageViewCount: number;
+  uniqueVisitorCount: number;
 }
 
 export interface AdminBigScreenTrendPoint {

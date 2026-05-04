@@ -108,9 +108,7 @@ export default function AdminDashboard() {
             {[
               { label: "基础设置", to: "/console/settings" },
               { label: "权限设置", to: "/console/permissions" },
-              { label: "角色管理", to: "/console/roles" },
               { label: "版本管理", to: "/console/versions" },
-              { label: "代码管理", to: "/console/snippets" },
               { label: "数据大屏", to: "/console/big-screen" },
             ].map((item) => (
               <button

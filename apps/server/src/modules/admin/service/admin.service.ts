@@ -9,6 +9,12 @@ import {
   ALL_ADMIN_PERMISSIONS,
   DEFAULT_ADMIN_PERMISSIONS,
   resolveAdminPermissions,
+  type AdminBigScreenComponentStat,
+  type AdminBigScreenDistributionItem,
+  type AdminBigScreenOverviewResponse,
+  type AdminBigScreenRecentReleaseItem,
+  type AdminBigScreenSummary,
+  type AdminBigScreenTrendPoint,
   type AdminPermission,
   type GlobalRole,
 } from '@codigo/schema';
@@ -21,9 +27,25 @@ import {
 import { OperationLog } from 'src/modules/flow/entity/operation-log.entity';
 import { PageCollaborator } from 'src/modules/flow/entity/page-collaborator.entity';
 import { PageVersion } from 'src/modules/flow/entity/page-version.entity';
+import { Template } from 'src/modules/template/entity/template.entity';
 import { User } from 'src/modules/user/entity/user.entity';
 import type { TCurrentUser } from 'src/shared/helpers/current-user.helper';
 import { SecretTool } from 'src/shared/utils/secret.tool';
+
+const BIG_SCREEN_DAYS = 7;
+const BIG_SCREEN_COMPONENT_FALLBACK: AdminBigScreenComponentStat[] = [
+  { type: 'lineChart', instanceCount: 18, pageCount: 6 },
+  { type: 'dataTable', instanceCount: 15, pageCount: 5 },
+  { type: 'cardGrid', instanceCount: 12, pageCount: 5 },
+  { type: 'pieChart', instanceCount: 9, pageCount: 4 },
+  { type: 'geoMap', instanceCount: 6, pageCount: 3 },
+];
+const BIG_SCREEN_TEMPLATE_TAG_FALLBACK: AdminBigScreenDistributionItem[] = [
+  { name: 'admin', value: 8 },
+  { name: 'screen', value: 4 },
+  { name: 'analytics', value: 3 },
+  { name: 'devops', value: 2 },
+];
 
 @Injectable()
 export class AdminService implements OnModuleInit {
@@ -44,6 +66,8 @@ export class AdminService implements OnModuleInit {
     private readonly operationLogRepository: Repository<OperationLog>,
     @InjectRepository(PageVersion)
     private readonly pageVersionRepository: Repository<PageVersion>,
+    @InjectRepository(Template)
+    private readonly templateRepository: Repository<Template>,
   ) {}
 
   async onModuleInit() {
@@ -252,6 +276,176 @@ export class AdminService implements OnModuleInit {
     return { message: '页面删除成功' };
   }
 
+  /**
+   * 聚合后台数据大屏所需的统计结果，并在真实数据稀疏时补齐展示型 mock。
+   */
+  async getBigScreenOverview(
+    user: TCurrentUser,
+  ): Promise<AdminBigScreenOverviewResponse> {
+    const todayStart = this.startOfDay(new Date());
+    const trendStartDate = this.startOfDayOffset(todayStart, -(BIG_SCREEN_DAYS - 1));
+    const expiringThreshold = this.startOfDayOffset(todayStart, BIG_SCREEN_DAYS);
+
+    const [
+      publishedSiteCount,
+      publicSiteCount,
+      privateSiteCount,
+      expiringSiteCount,
+      versionCount,
+      publishedTodayCount,
+      templateCount,
+      publishedTemplateCount,
+      collaboratorCount,
+      collaborationPageCount,
+      componentRows,
+      publishTrendRows,
+      recentReleaseRows,
+      layoutModeRows,
+      templates,
+    ] = await Promise.all([
+      this.pageRepository.countBy({ account_id: user.id }),
+      this.pageRepository.countBy({ account_id: user.id, visibility: 'public' }),
+      this.pageRepository.countBy({ account_id: user.id, visibility: 'private' }),
+      this.pageRepository
+        .createQueryBuilder('page')
+        .where('page.account_id = :userId', { userId: user.id })
+        .andWhere('page.expire_at IS NOT NULL')
+        .andWhere('page.expire_at >= :todayStart', { todayStart })
+        .andWhere('page.expire_at < :expiringThreshold', { expiringThreshold })
+        .getCount(),
+      this.pageVersionRepository.countBy({ account_id: user.id }),
+      this.pageVersionRepository
+        .createQueryBuilder('version')
+        .select('COUNT(DISTINCT version.page_id)', 'count')
+        .where('version.account_id = :userId', { userId: user.id })
+        .andWhere('version.created_at >= :todayStart', { todayStart })
+        .getRawOne<{ count: string | null }>(),
+      this.templateRepository.count(),
+      this.templateRepository.countBy({ status: 'published' }),
+      this.pageCollaboratorRepository
+        .createQueryBuilder('collaborator')
+        .leftJoin(Page, 'page', 'page.id = collaborator.page_id')
+        .where('page.account_id = :userId', { userId: user.id })
+        .getCount(),
+      this.pageCollaboratorRepository
+        .createQueryBuilder('collaborator')
+        .leftJoin(Page, 'page', 'page.id = collaborator.page_id')
+        .select('COUNT(DISTINCT collaborator.page_id)', 'count')
+        .where('page.account_id = :userId', { userId: user.id })
+        .getRawOne<{ count: string | null }>(),
+      this.componentRepository
+        .createQueryBuilder('component')
+        .select('component.type', 'type')
+        .addSelect('COUNT(*)', 'instanceCount')
+        .addSelect('COUNT(DISTINCT component.page_id)', 'pageCount')
+        .where('component.account_id = :userId', { userId: user.id })
+        .groupBy('component.type')
+        .orderBy('instanceCount', 'DESC')
+        .getRawMany<{
+          type: string;
+          instanceCount: string;
+          pageCount: string;
+        }>(),
+      this.pageVersionRepository
+        .createQueryBuilder('version')
+        .select('DATE(version.created_at)', 'date')
+        .addSelect('COUNT(DISTINCT version.page_id)', 'count')
+        .where('version.account_id = :userId', { userId: user.id })
+        .andWhere('version.created_at >= :trendStartDate', { trendStartDate })
+        .groupBy('DATE(version.created_at)')
+        .orderBy('DATE(version.created_at)', 'ASC')
+        .getRawMany<{ date: string; count: string }>(),
+      this.pageVersionRepository
+        .createQueryBuilder('version')
+        .leftJoin(Page, 'page', 'page.id = version.page_id')
+        .leftJoin(User, 'owner', 'owner.id = version.account_id')
+        .where('version.account_id = :userId', { userId: user.id })
+        .select([
+          'version.page_id AS pageId',
+          'page.page_name AS pageName',
+          'owner.username AS ownerName',
+          'version.version AS version',
+          'page.visibility AS visibility',
+          'version.created_at AS publishedAt',
+        ])
+        .orderBy('version.created_at', 'DESC')
+        .take(6)
+        .getRawMany<{
+          pageId: number;
+          pageName: string;
+          ownerName: string;
+          version: string;
+          visibility: 'public' | 'private';
+          publishedAt: string;
+        }>(),
+      this.pageRepository
+        .createQueryBuilder('page')
+        .select('page.layoutMode', 'name')
+        .addSelect('COUNT(*)', 'value')
+        .where('page.account_id = :userId', { userId: user.id })
+        .groupBy('page.layoutMode')
+        .orderBy('value', 'DESC')
+        .getRawMany<{ name: string; value: string }>(),
+      this.templateRepository.find({
+        select: ['id', 'tags'],
+      }),
+    ]);
+
+    const componentTypeStats = componentRows.map((row) => ({
+      type: row.type,
+      instanceCount: Number(row.instanceCount),
+      pageCount: Number(row.pageCount),
+    }));
+    const materialInstanceCount = componentTypeStats.reduce(
+      (sum, item) => sum + item.instanceCount,
+      0,
+    );
+    const summary: AdminBigScreenSummary = {
+      publishedSiteCount,
+      publishedTodayCount: Number(publishedTodayCount?.count ?? 0),
+      publishActionCount: versionCount,
+      templateCount,
+      publishedTemplateCount,
+      materialTypeCount: componentTypeStats.length,
+      materialInstanceCount,
+      collaboratorCount,
+      collaborationPageCount: Number(collaborationPageCount?.count ?? 0),
+      publicSiteCount,
+      privateSiteCount,
+      expiringSiteCount,
+      versionCount,
+      averageComponentsPerSite: publishedSiteCount
+        ? Number((materialInstanceCount / publishedSiteCount).toFixed(1))
+        : 0,
+      pageViewCount: 0,
+      uniqueVisitorCount: 0,
+    };
+
+    const mockedSections: string[] = [];
+    const trafficSummary = this.buildMockTrafficSummary(summary, mockedSections);
+    summary.pageViewCount = trafficSummary.pageViewCount;
+    summary.uniqueVisitorCount = trafficSummary.uniqueVisitorCount;
+
+    return {
+      generatedAt: new Date().toISOString(),
+      mockedSections,
+      summary,
+      publishTrend: this.buildPublishTrend(
+        publishTrendRows,
+        Math.max(summary.publishedSiteCount, 1),
+        mockedSections,
+      ),
+      visibilityStats: this.buildVisibilityStats(summary, mockedSections),
+      layoutModeStats: this.buildLayoutModeStats(layoutModeRows, mockedSections),
+      templateTagStats: this.buildTemplateTagStats(templates, mockedSections),
+      componentTypeStats: this.buildComponentTypeStats(
+        componentTypeStats,
+        mockedSections,
+      ),
+      recentReleases: this.buildRecentReleases(recentReleaseRows, mockedSections),
+    };
+  }
+
   async getComponentStats(search?: string) {
     const query = this.componentRepository
       .createQueryBuilder('component')
@@ -431,6 +625,244 @@ export class AdminService implements OnModuleInit {
       .getRawMany<{ page_id: string; count: string }>();
 
     return new Map(rows.map((row) => [Number(row.page_id), Number(row.count)]));
+  }
+
+  /**
+   * 以天为粒度构建最近 7 天发布趋势，并在低样本时生成更适合展示的曲线。
+   */
+  private buildPublishTrend(
+    rows: Array<{ date: string; count: string }>,
+    seed: number,
+    mockedSections: string[],
+  ): AdminBigScreenTrendPoint[] {
+    const today = this.startOfDay(new Date());
+    const startDate = this.startOfDayOffset(today, -(BIG_SCREEN_DAYS - 1));
+    const valueMap = new Map(
+      rows.map((row) => [row.date.slice(0, 10), Number(row.count ?? 0)]),
+    );
+    const realValues = Array.from({ length: BIG_SCREEN_DAYS }, (_, index) => {
+      const currentDate = this.startOfDayOffset(startDate, index);
+      return valueMap.get(this.formatDateKey(currentDate)) ?? 0;
+    });
+    const shouldMock =
+      realValues.reduce((sum, item) => sum + item, 0) === 0 ||
+      realValues.filter((item) => item > 0).length < 3;
+
+    if (shouldMock) {
+      mockedSections.push('publishTrend');
+    }
+
+    const mockValues = this.buildMockSeries(BIG_SCREEN_DAYS, seed);
+
+    return realValues.map((realValue, index) => {
+      const currentDate = this.startOfDayOffset(startDate, index);
+      return {
+        date: this.formatDateKey(currentDate),
+        label: this.formatShortDate(currentDate),
+        realValue,
+        displayValue: shouldMock ? Math.max(realValue, mockValues[index]) : realValue,
+        isMock: shouldMock && realValue === 0,
+      };
+    });
+  }
+
+  /**
+   * 根据页面可见性汇总公开/私密站点分布。
+   */
+  private buildVisibilityStats(
+    summary: AdminBigScreenSummary,
+    mockedSections: string[],
+  ): AdminBigScreenDistributionItem[] {
+    const stats = [
+      { name: '公开发布', value: summary.publicSiteCount },
+      { name: '私密发布', value: summary.privateSiteCount },
+    ].filter((item) => item.value > 0);
+
+    if (stats.length > 0) {
+      return stats;
+    }
+
+    mockedSections.push('visibilityStats');
+    return [
+      { name: '公开发布', value: 6 },
+      { name: '私密发布', value: 3 },
+    ];
+  }
+
+  /**
+   * 汇总页面布局模式分布，便于展示配置结构概况。
+   */
+  private buildLayoutModeStats(
+    rows: Array<{ name: string; value: string }>,
+    mockedSections: string[],
+  ): AdminBigScreenDistributionItem[] {
+    const stats = rows
+      .map((row) => ({
+        name: row.name === 'grid' ? '栅格布局' : '绝对布局',
+        value: Number(row.value),
+      }))
+      .filter((item) => item.value > 0);
+
+    if (stats.length > 0) {
+      return stats;
+    }
+
+    mockedSections.push('layoutModeStats');
+    return [
+      { name: '绝对布局', value: 8 },
+      { name: '栅格布局', value: 3 },
+    ];
+  }
+
+  /**
+   * 从模板标签中提取出现频次最高的分类，没有数据时提供截图友好的兜底项。
+   */
+  private buildTemplateTagStats(
+    templates: Array<Pick<Template, 'id' | 'tags'>>,
+    mockedSections: string[],
+  ): AdminBigScreenDistributionItem[] {
+    const counter = new Map<string, number>();
+
+    for (const template of templates) {
+      for (const tag of template.tags ?? []) {
+        counter.set(tag, (counter.get(tag) ?? 0) + 1);
+      }
+    }
+
+    const stats = Array.from(counter.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 6);
+
+    if (stats.length > 0) {
+      return stats;
+    }
+
+    mockedSections.push('templateTagStats');
+    return BIG_SCREEN_TEMPLATE_TAG_FALLBACK;
+  }
+
+  /**
+   * 输出物料类型排行；当真实实例为空时回退到预置样例。
+   */
+  private buildComponentTypeStats(
+    stats: AdminBigScreenComponentStat[],
+    mockedSections: string[],
+  ) {
+    if (stats.length > 0) {
+      return stats.slice(0, 6);
+    }
+
+    mockedSections.push('componentTypeStats');
+    return BIG_SCREEN_COMPONENT_FALLBACK;
+  }
+
+  /**
+   * 整理最近发布动态，没有真实数据时生成占位示例。
+   */
+  private buildRecentReleases(
+    rows: Array<{
+      pageId: number;
+      pageName: string;
+      ownerName: string;
+      version: string;
+      visibility: 'public' | 'private';
+      publishedAt: string;
+    }>,
+    mockedSections: string[],
+  ): AdminBigScreenRecentReleaseItem[] {
+    if (rows.length > 0) {
+      return rows.map((row) => ({
+        pageId: Number(row.pageId),
+        pageName: row.pageName,
+        ownerName: row.ownerName,
+        version: Number(row.version),
+        visibility: row.visibility,
+        publishedAt: new Date(row.publishedAt).toISOString(),
+      }));
+    }
+
+    mockedSections.push('recentReleases');
+    return Array.from({ length: 4 }, (_, index) => ({
+      pageId: index + 1,
+      pageName: `示例站点 ${index + 1}`,
+      ownerName: 'system',
+      version: index + 2,
+      visibility: index % 2 === 0 ? 'public' : 'private',
+      publishedAt: new Date(
+        Date.now() - index * 6 * 60 * 60 * 1000,
+      ).toISOString(),
+    }));
+  }
+
+  /**
+   * 生成截图观感更平滑的 mock 数列，同时保持与真实规模接近。
+   */
+  private buildMockSeries(length: number, seed: number) {
+    const base = Math.max(2, Math.min(18, seed + 2));
+    return Array.from({ length }, (_, index) => {
+      const wave = index % 3 === 0 ? 3 : index % 2 === 0 ? 1 : 5;
+      return base + wave + index;
+    });
+  }
+
+  /**
+   * 当前仓库尚未落真实访问埋点，先按站点体量生成截图可用的 PV / UV mock 值。
+   */
+  private buildMockTrafficSummary(
+    summary: AdminBigScreenSummary,
+    mockedSections: string[],
+  ) {
+    mockedSections.push('trafficSummary');
+    const pageViewCount =
+      summary.publishedSiteCount * 168 +
+      summary.publishActionCount * 42 +
+      summary.publicSiteCount * 96 +
+      320;
+    const uniqueVisitorCount = Math.max(
+      summary.publishedSiteCount * 24 + summary.publicSiteCount * 16 + 68,
+      Math.floor(pageViewCount * 0.28),
+    );
+
+    return {
+      pageViewCount,
+      uniqueVisitorCount,
+    };
+  }
+
+  /**
+   * 归一化为当天 00:00:00，避免统计边界受当前时刻影响。
+   */
+  private startOfDay(date: Date) {
+    const normalized = new Date(date);
+    normalized.setHours(0, 0, 0, 0);
+    return normalized;
+  }
+
+  /**
+   * 按天偏移时间，用于构造趋势范围与 mock 时间点。
+   */
+  private startOfDayOffset(date: Date, offsetDays: number) {
+    return new Date(date.getTime() + offsetDays * 86400000);
+  }
+
+  /**
+   * 格式化为 YYYY-MM-DD，供趋势图与聚合键统一使用。
+   */
+  private formatDateKey(date: Date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * 格式化为更适合图表横轴展示的短日期。
+   */
+  private formatShortDate(date: Date) {
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${month}/${day}`;
   }
 
   private normalizePermissions(
