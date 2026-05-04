@@ -631,14 +631,19 @@ export class AdminService implements OnModuleInit {
    * 以天为粒度构建最近 7 天发布趋势，并在低样本时生成更适合展示的曲线。
    */
   private buildPublishTrend(
-    rows: Array<{ date: string; count: string }>,
+    rows: Array<{ date: string | Date | null; count: string }>,
     seed: number,
     mockedSections: string[],
   ): AdminBigScreenTrendPoint[] {
     const today = this.startOfDay(new Date());
     const startDate = this.startOfDayOffset(today, -(BIG_SCREEN_DAYS - 1));
     const valueMap = new Map(
-      rows.map((row) => [row.date.slice(0, 10), Number(row.count ?? 0)]),
+      rows
+        .map((row) => [
+          this.normalizeRawDateKey(row.date),
+          Number(row.count ?? 0),
+        ] as const)
+        .filter((item): item is readonly [string, number] => Boolean(item[0])),
     );
     const realValues = Array.from({ length: BIG_SCREEN_DAYS }, (_, index) => {
       const currentDate = this.startOfDayOffset(startDate, index);
@@ -828,6 +833,36 @@ export class AdminService implements OnModuleInit {
       pageViewCount,
       uniqueVisitorCount,
     };
+  }
+
+  /**
+   * 兼容 MySQL raw query 返回 string / Date / null 三种日期形态。
+   */
+  private normalizeRawDateKey(value: string | Date | null | undefined) {
+    if (!value) {
+      return null;
+    }
+
+    if (value instanceof Date) {
+      return this.formatDateKey(value);
+    }
+
+    const normalized = String(value).trim();
+    if (!normalized) {
+      return null;
+    }
+
+    const matched = normalized.match(/\d{4}-\d{2}-\d{2}/)?.[0];
+    if (matched) {
+      return matched;
+    }
+
+    const parsed = new Date(normalized);
+    if (Number.isNaN(parsed.getTime())) {
+      return null;
+    }
+
+    return this.formatDateKey(parsed);
   }
 
   /**

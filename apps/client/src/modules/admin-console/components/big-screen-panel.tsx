@@ -14,17 +14,17 @@ export function BigScreenPanel(props: {
   return (
     <section
       className={classNames(
-        "rounded-[20px] border border-white/8 bg-[linear-gradient(180deg,rgba(10,20,41,0.92),rgba(7,15,30,0.96))] p-4 shadow-[0_20px_80px_rgba(0,0,0,0.32)] backdrop-blur",
+        "rounded-[20px] border border-[var(--ide-border)] bg-[var(--ide-control-bg)] p-4 shadow-[var(--ide-panel-shadow)]",
         props.className,
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[13px] font-semibold tracking-[0.18em] text-[#d8e7ff] uppercase">
+          <div className="text-[13px] font-semibold tracking-[0.18em] text-[var(--ide-text)] uppercase">
             {props.title}
           </div>
           {props.subtitle ? (
-            <div className="mt-1 text-[11px] text-[#8fa8d8]">{props.subtitle}</div>
+            <div className="mt-1 text-[11px] text-[var(--ide-text-muted)]">{props.subtitle}</div>
           ) : null}
         </div>
         {props.extra}
