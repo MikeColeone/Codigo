@@ -69,6 +69,69 @@ function getLegacyClickActions(node: ComponentNode): ActionConfig[] {
   return [];
 }
 
+function getActionBranches(action: ActionConfig): ActionConfig[] {
+  return Array.isArray(action.branches) ? action.branches : [];
+}
+
+function visitActionConfigs(
+  actions: ActionConfig[] | undefined,
+  visitor: (action: ActionConfig) => void,
+) {
+  const list = Array.isArray(actions) ? actions : [];
+  for (const action of list) {
+    visitor(action);
+    visitActionConfigs(getActionBranches(action), visitor);
+    if (action.type === "confirm") {
+      visitActionConfigs(action.onOk, visitor);
+      visitActionConfigs(action.onCancel, visitor);
+    }
+    if (action.type === "when") {
+      visitActionConfigs(action.onTrue, visitor);
+      visitActionConfigs(action.onFalse, visitor);
+    }
+    if (action.type === "request") {
+      visitActionConfigs(action.onSuccess, visitor);
+      visitActionConfigs(action.onError, visitor);
+    }
+  }
+}
+
+function hasBranchedActions(actions: ActionConfig[] | undefined) {
+  const list = Array.isArray(actions) ? actions : [];
+  return list.some((action) => getActionBranches(action).length > 0);
+}
+
+async function runActionTree(
+  action: ActionConfig,
+  dispatcher: (action: RuntimeAction) => void | Promise<void>,
+) {
+  await dispatcher(action);
+  const branches = getActionBranches(action);
+  if (!branches.length) {
+    return;
+  }
+  await Promise.all(branches.map((branch) => runActionTree(branch, dispatcher)));
+}
+
+export async function runConfiguredActions(
+  actions: ActionConfig[] | undefined,
+  dispatcher: (action: RuntimeAction) => void | Promise<void>,
+) {
+  const list = Array.isArray(actions) ? actions : [];
+  if (!list.length) {
+    return;
+  }
+
+  if (!hasBranchedActions(list)) {
+    for (const item of list) {
+      await dispatcher(item);
+    }
+    return;
+  }
+
+  await Promise.all(list.map((item) => runActionTree(item, dispatcher)));
+}
+
 /**
  * 返回节点指定事件的动作列表。
  */
@@ -99,11 +162,7 @@ function handleComponentClickActions(
     return;
   }
 
-  const run = async () => {
-    for (const action of actions) {
-      await runtime?.onAction?.(action);
-    }
-  };
+  const run = async () => runConfiguredActions(actions, (action) => runtime?.onAction?.(action));
   void run().catch(() => {});
 }
 
@@ -135,7 +194,7 @@ export function resolveInitialPageState(nodes: ComponentNode[]) {
   const initialState: Record<string, RuntimeStateValue> = {};
 
   visitNodes(nodes, (node) => {
-    for (const action of getComponentActions(node, "onClick")) {
+    visitActionConfigs(getComponentActions(node, "onClick"), (action) => {
       if (
         action.type === "setState" &&
         action.key &&
@@ -143,7 +202,7 @@ export function resolveInitialPageState(nodes: ComponentNode[]) {
       ) {
         initialState[action.key] = action.value;
       }
-    }
+    });
   });
 
   return initialState;
@@ -180,11 +239,7 @@ function RuntimeNodeShell({
       return;
     }
 
-    const run = async () => {
-      for (const action of actions) {
-        await runtime?.onAction?.(action);
-      }
-    };
+    const run = async () => runConfiguredActions(actions, (action) => runtime?.onAction?.(action));
     void run().catch(() => {});
   }, [conf, runtime]);
 

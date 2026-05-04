@@ -1,10 +1,27 @@
 import type { ActionConfig, ComponentEventName } from "@codigo/schema";
 import { makeAutoObservable } from "mobx";
+import {
+  createDefaultAction,
+  getActionTypeLabel,
+} from "@/modules/editor/components/right-panel/action-list-editor";
 import { NODE_TYPES } from "../constants";
 import type { FlowContext, FlowEdge, FlowNode, NodeType } from "../types";
 
+const START_NODE_ID = "start_1";
+
 function genId(p: string = "e"): string {
   return `${p}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+}
+
+function createStartNode(): FlowNode {
+  return {
+    id: START_NODE_ID,
+    type: "start",
+    label: "开始",
+    x: 0,
+    y: 0,
+    props: {},
+  };
 }
 
 class FlowStore {
@@ -25,31 +42,27 @@ class FlowStore {
     this.resetGraph();
   }
 
-  /* 计算属性：选中节点 */
   get selectedNode(): FlowNode | undefined {
-    return this.nodes.find((n) => n.id === this.selectedNodeId);
+    return this.nodes.find((node) => node.id === this.selectedNodeId);
   }
 
-  /* 计算属性：选中边 */
   get selectedEdge(): FlowEdge | undefined {
-    return this.edges.find((e) => e.id === this.selectedEdgeId);
+    return this.edges.find((edge) => edge.id === this.selectedEdgeId);
   }
 
-  /* 计算属性：当前选中内容是否允许删除 */
   get canRemoveSelection(): boolean {
     if (this.selectedEdgeId) {
       return true;
     }
-    return Boolean(
-      this.selectedNode &&
-        this.selectedNode.type !== "start" &&
-        this.selectedNode.type !== "end",
-    );
+    return Boolean(this.selectedNode && this.selectedNode.type !== "start");
   }
 
-  /**
-   * 将当前 Flow 绑定到组件事件上下文。
-   */
+  get actionNodes(): FlowNode[] {
+    return this.getOrderedNodeIds()
+      .map((nodeId) => this.nodes.find((node) => node.id === nodeId) ?? null)
+      .filter((node): node is FlowNode => Boolean(node && node.type !== "start"));
+  }
+
   setContext(options: {
     context: FlowContext;
     eventOptions: Array<{ name: ComponentEventName; title: string }>;
@@ -64,9 +77,6 @@ class FlowStore {
     this.loadFromActions(options.actions);
   }
 
-  /**
-   * 清除当前 Flow 与组件事件的绑定。
-   */
   clearContext(): void {
     this.context = null;
     this.eventOptions = [];
@@ -76,69 +86,7 @@ class FlowStore {
     this.resetGraph();
   }
 
-  /**
-   * 返回当前动作节点列表。
-   */
-  get actionNodes(): FlowNode[] {
-    return this.getOrderedNodeIds()
-      .map((nodeId) => this.nodes.find((node) => node.id === nodeId) ?? null)
-      .filter((node): node is FlowNode => Boolean(node && node.type !== "start" && node.type !== "end"));
-  }
-
-  /**
-   * 根据动作类型返回展示文案。
-   */
-  private getActionTypeLabel(type: ActionConfig["type"]): string {
-    const labelMap: Record<ActionConfig["type"], string> = {
-      setState: "设置状态",
-      setActiveContainer: "控制组件",
-      navigate: "打开页面",
-      openUrl: "打开链接",
-      scrollTo: "滚动定位",
-      toast: "消息提醒",
-      confirm: "确认弹窗",
-      when: "条件分支",
-      request: "调用请求",
-    };
-    return labelMap[type] ?? type;
-  }
-
-  /**
-   * 创建指定动作类型的默认配置。
-   */
-  private createDefaultAction(type: ActionConfig["type"]): ActionConfig {
-    switch (type) {
-      case "setActiveContainer":
-        return { type, viewGroupId: "", containerId: "" };
-      case "navigate":
-        return { type, path: "page:home" };
-      case "openUrl":
-        return { type, url: "https://example.com", target: "_blank" };
-      case "scrollTo":
-        return { type, targetId: "section-overview" };
-      case "toast":
-        return { type, message: "操作成功", variant: "success" };
-      case "confirm":
-        return { type, message: "确认执行该操作？" };
-      case "when":
-        return { type, key: "activePanel", op: "eq", value: "overview" };
-      case "request":
-        return {
-          type,
-          method: "GET",
-          url: "/api/health",
-          saveToStateKey: "lastResponse",
-          responsePath: "",
-        };
-      default:
-        return { type: "setState", key: "activePanel", value: "overview" };
-    }
-  }
-
-  /**
-   * 根据动作配置推导节点类型。
-   */
-  private getNodeTypeByAction(action: ActionConfig): Exclude<NodeType, "start" | "end"> {
+  private getNodeTypeByAction(action: ActionConfig): Exclude<NodeType, "start"> {
     if (action.type === "toast") {
       return "notify";
     }
@@ -148,158 +96,83 @@ class FlowStore {
     return "process";
   }
 
-  /**
-   * 根据动作生成节点。
-   */
+  private cloneAction(action: ActionConfig): ActionConfig {
+    const cloneList = (actions: ActionConfig[] | undefined) =>
+      Array.isArray(actions) ? actions.map((item) => this.cloneAction(item)) : undefined;
+
+    const nextAction = { ...action } as ActionConfig;
+    const branches = cloneList(action.branches);
+    if (branches?.length) {
+      nextAction.branches = branches;
+    } else {
+      delete nextAction.branches;
+    }
+
+    if (action.type === "confirm") {
+      nextAction.onOk = cloneList(action.onOk);
+      nextAction.onCancel = cloneList(action.onCancel);
+    }
+
+    if (action.type === "when") {
+      nextAction.onTrue = cloneList(action.onTrue);
+      nextAction.onFalse = cloneList(action.onFalse);
+    }
+
+    if (action.type === "request") {
+      nextAction.onSuccess = cloneList(action.onSuccess);
+      nextAction.onError = cloneList(action.onError);
+    }
+
+    return nextAction;
+  }
+
+  private createFallbackAction(node: FlowNode): ActionConfig {
+    if (node.type === "notify") {
+      return {
+        type: "toast",
+        message: String(node.props.message ?? ""),
+        variant:
+          (node.props.level as "success" | "error" | "info" | "warning" | undefined) ??
+          "success",
+      };
+    }
+    if (node.type === "condition") {
+      return {
+        type: "when",
+        key: String(node.props.key ?? "activePanel"),
+        op: "eq",
+        value: node.props.expr ?? "",
+      };
+    }
+    return {
+      type: "setState",
+      key: String(node.props.key ?? "activePanel"),
+      value: node.props.desc ?? "overview",
+    };
+  }
+
   private createNodeFromAction(action: ActionConfig): FlowNode {
     const type = this.getNodeTypeByAction(action);
     const count = this.nodes.filter((node) => node.type === type).length + 1;
     return {
       id: genId(type),
       type,
-      label: `${this.getActionTypeLabel(action.type)} ${count}`,
+      label: `${getActionTypeLabel(action.type)} ${count}`,
       x: 0,
       y: 0,
       props: {},
-      action,
+      action: this.cloneAction(action),
     };
   }
 
-  /**
-   * 重置为最小事件流。
-   */
-  resetGraph(): void {
-    this.nodes = [
-      {
-        id: "start_1",
-        type: "start",
-        label: "开始",
-        x: 0,
-        y: 0,
-        props: {},
-      },
-      { id: "end_1", type: "end", label: "结束", x: 0, y: 0, props: {} },
-    ];
-    this.edges = [{ id: genId(), source: "start_1", target: "end_1", label: "" }];
-    this.selectedNodeId = "";
-    this.selectedEdgeId = null;
-    this.layoutSequentialNodes();
+  private getChildEdges(sourceId: string): FlowEdge[] {
+    return this.edges.filter((edge) => edge.source === sourceId);
   }
 
-  /**
-   * 从动作数组构建当前事件流。
-   */
-  loadFromActions(actions: ActionConfig[]): void {
-    const actionNodes = actions.map((action) => this.createNodeFromAction(action));
-    this.nodes = [
-      {
-        id: "start_1",
-        type: "start",
-        label: "开始",
-        x: 0,
-        y: 0,
-        props: {},
-      },
-      ...actionNodes,
-      { id: "end_1", type: "end", label: "结束", x: 0, y: 0, props: {} },
-    ];
-
-    const orderedIds = this.nodes.map((node) => node.id);
-    this.edges = orderedIds.slice(0, -1).map((source, index) => ({
-      id: genId(),
-      source,
-      target: orderedIds[index + 1],
-      label: "",
-    }));
-    this.selectedNodeId = "";
-    this.selectedEdgeId = null;
-    this.layoutSequentialNodes();
+  private getParentEdges(targetId: string): FlowEdge[] {
+    return this.edges.filter((edge) => edge.target === targetId);
   }
 
-  /**
-   * 将当前主链路回写为动作数组。
-   */
-  serializeActions(): ActionConfig[] {
-    return this.actionNodes
-      .map((node) => node.action)
-      .filter((action): action is ActionConfig => Boolean(action));
-  }
-
-  /**
-   * 将当前节点变化同步到组件事件。
-   */
-  private syncActions(): void {
-    if (!this.onActionsChange) {
-      return;
-    }
-    this.onActionsChange(this.serializeActions());
-  }
-
-  /**
-   * 获取主链路的排序节点编号，优先从开始节点向后遍历。
-   */
-  getOrderedNodeIds(): string[] {
-    const ordered: string[] = [];
-    const visited = new Set<string>();
-    let cursor: FlowNode | null =
-      this.nodes.find((node) => node.type === "start") ?? this.nodes[0] ?? null;
-
-    while (cursor && !visited.has(cursor.id)) {
-      ordered.push(cursor.id);
-      visited.add(cursor.id);
-      const nextEdge = this.edges.find((edge) => edge.source === cursor?.id);
-      cursor = nextEdge
-        ? this.nodes.find((node) => node.id === nextEdge.target) ?? null
-        : null;
-    }
-
-    this.nodes.forEach((node) => {
-      if (!visited.has(node.id)) {
-        ordered.push(node.id);
-      }
-    });
-
-    return ordered;
-  }
-
-  /**
-   * 将当前节点按纵向步骤流自动排布。
-   */
-  layoutSequentialNodes(): void {
-    const laneCenterX = 280;
-    const startY = 56;
-    const gapY = 40;
-    let cursorY = startY;
-
-    this.getOrderedNodeIds().forEach((nodeId) => {
-      const node = this.nodes.find((item) => item.id === nodeId);
-      if (!node) {
-        return;
-      }
-      const meta = NODE_TYPES[node.type];
-      node.x = laneCenterX - meta.w / 2;
-      node.y = cursorY;
-      cursorY += meta.h + gapY;
-    });
-  }
-
-  /**
-   * 读取指定节点的首条后继连线。
-   */
-  private getNextEdge(sourceId: string): FlowEdge | undefined {
-    return this.edges.find((edge) => edge.source === sourceId);
-  }
-
-  /**
-   * 读取指定节点的首条前驱连线。
-   */
-  private getPreviousEdge(targetId: string): FlowEdge | undefined {
-    return this.edges.find((edge) => edge.target === targetId);
-  }
-
-  /**
-   * 删除一条连线。
-   */
   private removeEdge(edgeId: string): void {
     const index = this.edges.findIndex((edge) => edge.id === edgeId);
     if (index > -1) {
@@ -307,133 +180,307 @@ class FlowStore {
     }
   }
 
-  addNode(type: NodeType, label: string, x: number, y: number): void {
-    const node: FlowNode = {
-      id: genId(type),
-      type,
-      label,
-      x,
-      y,
-      props: {},
-    };
-
+  private appendActionTree(parentId: string, action: ActionConfig): string {
+    const node = this.createNodeFromAction(action);
     this.nodes.push(node);
-
-    this.selectedNodeId = node.id;
-    this.selectedEdgeId = null;
+    this.addEdge(parentId, node.id);
+    const branches = Array.isArray(action.branches) ? action.branches : [];
+    branches.forEach((branchAction) => {
+      this.appendActionTree(node.id, branchAction);
+    });
+    return node.id;
   }
 
-  /**
-   * 在指定节点后插入一个默认动作节点，并自动接回原有后继。
-   */
+  private serializeActionTree(nodeId: string): ActionConfig | null {
+    const node = this.nodes.find((item) => item.id === nodeId);
+    if (!node || node.type === "start") {
+      return null;
+    }
+    const action = this.cloneAction(node.action ?? this.createFallbackAction(node));
+    const branches = this.getChildEdges(nodeId)
+      .map((edge) => this.serializeActionTree(edge.target))
+      .filter((item): item is ActionConfig => Boolean(item));
+    if (branches.length) {
+      action.branches = branches;
+    } else {
+      delete action.branches;
+    }
+    return action;
+  }
+
+  private serializeNodeAction(nodeId: string): ActionConfig | null {
+    const node = this.nodes.find((item) => item.id === nodeId);
+    if (!node || node.type === "start") {
+      return null;
+    }
+    const action = this.cloneAction(node.action ?? this.createFallbackAction(node));
+    delete action.branches;
+    return action;
+  }
+
+  private hasGraphBranches(actions: ActionConfig[]) {
+    return actions.some((action) => Array.isArray(action.branches) && action.branches.length > 0);
+  }
+
+  private isLinearGraph() {
+    const startChildren = this.getChildEdges(START_NODE_ID);
+    if (startChildren.length > 1) {
+      return false;
+    }
+    return this.nodes.every((node) => {
+      if (node.type === "start") {
+        return this.getParentEdges(node.id).length === 0 && this.getChildEdges(node.id).length <= 1;
+      }
+      return this.getParentEdges(node.id).length <= 1 && this.getChildEdges(node.id).length <= 1;
+    });
+  }
+
+  private getReachableNodeIds(): Set<string> {
+    const reachable = new Set<string>();
+    const queue = [START_NODE_ID];
+
+    while (queue.length) {
+      const current = queue.shift();
+      if (!current || reachable.has(current)) {
+        continue;
+      }
+      reachable.add(current);
+      this.getChildEdges(current).forEach((edge) => {
+        if (!reachable.has(edge.target)) {
+          queue.push(edge.target);
+        }
+      });
+    }
+
+    return reachable;
+  }
+
+  private pruneUnreachableNodes() {
+    const reachable = this.getReachableNodeIds();
+    this.nodes = this.nodes.filter((node) => reachable.has(node.id));
+    this.edges = this.edges.filter(
+      (edge) => reachable.has(edge.source) && reachable.has(edge.target),
+    );
+
+    if (this.selectedNodeId && !reachable.has(this.selectedNodeId)) {
+      this.selectedNodeId = "";
+    }
+    if (this.selectedEdgeId && !this.edges.some((edge) => edge.id === this.selectedEdgeId)) {
+      this.selectedEdgeId = null;
+    }
+  }
+
+  private syncActions(): void {
+    if (!this.onActionsChange) {
+      return;
+    }
+    this.onActionsChange(this.serializeActions());
+  }
+
+  resetGraph(): void {
+    this.nodes = [createStartNode()];
+    this.edges = [];
+    this.selectedNodeId = "";
+    this.selectedEdgeId = null;
+    this.layoutGraph();
+  }
+
+  loadFromActions(actions: ActionConfig[]): void {
+    this.nodes = [createStartNode()];
+    this.edges = [];
+    this.selectedNodeId = "";
+    this.selectedEdgeId = null;
+
+    if (this.hasGraphBranches(actions)) {
+      actions.forEach((action) => {
+        this.appendActionTree(START_NODE_ID, action);
+      });
+    } else {
+      let cursor = START_NODE_ID;
+      actions.forEach((action) => {
+        cursor = this.appendActionTree(cursor, action);
+      });
+    }
+
+    this.layoutGraph();
+  }
+
+  serializeActions(): ActionConfig[] {
+    if (this.isLinearGraph()) {
+      const actions: ActionConfig[] = [];
+      let cursor = this.getChildEdges(START_NODE_ID)[0]?.target;
+      while (cursor) {
+        const action = this.serializeNodeAction(cursor);
+        if (action) {
+          actions.push(action);
+        }
+        cursor = this.getChildEdges(cursor)[0]?.target;
+      }
+      return actions;
+    }
+
+    return this.getChildEdges(START_NODE_ID)
+      .map((edge) => this.serializeActionTree(edge.target))
+      .filter((action): action is ActionConfig => Boolean(action));
+  }
+
+  getOrderedNodeIds(): string[] {
+    const ordered: string[] = [];
+    const visited = new Set<string>();
+    const visit = (nodeId: string) => {
+      if (visited.has(nodeId)) {
+        return;
+      }
+      visited.add(nodeId);
+      ordered.push(nodeId);
+      this.getChildEdges(nodeId).forEach((edge) => visit(edge.target));
+    };
+
+    visit(START_NODE_ID);
+    this.nodes.forEach((node) => {
+      if (!visited.has(node.id)) {
+        ordered.push(node.id);
+      }
+    });
+    return ordered;
+  }
+
+  layoutGraph(): void {
+    const positions = new Map<string, { x: number; y: number }>();
+    const depthGapX = 420;
+    const leafGapY = 240;
+    const startX = 80;
+    const baseY = 180;
+    let leafIndex = 0;
+
+    const place = (nodeId: string, depth: number): number => {
+      const childIds = this.getChildEdges(nodeId).map((edge) => edge.target);
+      const x = startX + depth * depthGapX;
+
+      if (!childIds.length) {
+        const y = baseY + leafIndex * leafGapY;
+        leafIndex += 1;
+        positions.set(nodeId, { x, y });
+        return y;
+      }
+
+      const centers = childIds.map((childId) => place(childId, depth + 1));
+      const y = centers.reduce((sum, value) => sum + value, 0) / centers.length;
+      positions.set(nodeId, { x, y });
+      return y;
+    };
+
+    place(START_NODE_ID, 0);
+
+    this.nodes.forEach((node) => {
+      const position = positions.get(node.id);
+      if (!position) {
+        return;
+      }
+      const meta = NODE_TYPES[node.type];
+      node.x = position.x;
+      node.y = position.y - meta.h / 2;
+    });
+  }
+
   insertNodeAfter(sourceId: string, actionType: ActionConfig["type"] = "toast"): void {
     const source = this.nodes.find((node) => node.id === sourceId);
-    if (!source || source.type === "end") {
+    if (!source) {
       return;
     }
 
-    const nextEdge = this.getNextEdge(sourceId);
-    const newNode = this.createNodeFromAction(this.createDefaultAction(actionType));
+    const newNode = this.createNodeFromAction(createDefaultAction(actionType));
     this.nodes.push(newNode);
-
-    if (nextEdge) {
-      this.removeEdge(nextEdge.id);
-      this.addEdge(newNode.id, nextEdge.target);
-    }
-
     this.addEdge(sourceId, newNode.id);
     this.selectedNodeId = newNode.id;
     this.selectedEdgeId = null;
-    this.layoutSequentialNodes();
+    this.layoutGraph();
     this.syncActions();
   }
 
   updateNodePos(id: string, x: number, y: number): void {
-    const n = this.nodes.find((n) => n.id === id);
-
-    if (n) {
-      n.x = Math.max(0, x);
-      n.y = Math.max(0, y);
+    const node = this.nodes.find((item) => item.id === id);
+    if (!node) {
+      return;
     }
+    node.x = Math.max(0, x);
+    node.y = Math.max(0, y);
   }
 
   addEdge(sourceId: string, targetId: string): void {
-    const exists = this.edges.some(
-      (e) => e.source === sourceId && e.target === targetId,
-    );
-
-    if (!exists) {
-      this.edges.push({
-        id: genId(),
-        source: sourceId,
-        target: targetId,
-        label: "",
-      });
+    if (!sourceId || !targetId || sourceId === targetId) {
+      return;
     }
+    const exists = this.edges.some(
+      (edge) => edge.source === sourceId && edge.target === targetId,
+    );
+    if (exists) {
+      return;
+    }
+    this.edges.push({
+      id: genId(),
+      source: sourceId,
+      target: targetId,
+      label: "",
+    });
   }
 
-  /**
-   * 更新当前节点对应的动作配置。
-   */
   updateNodeAction(id: string, nextAction: ActionConfig): void {
     const node = this.nodes.find((item) => item.id === id);
-    if (!node || node.type === "start" || node.type === "end") {
+    if (!node || node.type === "start") {
       return;
     }
     node.type = this.getNodeTypeByAction(nextAction);
-    node.label = this.getActionTypeLabel(nextAction.type);
-    node.action = nextAction;
-    this.layoutSequentialNodes();
+    node.label = getActionTypeLabel(nextAction.type);
+    node.action = this.cloneAction(nextAction);
+    this.layoutGraph();
     this.syncActions();
   }
 
-  /**
-   * 更新节点类型，并重置为该类型的默认属性。
-   */
   updateNodeType(id: string, type: Extract<NodeType, "process" | "condition" | "notify">): void {
     const fallbackActionType =
       type === "notify" ? "toast" : type === "condition" ? "when" : "setState";
-    this.updateNodeAction(id, this.createDefaultAction(fallbackActionType));
+    this.updateNodeAction(id, createDefaultAction(fallbackActionType));
   }
 
   removeSelected(): void {
     if (this.selectedNodeId) {
       const selectedNode = this.nodes.find((node) => node.id === this.selectedNodeId);
-      if (!selectedNode || selectedNode.type === "start" || selectedNode.type === "end") {
+      if (!selectedNode || selectedNode.type === "start") {
         return;
       }
-      const previousEdge = this.getPreviousEdge(this.selectedNodeId);
-      const nextEdge = this.getNextEdge(this.selectedNodeId);
-      const idx = this.nodes.findIndex((n) => n.id === this.selectedNodeId);
 
-      if (idx > -1) {
-        this.nodes.splice(idx, 1);
-      }
+      const parentIds = this.getParentEdges(this.selectedNodeId).map((edge) => edge.source);
+      const childIds = this.getChildEdges(this.selectedNodeId).map((edge) => edge.target);
 
+      this.nodes = this.nodes.filter((node) => node.id !== this.selectedNodeId);
       this.edges = this.edges.filter(
         (edge) =>
           edge.source !== this.selectedNodeId && edge.target !== this.selectedNodeId,
       );
 
-      if (previousEdge && nextEdge) {
-        this.addEdge(previousEdge.source, nextEdge.target);
-      }
+      parentIds.forEach((parentId) => {
+        childIds.forEach((childId) => this.addEdge(parentId, childId));
+      });
 
       this.selectedNodeId = "";
-      this.layoutSequentialNodes();
+      this.pruneUnreachableNodes();
+      this.layoutGraph();
       this.syncActions();
+      return;
     }
 
     if (this.selectedEdgeId) {
       this.removeEdge(this.selectedEdgeId);
       this.selectedEdgeId = null;
+      this.pruneUnreachableNodes();
+      this.layoutGraph();
+      this.syncActions();
     }
   }
 }
 
 export const flowStore = new FlowStore();
-
-
 
 
 

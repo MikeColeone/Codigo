@@ -66,32 +66,54 @@ export type RuntimeStateValue = unknown;
 /**
  * 描述组件事件配置结构。
  */
+export interface ActionBranchConfig {
+  branches?: ActionConfig[];
+}
+
 export type ActionConfig =
-  | { type: "navigate"; path: string }
-  | { type: "setState"; key: string; value: RuntimeStateValue }
-  | { type: "setActiveContainer"; viewGroupId?: string; containerId: string }
-  | { type: "openUrl"; url: string; target?: "_self" | "_blank" }
-  | { type: "scrollTo"; targetId: string }
-  | {
+  | ({
+      type: "navigate";
+      path: string;
+    } & ActionBranchConfig)
+  | ({
+      type: "setState";
+      key: string;
+      value: RuntimeStateValue;
+    } & ActionBranchConfig)
+  | ({
+      type: "setActiveContainer";
+      viewGroupId?: string;
+      containerId: string;
+    } & ActionBranchConfig)
+  | ({
+      type: "openUrl";
+      url: string;
+      target?: "_self" | "_blank";
+    } & ActionBranchConfig)
+  | ({
+      type: "scrollTo";
+      targetId: string;
+    } & ActionBranchConfig)
+  | ({
       type: "toast";
       message: string;
       variant?: "success" | "error" | "info" | "warning";
-    }
-  | {
+    } & ActionBranchConfig)
+  | ({
       type: "confirm";
       message: string;
       onOk?: ActionConfig[];
       onCancel?: ActionConfig[];
-    }
-  | {
+    } & ActionBranchConfig)
+  | ({
       type: "when";
       key: string;
       op?: "eq" | "ne" | "gt" | "gte" | "lt" | "lte" | "includes" | "truthy" | "falsy";
       value?: RuntimeStateValue;
       onTrue?: ActionConfig[];
       onFalse?: ActionConfig[];
-    }
-  | {
+    } & ActionBranchConfig)
+  | ({
       type: "request";
       method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
       url: string;
@@ -101,7 +123,7 @@ export type ActionConfig =
       responsePath?: string;
       onSuccess?: ActionConfig[];
       onError?: ActionConfig[];
-    };
+    } & ActionBranchConfig);
 
 /**
  * 描述组件事件名称，允许在已知事件之外继续扩展自定义键。

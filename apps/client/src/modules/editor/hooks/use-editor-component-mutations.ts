@@ -77,14 +77,40 @@ export function createEditorComponentMutations(
    * 标准化组件事件配置。
    */
   const normalizeActionConfig = (actionConfig: ActionConfig): ActionConfig => {
-    if (actionConfig.type !== "setState") {
-      return actionConfig;
+    const normalizeList = (actions: ActionConfig[] | undefined) =>
+      Array.isArray(actions) ? actions.map(normalizeActionConfig) : undefined;
+
+    const normalizedBranches = normalizeList(actionConfig.branches);
+    const normalizedAction =
+      actionConfig.type === "setState"
+        ? {
+            ...actionConfig,
+            value: calcValueByString(actionConfig.value as any),
+          }
+        : { ...actionConfig };
+
+    if (actionConfig.type === "confirm") {
+      normalizedAction.onOk = normalizeList(actionConfig.onOk);
+      normalizedAction.onCancel = normalizeList(actionConfig.onCancel);
     }
 
-    return {
-      ...actionConfig,
-      value: calcValueByString(actionConfig.value as any),
-    };
+    if (actionConfig.type === "when") {
+      normalizedAction.onTrue = normalizeList(actionConfig.onTrue);
+      normalizedAction.onFalse = normalizeList(actionConfig.onFalse);
+    }
+
+    if (actionConfig.type === "request") {
+      normalizedAction.onSuccess = normalizeList(actionConfig.onSuccess);
+      normalizedAction.onError = normalizeList(actionConfig.onError);
+    }
+
+    if (normalizedBranches?.length) {
+      normalizedAction.branches = normalizedBranches;
+    } else {
+      delete normalizedAction.branches;
+    }
+
+    return normalizedAction as ActionConfig;
   };
 
   /**

@@ -7,6 +7,7 @@ import { CaretLeftOutlined } from "@ant-design/icons";
 import {
   generateComponent,
   resolveInitialPageState,
+  runConfiguredActions,
   type RuntimeAction,
 } from "@/modules/editor/runtime";
 import { useFitScale, useStorePage } from "@/shared/hooks";
@@ -126,13 +127,6 @@ function PreviewCanvas() {
       });
     };
 
-    const runActions = async (actions: RuntimeAction[] | undefined) => {
-      const list = Array.isArray(actions) ? actions : [];
-      for (const item of list) {
-        await onAction(item);
-      }
-    };
-
     const onAction = async (action: RuntimeAction) => {
         if (action.type === "set-state") {
           pageStateRef.current = {
@@ -186,10 +180,10 @@ function PreviewCanvas() {
         if (action.type === "confirm") {
           const ok = window.confirm(action.message);
           if (ok) {
-            await runActions(action.onOk);
+            await runConfiguredActions(action.onOk, onAction);
             return;
           }
-          await runActions(action.onCancel);
+          await runConfiguredActions(action.onCancel, onAction);
           throw new Error("ACTION_CANCELLED");
         }
 
@@ -221,9 +215,9 @@ function PreviewCanvas() {
                             : !!stateValue;
 
           if (passed) {
-            await runActions(action.onTrue);
+            await runConfiguredActions(action.onTrue, onAction);
           } else {
-            await runActions(action.onFalse);
+            await runConfiguredActions(action.onFalse, onAction);
           }
           return;
         }
@@ -296,12 +290,12 @@ function PreviewCanvas() {
                 };
                 setPageState(pageStateRef.current);
               }
-              await runActions(action.onSuccess);
+              await runConfiguredActions(action.onSuccess, onAction);
               return;
             }
 
             if (Array.isArray(action.onError) && action.onError.length) {
-              await runActions(action.onError);
+              await runConfiguredActions(action.onError, onAction);
               return;
             }
 
@@ -311,7 +305,7 @@ function PreviewCanvas() {
             throw new Error(errorMessage);
           } catch (err) {
             if (Array.isArray(action.onError) && action.onError.length) {
-              await runActions(action.onError);
+              await runConfiguredActions(action.onError, onAction);
               return;
             }
             message.open({

@@ -72,7 +72,7 @@ function Toolbar() {
           返回时会保留当前组件与事件
         </span>
         <span className="rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-[11px] text-indigo-600">
-          悬浮节点底部小点可创建下一步
+          悬浮节点底部小点可创建并发任务
         </span>
         <span className="text-[11px] text-zinc-500">
           {flowStore.nodes.length} 节点 · {flowStore.edges.length} 连线

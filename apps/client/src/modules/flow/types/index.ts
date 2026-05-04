@@ -5,8 +5,7 @@ export type NodeType =
   | "start"
   | "process"
   | "condition"
-  | "notify"
-  | "end";
+  | "notify";
 
 /* 节点属性（宽松版） */
 export interface NodeProps {
@@ -37,7 +36,6 @@ export interface FlowContext {
   componentLabel: string;
   eventName: ComponentEventName;
 }
-
 
 
 

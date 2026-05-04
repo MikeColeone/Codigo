@@ -11,5 +11,6 @@
 - `.trae/context/*`：跨会话上下文资产目录，存放 handoff、项目事实与决策日志。
 - `.trae/retros/BAD_CASES.md`：逻辑错误、架构违规、代码回退的复盘主文件。
 - `packages/schema/src/schema/low-code.ts`：低代码页面协议单一事实源；多页面结构中 `pages` 表示真实页面，`pageGroups` 表示仅用于导航分组的页面集，二者职责分离。
+- `packages/schema/src/schema/components.ts`：组件事件动作协议单一事实源；Flow 编排的并发分支通过 `ActionConfig.branches` 表达，事件根数组在带分支时表示并发根任务，分支无后续动作即自然结束，不再依赖显式结束节点。
 - `apps/client/src/modules/editor/components/pageManager/*`：编辑器页面管理入口；负责页面/页面集的创建、树形展示与当前页面元数据维护，普通页面不应直接充当页面集父节点。
 - `apps/client/src/modules/pageShell/*`：预览/发布导航壳层；统一消费 `pages + pageGroups` 构建导航树，兼容旧页面路径层级并避免把父页面误显示为路径占位节点。

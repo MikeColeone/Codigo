@@ -161,7 +161,7 @@ function Flow() {
         <PropsPanel />
       </div>
       <div className="flex h-[30px] flex-shrink-0 items-center border-t border-zinc-200 bg-zinc-50 px-4 text-[11px] text-zinc-500">
-        拖拽节点可调整位置 · 从节点尾部选择下一步动作 · Delete 键删除选中
+        拖拽节点可调整位置 · 从节点尾部派生并发任务 · 无后续动作即自然结束
       </div>
     </div>
   );
@@ -170,5 +170,3 @@ function Flow() {
 const FlowComponent = observer(Flow);
 
 export default FlowComponent;
-
-/* flow-index-padding-to-overwrite-locked-file */

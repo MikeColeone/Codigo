@@ -12,7 +12,7 @@ function PropsPanel() {
         <div className="px-5 py-12 text-center text-sm text-zinc-500">
           <p>点击节点或连线</p>
           <p className="mt-3">悬浮节点底部小点</p>
-          <p>可点击或拖拽新增下一步</p>
+          <p>可点击或拖拽新增并发任务</p>
         </div>
       )}
       {flowStore.selectedNode && (
@@ -40,8 +40,7 @@ function PropsPanel() {
                 }}
               />
             </div>
-            {flowStore.selectedNode.type !== "start" &&
-            flowStore.selectedNode.type !== "end" ? (
+            {flowStore.selectedNode.type !== "start" ? (
               <div className="mb-2 flex items-center gap-2">
                 <label className="min-w-12 flex-shrink-0 whitespace-nowrap text-[11px] text-zinc-600">
                   类型
@@ -161,14 +160,16 @@ function PropsPanel() {
               </span>
             </div>
           </div>
-          <div className="p-[14px]">
-            <button
-              className="h-8 w-full rounded-md border border-red-200 bg-red-50 px-2.5 text-xs text-red-600 transition-colors hover:bg-red-100"
-              onClick={() => flowStore.removeSelected()}
-            >
-              删除节点
-            </button>
-          </div>
+          {flowStore.canRemoveSelection ? (
+            <div className="p-[14px]">
+              <button
+                className="h-8 w-full rounded-md border border-red-200 bg-red-50 px-2.5 text-xs text-red-600 transition-colors hover:bg-red-100"
+                onClick={() => flowStore.removeSelected()}
+              >
+                删除节点
+              </button>
+            </div>
+          ) : null}
         </div>
       )}
       {flowStore.selectedEdge && (

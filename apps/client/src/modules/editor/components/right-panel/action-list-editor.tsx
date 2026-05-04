@@ -470,6 +470,15 @@ export const ActionConfigFields: FC<{
           ])}
         </>
       ) : null}
+
+      {renderNested([
+        {
+          key: "branches",
+          title: "并发后续",
+          value: action.branches,
+          onChange: (next) => updateAction({ branches: next.length ? next : undefined }),
+        },
+      ])}
     </>
   );
 };

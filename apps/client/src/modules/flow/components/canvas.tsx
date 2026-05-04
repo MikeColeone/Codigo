@@ -88,7 +88,7 @@ function Canvas() {
   }
 
   /**
-   * 开始从节点尾部连接点创建下一步。
+   * 开始从节点尾部连接点派生并发任务。
    */
   function startCreateNext(e: React.MouseEvent, nodeId: string) {
     e.stopPropagation();
@@ -113,8 +113,10 @@ function Canvas() {
       return {
         type: "toast",
         message: String(node.props.message ?? ""),
-        variant: (node.props.level as ActionConfig["type"]) ? undefined : "success",
-      } as ActionConfig;
+        variant:
+          (node.props.level as "success" | "error" | "info" | "warning" | undefined) ??
+          "success",
+      };
     }
     if (node.type === "condition") {
       return {
@@ -167,8 +169,7 @@ function Canvas() {
     const meta = NODE_TYPES[node.type];
     const color = NODE_COLORS[node.type];
     const isSelected = flowStore.selectedNodeId === node.id;
-    const isTerminal = node.type === "end";
-    const isActionNode = node.type !== "start" && node.type !== "end";
+    const isActionNode = node.type !== "start";
 
     return (
       <div
@@ -247,25 +248,34 @@ function Canvas() {
           )}
         </div>
 
-        {!isTerminal ? (
-          <div className="pointer-events-none absolute bottom-[-32px] left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-1">
-            <span className="text-[11px] text-zinc-400 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-              下一步
-            </span>
-            <button
-              type="button"
-              className="pointer-events-auto flex h-6 w-6 items-center justify-center rounded-full border border-white bg-indigo-500 text-sm text-white opacity-0 shadow-lg transition-all duration-150 group-hover:opacity-100 hover:scale-110"
-              onClick={(e) => e.stopPropagation()}
-              onMouseDown={(e) => startCreateNext(e, node.id)}
-              title="点击或拖拽新建下一步"
-            >
-              +
-            </button>
-          </div>
-        ) : null}
+        <div className="pointer-events-none absolute bottom-[-32px] left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-1">
+          <span className="text-[11px] text-zinc-400 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+            并发任务
+          </span>
+          <button
+            type="button"
+            className="pointer-events-auto flex h-6 w-6 items-center justify-center rounded-full border border-white bg-indigo-500 text-sm text-white opacity-0 shadow-lg transition-all duration-150 group-hover:opacity-100 hover:scale-110"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => startCreateNext(e, node.id)}
+            title="点击或拖拽新增并发任务"
+          >
+            +
+          </button>
+        </div>
       </div>
     );
   }
+
+  const canvasBounds = flowStore.nodes.reduce(
+    (bounds, node) => {
+      const meta = NODE_TYPES[node.type];
+      return {
+        maxRight: Math.max(bounds.maxRight, node.x + meta.w),
+        maxBottom: Math.max(bounds.maxBottom, node.y + meta.h),
+      };
+    },
+    { maxRight: 720, maxBottom: 720 },
+  );
 
   useEffect(() => {
     if (!handleState) {
@@ -437,7 +447,13 @@ function Canvas() {
             ) : null}
           </svg>
 
-          <div className="relative min-h-[920px]">
+          <div
+            className="relative"
+            style={{
+              minHeight: Math.max(920, canvasBounds.maxBottom + 160),
+              minWidth: Math.max(980, canvasBounds.maxRight + 180),
+            }}
+          >
             {flowStore.getOrderedNodeIds().map((nodeId, index) => {
               const node = flowStore.nodes.find((item) => item.id === nodeId);
               return node ? renderNode(node, index) : null;
@@ -452,7 +468,7 @@ function Canvas() {
                 onClick={(event) => event.stopPropagation()}
               >
                 <div className="px-2 py-1 text-[11px] font-semibold text-slate-500">
-                  选择下一步动作
+                  选择并发任务动作
                 </div>
                 <div className="mt-1 space-y-1">
                   {ActionTypeOptions.map((item) => (
