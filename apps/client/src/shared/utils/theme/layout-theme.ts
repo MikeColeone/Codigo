@@ -5,6 +5,7 @@ const studioAntdTheme = {
     colorPrimary: "var(--ide-accent)",
     colorBgContainer: "var(--ide-sidebar-bg)",
     colorBgLayout: "var(--ide-bg)",
+    colorBgElevated: "var(--ide-overlay-bg)",
     colorBorder: "var(--ide-border)",
     colorText: "var(--ide-text)",
     colorTextSecondary: "var(--ide-text-muted)",
@@ -37,6 +38,22 @@ const studioAntdTheme = {
     InputNumber: {
       activeBorderColor: "var(--ide-accent)",
       hoverBorderColor: "var(--ide-accent)",
+    },
+    Menu: {
+      itemBg: "var(--ide-overlay-bg)",
+      popupBg: "var(--ide-overlay-bg)",
+      subMenuItemBg: "var(--ide-overlay-bg)",
+      itemColor: "var(--ide-text)",
+      itemHoverColor: "var(--ide-text)",
+      itemHoverBg: "var(--ide-hover)",
+      itemSelectedBg: "var(--ide-active)",
+      itemSelectedColor: "var(--ide-text)",
+    },
+    Select: {
+      selectorBg: "var(--ide-control-bg)",
+      optionActiveBg: "var(--ide-hover)",
+      optionSelectedBg: "var(--ide-active)",
+      optionSelectedColor: "var(--ide-text)",
     },
     Switch: {
       colorPrimary: "var(--ide-accent)",

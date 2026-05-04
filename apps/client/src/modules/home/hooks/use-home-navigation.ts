@@ -10,7 +10,6 @@ const navigationItems = [
   { label: "物料广场", path: "/?view=materials" },
   { label: "使用手册", path: "/doc" },
   { label: "应用管理", path: "/app-management?tab=published" },
-  { label: "后台管理", path: "/console" },
 ] as const;
 
 export function useHomeNavigation(options?: {

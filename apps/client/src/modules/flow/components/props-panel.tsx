@@ -11,8 +11,8 @@ function PropsPanel() {
       {!flowStore.selectedNode && !flowStore.selectedEdge && (
         <div className="px-5 py-12 text-center text-sm text-zinc-500">
           <p>点击节点或连线</p>
-          <p className="mt-3">拖拽右侧圆点</p>
-          <p>可连接两个节点</p>
+          <p className="mt-3">悬浮节点底部小点</p>
+          <p>可点击或拖拽新增下一步</p>
         </div>
       )}
       {flowStore.selectedNode && (
@@ -40,6 +40,28 @@ function PropsPanel() {
                 }}
               />
             </div>
+            {flowStore.selectedNode.type !== "start" &&
+            flowStore.selectedNode.type !== "end" ? (
+              <div className="mb-2 flex items-center gap-2">
+                <label className="min-w-12 flex-shrink-0 whitespace-nowrap text-[11px] text-zinc-600">
+                  类型
+                </label>
+                <select
+                  className="h-8 flex-1 rounded-md border border-zinc-200 px-2 text-xs outline-none focus:border-zinc-400"
+                  value={flowStore.selectedNode.type}
+                  onChange={(e) =>
+                    flowStore.updateNodeType(
+                      flowStore.selectedNode!.id,
+                      e.target.value as "process" | "condition" | "notify",
+                    )
+                  }
+                >
+                  <option value="process">动作</option>
+                  <option value="condition">条件判断</option>
+                  <option value="notify">消息提醒</option>
+                </select>
+              </div>
+            ) : null}
             {flowStore.selectedNode.type === "process" && (
               <div className="mb-2 flex items-center gap-2">
                 <label className="min-w-12 flex-shrink-0 whitespace-nowrap text-[11px] text-zinc-600">
@@ -77,20 +99,58 @@ function PropsPanel() {
               </div>
             )}
             {flowStore.selectedNode.type === "notify" && (
-              <div className="mb-2 flex items-center gap-2">
-                <label className="min-w-12 flex-shrink-0 whitespace-nowrap text-[11px] text-zinc-600">
-                  消息内容
-                </label>
-                <input
-                  className="h-8 flex-1 rounded-md border border-zinc-200 px-2 text-xs outline-none focus:border-zinc-400"
-                  value={(flowStore.selectedNode.props.message ?? "") as string}
-                  onChange={(e) => {
-                    if (flowStore.selectedNode) {
-                      flowStore.selectedNode.props.message = e.target.value;
-                    }
-                  }}
-                />
-              </div>
+              <>
+                <div className="mb-2 flex items-center gap-2">
+                  <label className="min-w-12 flex-shrink-0 whitespace-nowrap text-[11px] text-zinc-600">
+                    级别
+                  </label>
+                  <select
+                    className="h-8 flex-1 rounded-md border border-zinc-200 px-2 text-xs outline-none focus:border-zinc-400"
+                    value={(flowStore.selectedNode.props.level ?? "success") as string}
+                    onChange={(e) => {
+                      if (flowStore.selectedNode) {
+                        flowStore.selectedNode.props.level = e.target.value;
+                      }
+                    }}
+                  >
+                    <option value="success">成功</option>
+                    <option value="info">信息</option>
+                    <option value="warning">警告</option>
+                    <option value="error">错误</option>
+                  </select>
+                </div>
+                <div className="mb-2 flex items-center gap-2">
+                  <label className="min-w-12 flex-shrink-0 whitespace-nowrap text-[11px] text-zinc-600">
+                    消息内容
+                  </label>
+                  <input
+                    className="h-8 flex-1 rounded-md border border-zinc-200 px-2 text-xs outline-none focus:border-zinc-400"
+                    value={(flowStore.selectedNode.props.message ?? "") as string}
+                    onChange={(e) => {
+                      if (flowStore.selectedNode) {
+                        flowStore.selectedNode.props.message = e.target.value;
+                      }
+                    }}
+                  />
+                </div>
+                <div className="mb-2 flex items-center gap-2">
+                  <label className="min-w-12 flex-shrink-0 whitespace-nowrap text-[11px] text-zinc-600">
+                    时长
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    className="h-8 flex-1 rounded-md border border-zinc-200 px-2 text-xs outline-none focus:border-zinc-400"
+                    value={(flowStore.selectedNode.props.duration ?? 3) as number}
+                    onChange={(e) => {
+                      if (flowStore.selectedNode) {
+                        flowStore.selectedNode.props.duration =
+                          Number.parseInt(e.target.value || "0", 10) || 1;
+                      }
+                    }}
+                  />
+                </div>
+              </>
             )}
             <div className="mb-2 flex items-center gap-2">
               <label className="min-w-12 flex-shrink-0 whitespace-nowrap text-[11px] text-zinc-600">

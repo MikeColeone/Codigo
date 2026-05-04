@@ -5,7 +5,7 @@ import type { ChangeEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { useEditorPage, useLayoutManagerUi } from "@/modules/editor/hooks";
-import { WorkspaceSwitcher } from "./workspace-switcher";
+import { CanvasHistoryActions } from "./center/canvas-edit-actions";
 import EditorPageManager from "../page-manager";
 import EditorLayoutManager from "../layout-manager";
 
@@ -61,7 +61,6 @@ export default function Left(props: { title: string }) {
             C
           </span>
         </button>
-        <WorkspaceSwitcher />
         <div className="min-w-0 ml-1">
           <div className="flex items-center gap-2">
             {isFlowWorkspace ? (
@@ -85,7 +84,7 @@ export default function Left(props: { title: string }) {
                 }}
                 popupRender={() => (
                   <div
-                    className="p-2"
+                    className="rounded-md border border-[var(--ide-control-border)] bg-[var(--ide-overlay-bg)] p-2 shadow-[var(--ide-panel-shadow)]"
                     onClick={(event) => event.stopPropagation()}
                   >
                     <div className="mb-2 flex items-center gap-1 rounded-md border border-[var(--ide-border)] bg-[var(--ide-control-bg)] p-1">
@@ -140,6 +139,11 @@ export default function Left(props: { title: string }) {
               </Dropdown>
             )}
             {!isFlowWorkspace && <EditOutlined {...publicProps} />}
+            {!isFlowWorkspace && (
+              <div className="ml-1 flex items-center gap-0.5 px-0.5 py-0.5">
+                <CanvasHistoryActions />
+              </div>
+            )}
           </div>
         </div>
       </div>

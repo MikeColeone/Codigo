@@ -3,6 +3,7 @@ import { action } from "mobx";
 import { calcValueByString } from "@codigo/materials";
 import type {
   ActionConfig,
+  ComponentEventName,
   ComponentNodeRecord,
   PageGridConfig,
   PageLayoutMode,
@@ -139,7 +140,7 @@ export function createEditorComponentMutations(
    * 更新当前组件事件配置。
    */
   const updateCurrentComponentEvents = action(
-    (eventName: "onClick", actions: ActionConfig[]) => {
+    (eventName: ComponentEventName, actions: ActionConfig[]) => {
       if (!ensurePermission("edit_content", "当前角色不能修改组件事件")) {
         return;
       }

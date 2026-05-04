@@ -14,11 +14,11 @@ export interface NodeColorMeta {
 }
 
 export const NODE_TYPES: Record<NodeType, NodeTypeMeta> = {
-  start: { label: "触发", w: 90, h: 40, shape: "pill" },
-  end: { label: "结束", w: 90, h: 40, shape: "pill" },
-  process: { label: "动作", w: 130, h: 48, shape: "rect" },
-  condition: { label: "条件判断", w: 120, h: 52, shape: "rect" },
-  notify: { label: "通知", w: 130, h: 48, shape: "rect" },
+  start: { label: "开始", w: 112, h: 48, shape: "pill" },
+  end: { label: "结束", w: 112, h: 48, shape: "pill" },
+  process: { label: "动作", w: 320, h: 132, shape: "rect" },
+  condition: { label: "条件判断", w: 320, h: 132, shape: "rect" },
+  notify: { label: "消息提醒", w: 320, h: 188, shape: "rect" },
 };
 
 export const NODE_COLORS: Record<NodeType, NodeColorMeta> = {

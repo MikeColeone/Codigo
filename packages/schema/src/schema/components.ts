@@ -103,14 +103,30 @@ export type ActionConfig =
       onError?: ActionConfig[];
     };
 
+/**
+ * 描述组件事件名称，允许在已知事件之外继续扩展自定义键。
+ */
+export type ComponentEventName =
+  | "didMount"
+  | "onClick"
+  | "onChange"
+  | "onPressEnter"
+  | "onSubmit"
+  | "onReset"
+  | "onPageChange"
+  | "onRowClick"
+  | "onCellClick"
+  | "onSorter"
+  | "onFilter"
+  | "exportData"
+  | "clearSelection"
+  | "clearDataSource"
+  | (string & {});
 
 /**
  * 描述组件事件映射结构。
- * @param onClick - 点击事件配置。
  */
-export interface ComponentEventMap {
-  onClick?: ActionConfig[];
-}
+export type ComponentEventMap = Partial<Record<ComponentEventName, ActionConfig[]>>;
 /**
  * 描述组件在画布中的通用样式配置。
  */

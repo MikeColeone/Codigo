@@ -15,6 +15,7 @@
   --ide-hover: #e9ecef;
   --ide-active: #dde3e8;
   --ide-control-bg: #ffffff;
+  --ide-overlay-bg: #f1f3f5;
   --ide-control-border: #cfd6dd;
   --ide-grid-line: rgba(31, 35, 40, 0.05);
   --ide-statusbar-text: #ffffff;
@@ -45,6 +46,7 @@
   --ide-hover: #e9ecef;
   --ide-active: #dde3e8;
   --ide-control-bg: #ffffff;
+  --ide-overlay-bg: #f1f3f5;
   --ide-control-border: #cfd6dd;
   --ide-grid-line: rgba(31, 35, 40, 0.05);
   --ide-statusbar-text: #ffffff;
@@ -130,7 +132,6 @@ body,
 .studio-root .ant-input-number,
 .studio-root .ant-input-number-group-addon,
 .studio-root .ant-select-selector,
-.studio-root .ant-dropdown .ant-dropdown-menu,
 .studio-root .ant-modal-content {
   border-color: var(--ide-control-border) !important;
   box-shadow: none !important;
@@ -138,20 +139,42 @@ body,
 
 .studio-root .ant-input-number,
 .studio-root .ant-select-selector,
-.studio-root .ant-dropdown .ant-dropdown-menu,
 .studio-root .ant-modal-content {
   background-color: var(--ide-control-bg) !important;
 }
 
 .studio-root .ant-modal-header,
-.studio-root .ant-dropdown .ant-dropdown-menu,
-.studio-root .ant-dropdown-menu-item {
+.ant-dropdown .ant-dropdown-menu,
+.ant-dropdown .ant-dropdown-menu-item,
+.ant-dropdown .ant-dropdown-menu-submenu-title,
+.ant-popover .ant-popover-inner,
+.ant-popover .ant-popover-title,
+.ant-popover .ant-popover-inner-content,
+.ant-select-dropdown,
+.ant-select-item {
+  color: var(--ide-text) !important;
+}
+
+.ant-dropdown .ant-dropdown-menu,
+.ant-select-dropdown,
+.ant-popover .ant-popover-inner {
+  background-color: var(--ide-overlay-bg) !important;
+  border: 1px solid var(--ide-control-border) !important;
+  box-shadow: var(--ide-panel-shadow) !important;
+}
+
+.ant-dropdown .ant-dropdown-arrow::before,
+.ant-popover .ant-popover-arrow::before {
+  background-color: var(--ide-overlay-bg) !important;
+}
+
+.studio-root .ant-modal-header {
   background-color: var(--ide-sidebar-bg) !important;
   color: var(--ide-text) !important;
 }
 
-.studio-root .ant-dropdown-menu-item:hover,
-.studio-root .ant-dropdown-menu-submenu-title:hover {
+.ant-dropdown-menu-item:hover,
+.ant-dropdown-menu-submenu-title:hover {
   background-color: var(--ide-hover) !important;
 }
 
@@ -187,19 +210,18 @@ body,
   color: color-mix(in srgb, var(--ide-text-muted) 80%, transparent) !important;
 }
 
-.studio-root .ant-select-dropdown {
-  background-color: var(--ide-control-bg) !important;
+.ant-select-dropdown {
+  background-color: var(--ide-overlay-bg) !important;
   border: 1px solid var(--ide-control-border) !important;
   box-shadow: var(--ide-panel-shadow) !important;
 }
 
-.studio-root .ant-select-item {
-  color: var(--ide-text) !important;
+.ant-select-item-option-active:not(.ant-select-item-option-disabled),
+  .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background-color: var(--ide-active) !important;
 }
 
-.studio-root .ant-select-item-option-active:not(.ant-select-item-option-disabled),
-.studio-root
-  .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+.ant-select-item-option-active:not(.ant-select-item-option-disabled) {
   background-color: var(--ide-hover) !important;
 }
 

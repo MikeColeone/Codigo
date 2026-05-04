@@ -1,7 +1,5 @@
 import { observer } from "mobx-react-lite";
 import { flowStore } from "../stores/flow-store";
-import { NODE_TYPES, NODE_COLORS } from "../constants";
-import type { NodeType } from "../types";
 
 function Toolbar() {
   return (
@@ -14,28 +12,9 @@ function Toolbar() {
         </span>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[11px] text-zinc-500">添加节点：</span>
-        {Object.entries(NODE_TYPES).map(([key, t]) => (
-          <button
-            key={key}
-            className="h-7 rounded-md border px-2.5 text-xs transition-colors hover:opacity-80"
-            style={{
-              color: NODE_COLORS[key as NodeType].text,
-              borderColor: NODE_COLORS[key as NodeType].border,
-              background: NODE_COLORS[key as NodeType].bg,
-            }}
-            onClick={() =>
-              flowStore.addNode(
-                key as NodeType,
-                t.label,
-                120 + Math.random() * 300,
-                80 + Math.random() * 180,
-              )
-            }
-          >
-            {t.label}
-          </button>
-        ))}
+        <span className="rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-[11px] text-indigo-600">
+          悬浮节点底部小点可创建下一步
+        </span>
         {(flowStore.selectedNodeId || flowStore.selectedEdgeId) && (
           <button
             className="h-7 rounded-md border border-red-200 bg-red-50 px-2.5 text-xs text-red-600 transition-colors hover:bg-red-100"

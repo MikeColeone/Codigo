@@ -4,7 +4,8 @@ import {
   SafetyCertificateOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
-import { NavLink } from "react-router-dom";
+import { NavLink, useSearchParams } from "react-router-dom";
+import { withPageId } from "../utils/page-id-route";
 
 type AdminNavItem = {
   key: string;
@@ -27,6 +28,9 @@ const items: AdminNavItem[] = [
 
 /** 页面管理工作台侧边栏：聚合页面搭建者模块入口（暂不提供 npm 包管理）。 */
 export default function AdminSidebar() {
+  const [searchParams] = useSearchParams();
+  const pageId = Number(searchParams.get("id"));
+
   return (
     <div className="flex h-full flex-col">
       <div className="px-2 py-2">
@@ -39,7 +43,7 @@ export default function AdminSidebar() {
           {items.map((item) => (
             <NavLink
               key={item.key}
-              to={item.to}
+              to={withPageId(item.to, pageId)}
               end={item.to === "/console"}
               className={({ isActive }) =>
                 [

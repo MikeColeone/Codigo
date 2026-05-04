@@ -1,14 +1,17 @@
 import { ArrowRightOutlined, FileTextOutlined, FormOutlined } from "@ant-design/icons";
 import { Button } from "antd";
 import { useTitle } from "ahooks";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useStoreAuth } from "@/shared/hooks";
+import { withPageId } from "../utils/page-id-route";
 
 /** 页面搭建者工作台概览页：提供常用入口与项目状态摘要。 */
 export default function AdminDashboard() {
   useTitle("Codigo - 页面管理");
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { store: storeAuth } = useStoreAuth();
+  const pageId = Number(searchParams.get("id"));
 
   return (
     <div className="h-full p-4">
@@ -32,7 +35,7 @@ export default function AdminDashboard() {
           <Button
             type="primary"
             icon={<FormOutlined />}
-            onClick={() => navigate("/editor")}
+            onClick={() => navigate(withPageId("/editor", pageId))}
           >
             进入编辑器
           </Button>
@@ -85,7 +88,7 @@ export default function AdminDashboard() {
 
             <button
               className="group flex items-center justify-between rounded-sm border border-[var(--ide-control-border)] bg-[var(--ide-sidebar-bg)] px-3 py-2 text-left transition-colors hover:bg-[var(--ide-hover)]"
-              onClick={() => navigate("/editor")}
+              onClick={() => navigate(withPageId("/editor", pageId))}
             >
               <div className="min-w-0">
                 <div className="text-[12px] font-medium text-[var(--ide-text)]">
@@ -113,7 +116,7 @@ export default function AdminDashboard() {
               <button
                 key={item.to}
                 className="rounded-sm border border-[var(--ide-control-border)] bg-[var(--ide-sidebar-bg)] px-2 py-2 text-left text-[12px] text-[var(--ide-text)] transition-colors hover:bg-[var(--ide-hover)]"
-                onClick={() => navigate(item.to)}
+                onClick={() => navigate(withPageId(item.to, pageId))}
               >
                 {item.label}
               </button>

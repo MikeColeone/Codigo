@@ -28,7 +28,7 @@ function Flow() {
         <PropsPanel />
       </div>
       <div className="flex h-[30px] flex-shrink-0 items-center border-t border-zinc-200 bg-zinc-50 px-4 text-[11px] text-zinc-500">
-        拖拽节点移动 · 拖拽节点右侧圆点连线 · Delete 键删除选中
+        悬浮底部小点点击或拖拽即可新增下一步 · Delete 键删除选中
       </div>
     </div>
   );

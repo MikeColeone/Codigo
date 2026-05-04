@@ -1,10 +1,12 @@
 import { toJS } from "mobx";
+import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { getComponentByType } from "@codigo/materials";
 import {
   groupChildrenBySlot,
   type ActionConfig,
   type ComponentNode,
+  type ComponentEventName,
   type RuntimeStateValue,
 } from "@codigo/schema";
 
@@ -67,10 +69,20 @@ function getLegacyClickActions(node: ComponentNode): ActionConfig[] {
   return [];
 }
 
-function getComponentClickActions(node: ComponentNode): ActionConfig[] {
-  const configuredActions = Array.isArray(node.events?.onClick)
-    ? node.events.onClick
+/**
+ * 返回节点指定事件的动作列表。
+ */
+function getComponentActions(
+  node: ComponentNode,
+  eventName: ComponentEventName,
+): ActionConfig[] {
+  const configuredActions = Array.isArray(node.events?.[eventName])
+    ? node.events[eventName]
     : [];
+
+  if (eventName !== "onClick") {
+    return [...configuredActions];
+  }
 
   return [...configuredActions, ...getLegacyClickActions(node)];
 }
@@ -82,7 +94,7 @@ function handleComponentClickActions(
   if (runtime?.mode !== "preview") {
     return;
   }
-  const actions = getComponentClickActions(node);
+  const actions = getComponentActions(node, "onClick");
   if (!actions.length) {
     return;
   }
@@ -123,7 +135,7 @@ export function resolveInitialPageState(nodes: ComponentNode[]) {
   const initialState: Record<string, RuntimeStateValue> = {};
 
   visitNodes(nodes, (node) => {
-    for (const action of getComponentClickActions(node)) {
+    for (const action of getComponentActions(node, "onClick")) {
       if (
         action.type === "setState" &&
         action.key &&
@@ -135,6 +147,70 @@ export function resolveInitialPageState(nodes: ComponentNode[]) {
   });
 
   return initialState;
+}
+
+interface RuntimeNodeShellProps {
+  conf: ComponentNode;
+  runtime?: ComponentRuntimeState;
+  shouldStretchWidth: boolean;
+  shouldStretchHeight: boolean;
+  children: ReactNode;
+}
+
+/**
+ * 承接运行时通用事件触发逻辑，例如 didMount 和 onClick。
+ */
+function RuntimeNodeShell({
+  conf,
+  runtime,
+  shouldStretchWidth,
+  shouldStretchHeight,
+  children,
+}: RuntimeNodeShellProps) {
+  const hasMountedRef = useRef(false);
+
+  useEffect(() => {
+    if (runtime?.mode !== "preview" || hasMountedRef.current) {
+      return;
+    }
+
+    hasMountedRef.current = true;
+    const actions = getComponentActions(conf, "didMount");
+    if (!actions.length) {
+      return;
+    }
+
+    const run = async () => {
+      for (const action of actions) {
+        await runtime?.onAction?.(action);
+      }
+    };
+    void run().catch(() => {});
+  }, [conf, runtime]);
+
+  return (
+    <div
+      data-render-node={conf.id}
+      onClick={() => handleComponentClickActions(conf, runtime)}
+      className={`${shouldStretchWidth ? "[&>*]:w-full" : ""} ${shouldStretchHeight ? "[&>*]:h-full" : ""}`}
+      style={{
+        position: "relative",
+        width: conf.styles?.width || "100%",
+        height: conf.styles?.height || "auto",
+        marginTop: conf.styles?.marginTop,
+        marginBottom: conf.styles?.marginBottom,
+        marginLeft: conf.styles?.marginLeft,
+        marginRight: conf.styles?.marginRight,
+        paddingTop: conf.styles?.paddingTop,
+        paddingBottom: conf.styles?.paddingBottom,
+        paddingLeft: conf.styles?.paddingLeft,
+        paddingRight: conf.styles?.paddingRight,
+        overflow: "visible",
+      }}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function generateComponent(
@@ -181,24 +257,11 @@ export function generateComponent(
     conf.styles?.height !== undefined && conf.styles?.height !== "auto";
 
   return (
-    <div
-      data-render-node={conf.id}
-      onClick={() => handleComponentClickActions(conf, runtime)}
-      className={`${shouldStretchWidth ? "[&>*]:w-full" : ""} ${shouldStretchHeight ? "[&>*]:h-full" : ""}`}
-      style={{
-        position: "relative",
-        width: conf.styles?.width || "100%",
-        height: conf.styles?.height || "auto",
-        marginTop: conf.styles?.marginTop,
-        marginBottom: conf.styles?.marginBottom,
-        marginLeft: conf.styles?.marginLeft,
-        marginRight: conf.styles?.marginRight,
-        paddingTop: conf.styles?.paddingTop,
-        paddingBottom: conf.styles?.paddingBottom,
-        paddingLeft: conf.styles?.paddingLeft,
-        paddingRight: conf.styles?.paddingRight,
-        overflow: "visible",
-      }}
+    <RuntimeNodeShell
+      conf={conf}
+      runtime={runtime}
+      shouldStretchWidth={shouldStretchWidth}
+      shouldStretchHeight={shouldStretchHeight}
     >
       <Component
         {...toJS(conf.props)}
@@ -212,6 +275,6 @@ export function generateComponent(
         editorNodeId={conf.id}
         runtimeEnv={runtime?.mode === "preview" ? "preview" : "editor"}
       />
-    </div>
+    </RuntimeNodeShell>
   );
 }

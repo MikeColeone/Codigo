@@ -1,60 +1,12 @@
 import { useState } from "react";
-import { Empty, Tabs, Tooltip } from "antd";
+import { Tabs, Tooltip } from "antd";
 import {
   AppstoreOutlined,
   ThunderboltOutlined,
 } from "@ant-design/icons";
 import ComponentFields from "./component-fields";
-import { toJS } from "mobx";
-import type { ActionConfig } from "@codigo/schema";
-import { ActionListEditor } from "./action-list-editor";
+import ComponentEventsPanel from "./component-events-panel";
 import { useEditorComponents, useEditorPage } from "@/modules/editor/hooks";
-import { observer } from "mobx-react-lite";
-
-function ComponentEventsPanel() {
-  const { getCurrentComponentConfig, getPages, updateCurrentComponentEvents } =
-    useEditorComponents();
-  const config = getCurrentComponentConfig.get();
-
-  if (!config) {
-    return (
-      <div className="py-8 text-center">
-        <div className="mb-3 text-[12px] font-medium text-[var(--ide-text)]">
-          暂未选中组件
-        </div>
-        <div className="mb-4 text-[11px] leading-relaxed text-[var(--ide-text-muted)]">
-          在画布中点击组件进行配置
-        </div>
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description={false}
-          className="!mb-0 !mt-2"
-        />
-      </div>
-    );
-  }
-
-  const pageOptions = getPages.get().map((page) => ({
-    label: `${page.name} · page:${page.path}`,
-    value: `page:${page.path}`,
-  }));
-  const eventActions = (toJS(config.events?.onClick) ?? []) as ActionConfig[];
-
-  return (
-    <div className="space-y-2 px-3 pb-8">
-      <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-hover)] p-2">
-        <ActionListEditor
-        value={eventActions}
-        onChange={(actions) => updateCurrentComponentEvents("onClick", actions)}
-        pageOptions={pageOptions}
-        emptyText="无事件步骤"
-      />
-      </div>
-    </div>
-  );
-}
-
-const ComponentEventsPanelComponent = observer(ComponentEventsPanel);
 
 export default function EditorRightPanel() {
   const { store: pageStore } = useEditorPage();
@@ -82,7 +34,7 @@ export default function EditorRightPanel() {
           </div>
         </Tooltip>
       ),
-      children: <ComponentEventsPanelComponent />,
+      children: <ComponentEventsPanel />,
     },
   ];
 
