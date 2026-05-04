@@ -30,43 +30,64 @@ const PlainField: FC<PxFieldProps> = ({ name, label, placeholder }) => {
 
 const SpacingDiagramFields: FC = () => {
   return (
-    <div className="relative mx-auto h-[168px] w-full max-w-[320px] select-none">
-      <div className="absolute inset-0 rounded-sm border border-[var(--ide-border)] bg-[var(--ide-control-bg)]/10" />
-      <div className="absolute inset-[22px] rounded-sm border border-[var(--ide-border)] bg-[var(--ide-hover)]/70" />
-      <div className="absolute inset-[54px] rounded-sm border border-[var(--ide-border)] bg-[var(--ide-control-bg)]/20" />
-      <div className="absolute inset-[86px] rounded-sm border border-[var(--ide-border)] bg-[var(--ide-sidebar-bg)]/60" />
-
-      <div className="absolute left-2 top-2 text-[10px] text-[var(--ide-text-muted)]">
-        外边距
-      </div>
-      <div className="absolute left-[30px] top-[30px] text-[10px] text-[var(--ide-text-muted)]">
-        内边距
-      </div>
-
-      <div className="absolute left-1/2 top-2 w-[72px] -translate-x-1/2">
-        <PxField name="marginTop" placeholder="0" />
-      </div>
-      <div className="absolute right-2 top-1/2 w-[72px] -translate-y-1/2">
-        <PxField name="marginRight" placeholder="0" />
-      </div>
-      <div className="absolute left-1/2 bottom-2 w-[72px] -translate-x-1/2">
-        <PxField name="marginBottom" placeholder="0" />
-      </div>
-      <div className="absolute left-2 top-1/2 w-[72px] -translate-y-1/2">
-        <PxField name="marginLeft" placeholder="0" />
+    <div className="mx-auto w-full max-w-[320px] select-none space-y-2">
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-control-bg)]/20 p-1.5">
+          <div className="mb-1 text-[10px] text-[var(--ide-text-muted)]">外上</div>
+          <PxField name="marginTop" placeholder="0" />
+        </div>
+        <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-hover)]/70 p-1.5">
+          <div className="mb-1 text-[10px] text-[var(--ide-text-muted)]">内上</div>
+          <PxField name="paddingTop" placeholder="0" />
+        </div>
       </div>
 
-      <div className="absolute left-1/2 top-[46px] w-[72px] -translate-x-1/2">
-        <PxField name="paddingTop" placeholder="0" />
+      <div className="grid grid-cols-[84px_minmax(0,1fr)_84px] items-center gap-2">
+        <div className="space-y-2">
+          <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-control-bg)]/20 p-1.5">
+            <div className="mb-1 text-[10px] text-[var(--ide-text-muted)]">外左</div>
+            <PxField name="marginLeft" placeholder="0" />
+          </div>
+          <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-hover)]/70 p-1.5">
+            <div className="mb-1 text-[10px] text-[var(--ide-text-muted)]">内左</div>
+            <PxField name="paddingLeft" placeholder="0" />
+          </div>
+        </div>
+
+        <div className="relative h-[132px] min-w-0 rounded-sm border border-[var(--ide-border)] bg-[var(--ide-control-bg)]/10">
+          <div className="absolute inset-[12px] rounded-sm border border-[var(--ide-border)] bg-[var(--ide-control-bg)]/20" />
+          <div className="absolute inset-[34px] rounded-sm border border-[var(--ide-border)] bg-[var(--ide-hover)]/70" />
+          <div className="absolute inset-[58px] rounded-sm border border-[var(--ide-border)] bg-[var(--ide-sidebar-bg)]/60" />
+
+          <div className="absolute left-2 top-2 text-[10px] text-[var(--ide-text-muted)]">
+            外边距
+          </div>
+          <div className="absolute left-4 top-6 text-[10px] text-[var(--ide-text-muted)]">
+            内边距
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-control-bg)]/20 p-1.5">
+            <div className="mb-1 text-[10px] text-[var(--ide-text-muted)]">外右</div>
+            <PxField name="marginRight" placeholder="0" />
+          </div>
+          <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-hover)]/70 p-1.5">
+            <div className="mb-1 text-[10px] text-[var(--ide-text-muted)]">内右</div>
+            <PxField name="paddingRight" placeholder="0" />
+          </div>
+        </div>
       </div>
-      <div className="absolute right-[46px] top-1/2 w-[72px] -translate-y-1/2">
-        <PxField name="paddingRight" placeholder="0" />
-      </div>
-      <div className="absolute left-1/2 bottom-[46px] w-[72px] -translate-x-1/2">
-        <PxField name="paddingBottom" placeholder="0" />
-      </div>
-      <div className="absolute left-[46px] top-1/2 w-[72px] -translate-y-1/2">
-        <PxField name="paddingLeft" placeholder="0" />
+
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-control-bg)]/20 p-1.5">
+          <div className="mb-1 text-[10px] text-[var(--ide-text-muted)]">外下</div>
+          <PxField name="marginBottom" placeholder="0" />
+        </div>
+        <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-hover)]/70 p-1.5">
+          <div className="mb-1 text-[10px] text-[var(--ide-text-muted)]">内下</div>
+          <PxField name="paddingBottom" placeholder="0" />
+        </div>
       </div>
     </div>
   );
@@ -117,4 +138,3 @@ export const LayoutSpacingFields: FC<{ isGridRoot: boolean }> = ({
     </div>
   );
 };
-

@@ -13,7 +13,7 @@ function AppManagementSidebar({
 }: AppManagementSidebarProps) {
   return (
     <>
-      <aside className="hidden w-[64px] shrink-0 border-r border-[var(--ide-border)] bg-[var(--ide-sidebar-bg)] lg:flex">
+      <aside className="hidden w-[64px] shrink-0 border-r border-[var(--ide-border)] bg-[color:color-mix(in_oklab,var(--ide-sidebar-bg)_88%,transparent)] backdrop-blur lg:flex">
         <div className="flex h-full w-full flex-col items-center py-2">
           <div className="flex w-full flex-1 flex-col gap-0.5">
             {items.map((item) => {
@@ -42,7 +42,7 @@ function AppManagementSidebar({
         </div>
       </aside>
 
-      <div className="border-b border-[var(--ide-border)] bg-[var(--ide-sidebar-bg)] p-2 lg:hidden">
+      <div className="border-b border-[var(--ide-border)] bg-[color:color-mix(in_oklab,var(--ide-sidebar-bg)_88%,transparent)] p-2 backdrop-blur lg:hidden">
         <div className="flex flex-wrap gap-2">
           {items.map((item) => {
             const active = currentTab === item.key;

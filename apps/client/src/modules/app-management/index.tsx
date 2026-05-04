@@ -2,6 +2,7 @@ import { observer } from "mobx-react-lite";
 import { useNavigate } from "react-router-dom";
 import { TemplatePreviewModal } from "@/modules/template-center/components/template-preview-modal";
 import { TopNavLayout } from "@/app/layouts/top-nav-layout";
+import { ParticleBackground } from "@/modules/home/components/background/particle-background";
 import { useAppManagementController } from "./hooks/use-app-management-controller";
 import { useAppManagementViewModel } from "./hooks/use-app-management-view-model";
 import AppManagementHero from "./components/layout/app-management-hero";
@@ -28,43 +29,44 @@ function AppManagement() {
     setPreviewState,
     templates,
   } = useAppManagementController();
-  const { metrics, navigationItems } = useAppManagementViewModel({
+  const { navigationItems } = useAppManagementViewModel({
     isLoggedIn,
-    isUpdatedAfterPublish: localDraftMeta?.isUpdatedAfterPublish,
-    publicLoading,
-    publicPagesCount: publicPages.length,
-    templatesCount: templates.length,
-    versionsCount: myPageData?.versions.length ?? 0,
   });
 
   return (
     <TopNavLayout>
-      <AppManagementWorkspace
-        currentTab={currentTab}
-        hero={<AppManagementHero isLoggedIn={isLoggedIn} metrics={metrics} />}
-        items={navigationItems}
-        onChange={handleTabChange}
-      >
-        <AppManagementSectionContent
-          currentTab={currentTab}
-          draftMeta={localDraftMeta}
-          isLoggedIn={isLoggedIn}
-          myPageData={myPageData}
-          myPageLoading={myPageLoading}
-          publicLoading={publicLoading}
-          publicPages={publicPages}
-          templates={templates}
-          onContinue={() =>
-            navigate(
-              myPageData?.page?.id ? `/editor?id=${myPageData.page.id}` : "/editor",
-            )
-          }
-          onPreviewPublished={handleOpenPublishedPage}
-          onPreviewTemplate={handleOpenTemplatePreview}
-          onPreviewVersion={handleOpenVersion}
-          onUseTemplate={handleUseTemplate}
-        />
-      </AppManagementWorkspace>
+      <div className="relative h-full bg-[var(--ide-bg)] text-[var(--ide-text)]">
+        <ParticleBackground />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(15,108,189,0.06),transparent_45%)]" />
+        <div className="relative h-full">
+          <AppManagementWorkspace
+            currentTab={currentTab}
+            hero={<AppManagementHero isLoggedIn={isLoggedIn} />}
+            items={navigationItems}
+            onChange={handleTabChange}
+          >
+            <AppManagementSectionContent
+              currentTab={currentTab}
+              draftMeta={localDraftMeta}
+              isLoggedIn={isLoggedIn}
+              myPageData={myPageData}
+              myPageLoading={myPageLoading}
+              publicLoading={publicLoading}
+              publicPages={publicPages}
+              templates={templates}
+              onContinue={() =>
+                navigate(
+                  myPageData?.page?.id ? `/editor?id=${myPageData.page.id}` : "/editor",
+                )
+              }
+              onPreviewPublished={handleOpenPublishedPage}
+              onPreviewTemplate={handleOpenTemplatePreview}
+              onPreviewVersion={handleOpenVersion}
+              onUseTemplate={handleUseTemplate}
+            />
+          </AppManagementWorkspace>
+        </div>
+      </div>
       <TemplatePreviewModal
         loading={previewLoading}
         open={Boolean(previewState)}

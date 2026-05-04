@@ -19,11 +19,12 @@ import type {
   PreviewState,
 } from "../types/app-management";
 import type { TemplateListItem } from "@codigo/schema";
-import {
-  buildTemplateSchema,
-  writeTemplateToDraft,
-} from "@/modules/template-center/utils/template-draft";
+import { buildTemplateSchema } from "@/modules/template-center/utils/template-draft";
 import { fetchTemplateDetail, fetchTemplateList } from "@/modules/template-center/api/templates";
+import {
+  getTemplateKindLabel,
+  isSinglePageTemplatePreset,
+} from "@/modules/template-center/utils/template-kind";
 
 export function useAppManagementController() {
   const navigate = useNavigate();
@@ -109,7 +110,7 @@ export function useAppManagementController() {
       const detail = await fetchTemplateDetail(template.id);
       return {
         title: detail.preset.name,
-        subtitle: `${detail.preset.deviceType === "mobile" ? "移动端" : "PC 端"} · ${detail.preset.pages.length} 个页面 · 画布 ${detail.preset.canvasWidth} × ${detail.preset.canvasHeight}`,
+        subtitle: `${getTemplateKindLabel(isSinglePageTemplatePreset(detail.preset))} · ${detail.preset.deviceType === "mobile" ? "移动端" : "PC 端"} · ${detail.preset.pages.length} 个页面 · 画布 ${detail.preset.canvasWidth} × ${detail.preset.canvasHeight}`,
         schema: buildTemplateSchema(detail.preset),
       };
     });
@@ -121,9 +122,7 @@ export function useAppManagementController() {
       return;
     }
 
-    const detail = await fetchTemplateDetail(template.id);
-    writeTemplateToDraft(detail.preset);
-    navigate("/editor");
+    navigate(`/editor?templateId=${template.id}`);
   };
 
   const handleOpenPublishedPage = async (

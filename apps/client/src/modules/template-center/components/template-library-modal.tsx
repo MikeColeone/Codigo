@@ -6,6 +6,10 @@ import type { TemplateDetailResponse, TemplateListItem } from "@codigo/schema";
 import type { TemplatePreset } from "../types/templates";
 import { fetchTemplateDetail, fetchTemplateList } from "../api/templates";
 import { buildTemplateSchema } from "../utils/template-draft";
+import {
+  getTemplateKindLabel,
+  isSinglePageTemplateItem,
+} from "../utils/template-kind";
 import { TemplateGallery } from "./template-gallery";
 import { TemplatePreviewModal } from "./template-preview-modal";
 
@@ -87,7 +91,7 @@ export function TemplateLibraryModal({
         onCancel={onClose}
       >
         <div className="mb-5 rounded-md border border-[var(--ide-border)] bg-[var(--ide-hover)] px-4 py-3 text-sm text-[var(--ide-text-muted)]">
-          在编辑器内直接预览并应用模板
+          单页面模板会直接覆盖当前页，完整站点模板会替换当前工作区的全部页面
         </div>
         {listLoading ? (
           <div className="flex items-center justify-center py-24">
@@ -108,7 +112,7 @@ export function TemplateLibraryModal({
         title={previewTemplate?.name}
         subtitle={
           previewTemplate
-            ? `${previewTemplate.deviceType === "mobile" ? "移动端" : "PC 端"} · ${previewTemplate.pagesCount} 个页面 · 画布 ${previewTemplate.canvasWidth} × ${previewTemplate.canvasHeight}`
+            ? `${getTemplateKindLabel(isSinglePageTemplateItem(previewTemplate))} · ${previewTemplate.deviceType === "mobile" ? "移动端" : "PC 端"} · ${previewTemplate.pagesCount} 个页面 · 画布 ${previewTemplate.canvasWidth} × ${previewTemplate.canvasHeight}`
             : undefined
         }
         schema={previewDetail ? buildTemplateSchema(previewDetail.preset) : null}

@@ -8,6 +8,7 @@ import {
   buildTemplateSchema,
   createTemplatePageSettings,
 } from "@/modules/template-center/utils/template-draft";
+import { isSinglePageTemplatePreset } from "@/modules/template-center/utils/template-kind";
 import {
   createEditorComponentsStore,
   type TEditorComponentsStore,
@@ -546,18 +547,25 @@ export function useEditorComponents() {
   });
 
   /**
-   * 将模板整体应用到当前工作区，并替换现有页面集合。
+   * 将模板应用到编辑器。单页面模板只覆盖当前页，完整站点模板替换整个页面集合。
    */
   const applyTemplateToWorkspace = action((template: TemplatePreset) => {
     if (!ensurePermission("edit_structure", "当前角色不能应用模板")) {
       return false;
     }
 
+    ensureEditorPages();
     const schema = buildTemplateSchema(template);
     const nextPageSettings = createTemplatePageSettings(template);
+    const isSinglePageTemplate = isSinglePageTemplatePreset(template);
     const activeTemplatePage =
       schema.pages?.find((page) => page.id === schema.activePageId) ??
       schema.pages?.[0] ??
+      null;
+    const currentPages = getPages.get();
+    const currentActivePage =
+      currentPages.find((page) => page.id === storeComponents.activePageId) ??
+      currentPages[0] ??
       null;
 
     if (!activeTemplatePage || !schema.pages?.length) {
@@ -580,14 +588,34 @@ export function useEditorComponents() {
     storeComponents.selectedCompIds = storeComponents.currentCompConfig
       ? [storeComponents.currentCompConfig]
       : [];
-    storeComponents.pages = schema.pages ?? [];
-    storeComponents.pageGroups = schema.pageGroups ?? [];
-    storeComponents.activePageId = activeTemplatePage.id;
+
+    if (isSinglePageTemplate && currentActivePage) {
+      const nextCurrentPageComponents =
+        stripPlainTemplateContainers(activeTemplatePage.components) ?? [];
+      storeComponents.pages = currentPages.map((page) =>
+        page.id === currentActivePage.id
+          ? {
+              ...page,
+              components: nextCurrentPageComponents,
+            }
+          : page,
+      );
+      storeComponents.activePageId = currentActivePage.id;
+    } else {
+      storeComponents.pages = schema.pages ?? [];
+      storeComponents.pageGroups = schema.pageGroups ?? [];
+      storeComponents.activePageId = activeTemplatePage.id;
+    }
 
     updatePage(nextPageSettings);
     broadcastReplaceAll();
     addOperationLogWithHistory("update_page", `应用模板:${template.name}`);
-    message.success(`已应用“${template.name}”模板，当前工作区已切换为多页面后台骨架`);
+
+    if (isSinglePageTemplate) {
+      message.success(`已应用“${template.name}”单页面模板，当前页面内容已覆盖`);
+    } else {
+      message.success(`已应用“${template.name}”完整站点模板，当前工作区页面已整体替换`);
+    }
     return true;
   });
 

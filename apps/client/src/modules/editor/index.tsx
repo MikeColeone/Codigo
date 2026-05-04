@@ -13,6 +13,7 @@ import { EditorViewport } from "./components/shell/editor-viewport";
 import { useEditorBootstrap } from "./components/shell/use-editor-bootstrap";
 import { fetchTemplateDetail } from "@/modules/template-center/api/templates";
 import { writeTemplateToDraft } from "@/modules/template-center/utils/template-draft";
+import { isSinglePageTemplatePreset } from "@/modules/template-center/utils/template-kind";
 import { getLowCodePage } from "@/modules/editor/api/low-code";
 
 function Editor() {
@@ -21,7 +22,7 @@ function Editor() {
   const pageId = Number(searchParams.get("id"));
   const templateId = Number(searchParams.get("templateId"));
 
-  const { store: storeComps, loadPageData } = useEditorComponents();
+  const { applyTemplateToWorkspace, store: storeComps, loadPageData } = useEditorComponents();
   const { store: storePage, hydrateGridDashedLinesVisible } = useEditorPage();
   const { initCollaboration, cleanupCollaboration } = useEditorPermission();
   const { store: storeAuth } = useStoreAuth();
@@ -45,8 +46,13 @@ function Editor() {
     void (async () => {
       try {
         const detail = await fetchTemplateDetail(templateId);
-        writeTemplateToDraft(detail.preset);
-        await loadPageData(getLowCodePage);
+        if (isSinglePageTemplatePreset(detail.preset)) {
+          await loadPageData(getLowCodePage);
+          applyTemplateToWorkspace(detail.preset);
+        } else {
+          writeTemplateToDraft(detail.preset);
+          await loadPageData(getLowCodePage);
+        }
         setSearchParams((prev) => {
           const next = new URLSearchParams(prev);
           next.delete("templateId");
@@ -56,7 +62,7 @@ function Editor() {
         message.error("模板载入失败，请稍后重试");
       }
     })();
-  }, [loadPageData, setSearchParams, templateId]);
+  }, [applyTemplateToWorkspace, loadPageData, setSearchParams, templateId]);
 
   useEditorBootstrap({
     pageId,

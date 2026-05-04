@@ -1,7 +1,7 @@
 import { builtinComponentDefinitions } from "@codigo/materials";
 import { useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { MaterialDocPanel } from "./materials-plaza/material-doc-panel";
+import { useNavigate } from "react-router-dom";
+import { getEditorComponentSections } from "@/modules/editor/registry/components";
 import { MaterialsList } from "./materials-plaza/materials-list";
 
 export type MaterialMeta = {
@@ -10,12 +10,22 @@ export type MaterialMeta = {
   description?: string;
   isContainer?: boolean;
   slots?: { name: string; title?: string; multiple?: boolean }[];
+  sectionKey: string;
+  sectionLabel: string;
 };
 
 export function HomeMaterialsPlaza() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const selectedType = searchParams.get("type");
+
+  const sections = useMemo(() => {
+    return getEditorComponentSections("admin")
+      .filter((section) => section.items.length > 0)
+      .map((section) => ({
+        key: section.key,
+        label: section.label,
+        types: new Set(section.items.map((item) => item.type)),
+      }));
+  }, []);
 
   const materials = useMemo<MaterialMeta[]>(
     () =>
@@ -26,29 +36,33 @@ export function HomeMaterialsPlaza() {
           description: item.description,
           isContainer: item.isContainer,
           slots: item.slots,
+          section:
+            sections.find((section) => section.types.has(String(item.type))) ?? null,
+        }))
+        .filter(
+          (
+            item,
+          ): item is Omit<MaterialMeta, "sectionKey" | "sectionLabel"> & {
+            section: (typeof sections)[number];
+          } => Boolean(item.section),
+        )
+        .map((item) => ({
+          type: item.type,
+          name: item.name,
+          description: item.description,
+          isContainer: item.isContainer,
+          slots: item.slots,
+          sectionKey: item.section.key,
+          sectionLabel: item.section.label,
         }))
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [],
+    [sections],
   );
-
-  const selectedMaterial = useMemo(() => {
-    if (!selectedType) {
-      return null;
-    }
-    return materials.find((item) => item.type === selectedType) ?? null;
-  }, [materials, selectedType]);
 
   const openMaterial = (type: string) => {
     navigate(
       `/doc?page=materials&section=${encodeURIComponent(`materials-${type}`)}`,
     );
-  };
-
-  const clearSelection = () => {
-    const next = new URLSearchParams(searchParams);
-    next.set("view", "materials");
-    next.delete("type");
-    setSearchParams(next);
   };
 
   return (
@@ -65,17 +79,15 @@ export function HomeMaterialsPlaza() {
         </p>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-7">
-          <MaterialsList
-            materials={materials}
-            selectedType={selectedType}
-            onSelect={openMaterial}
-          />
-        </div>
-        <div className="lg:col-span-5">
-          <MaterialDocPanel material={selectedMaterial} onBack={clearSelection} />
-        </div>
+      <div className="mt-6">
+        <MaterialsList
+          materials={materials}
+          sections={sections.map((section) => ({
+            key: section.key,
+            label: section.label,
+          }))}
+          onSelect={openMaterial}
+        />
       </div>
     </section>
   );

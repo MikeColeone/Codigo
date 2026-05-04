@@ -1,27 +1,10 @@
 export const LEFT_PANEL_RAIL_WIDTH = 48;
-export const LEFT_PANEL_DEFAULT_WIDTH = LEFT_PANEL_RAIL_WIDTH + 260;
-export const RIGHT_PANEL_DEFAULT_WIDTH = 320;
-export const LEFT_PANEL_MIN_WIDTH = LEFT_PANEL_RAIL_WIDTH + 240;
-export const RIGHT_PANEL_MIN_WIDTH = 288;
-export const LEFT_PANEL_MAX_WIDTH = LEFT_PANEL_RAIL_WIDTH + 360;
-export const RIGHT_PANEL_MAX_WIDTH = 460;
+export const LEFT_PANEL_WIDTH = LEFT_PANEL_RAIL_WIDTH + 340;
+export const RIGHT_PANEL_WIDTH = 460;
 export const CENTER_MIN_WIDTH = 420;
-export const LEFT_PANEL_STORAGE_KEY = "codigo:editor:left-panel-width:v5";
-export const RIGHT_PANEL_STORAGE_KEY = "codigo:editor:right-panel-width:v2";
 export const LEFT_PANEL_COLLAPSED_KEY = "codigo:editor:left-panel-collapsed:v1";
 export const RIGHT_PANEL_COLLAPSED_KEY =
   "codigo:editor:right-panel-collapsed:v1";
-
-export type ResizeSide = "left" | "right";
-
-export function readStoredWidth(key: string, fallback: number) {
-  if (typeof window === "undefined") {
-    return fallback;
-  }
-
-  const stored = Number(window.localStorage.getItem(key));
-  return Number.isFinite(stored) ? stored : fallback;
-}
 
 export function readStoredBoolean(key: string, fallback: boolean) {
   if (typeof window === "undefined") {
@@ -34,55 +17,24 @@ export function readStoredBoolean(key: string, fallback: boolean) {
   return fallback;
 }
 
-export function clampWidth(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value));
-}
+export function resolveFixedPanelWidths(viewportWidth: number) {
+  const availablePanelWidth = Math.max(0, viewportWidth - CENTER_MIN_WIDTH);
+  const preferredTotalWidth = LEFT_PANEL_WIDTH + RIGHT_PANEL_WIDTH;
 
-export function getPanelBounds(
-  side: ResizeSide,
-  viewportWidth: number,
-  oppositeWidth: number,
-) {
-  const minWidth =
-    side === "left" ? LEFT_PANEL_MIN_WIDTH : RIGHT_PANEL_MIN_WIDTH;
-  const maxWidth =
-    side === "left" ? LEFT_PANEL_MAX_WIDTH : RIGHT_PANEL_MAX_WIDTH;
-  const remainingWidth = Math.max(
-    minWidth,
-    viewportWidth - CENTER_MIN_WIDTH - oppositeWidth,
+  if (availablePanelWidth >= preferredTotalWidth) {
+    return {
+      leftWidth: LEFT_PANEL_WIDTH,
+      rightWidth: RIGHT_PANEL_WIDTH,
+    };
+  }
+
+  const leftRatio = LEFT_PANEL_WIDTH / preferredTotalWidth;
+  const leftWidth = Math.max(
+    LEFT_PANEL_RAIL_WIDTH,
+    Math.round(availablePanelWidth * leftRatio),
   );
-
   return {
-    minWidth,
-    maxWidth: Math.max(minWidth, Math.min(maxWidth, remainingWidth)),
-  };
-}
-
-export function normalizePanelWidths(
-  viewportWidth: number,
-  leftWidth: number,
-  rightWidth: number,
-) {
-  const leftBounds = getPanelBounds("left", viewportWidth, rightWidth);
-  const nextLeftWidth = clampWidth(
     leftWidth,
-    leftBounds.minWidth,
-    leftBounds.maxWidth,
-  );
-  const rightBounds = getPanelBounds("right", viewportWidth, nextLeftWidth);
-  const nextRightWidth = clampWidth(
-    rightWidth,
-    rightBounds.minWidth,
-    rightBounds.maxWidth,
-  );
-  const finalLeftBounds = getPanelBounds("left", viewportWidth, nextRightWidth);
-
-  return {
-    leftWidth: clampWidth(
-      nextLeftWidth,
-      finalLeftBounds.minWidth,
-      finalLeftBounds.maxWidth,
-    ),
-    rightWidth: nextRightWidth,
+    rightWidth: Math.max(0, availablePanelWidth - leftWidth),
   };
 }

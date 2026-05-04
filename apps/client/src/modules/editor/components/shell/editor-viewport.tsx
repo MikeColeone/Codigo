@@ -13,7 +13,6 @@ import {
 import { useEffect, useRef, useState } from "react";
 import type {
   MouseEvent as ReactMouseEvent,
-  PointerEvent as ReactPointerEvent,
   ReactNode,
   RefObject,
 } from "react";
@@ -21,7 +20,7 @@ import { observer } from "mobx-react-lite";
 import { useNavigate } from "react-router-dom";
 import EditorLeftPanel from "../left-panel";
 import EditorRightPanel from "../right-panel";
-import AiChatPanel from "../ai/aichat-panel";
+import AiChatPanel from "../ai/ai-chat-panel";
 import { EditorOutlineTree } from "../right-panel/component-fields";
 import GlobalFields from "../right-panel/global-fields";
 import EditorCanvas from "../canvas";
@@ -50,17 +49,13 @@ type LeftPanelSection =
 const WORKSPACE_STAGE_PADDING = 64;
 const MOBILE_FRAME_SIZE = 24;
 
-function PanelResizeHandle({
+function PanelToggleRail({
   side,
-  onPointerDown,
   onToggle,
   toggleIcon,
   toggleTitle,
 }: {
   side: "left" | "right";
-  lineClassName?: string;
-  gripClassName?: string;
-  onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onToggle: () => void;
   toggleIcon: ReactNode;
   toggleTitle: string;
@@ -68,9 +63,8 @@ function PanelResizeHandle({
   return (
     <div
       role="separator"
-      onPointerDown={onPointerDown}
       data-side={side}
-      className="group relative z-30 w-1 shrink-0 cursor-col-resize bg-transparent touch-none transition-colors hover:bg-[var(--ide-accent)]"
+      className="group relative z-30 w-1 shrink-0 bg-transparent touch-none"
     >
       <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[var(--ide-border)]" />
       <button
@@ -146,7 +140,6 @@ function EditorViewport(props: EditorViewportProps) {
     setRightPanelCollapsed,
     leftPanelWidth,
     rightPanelWidth,
-    startResize,
   } = useEditorPanelLayout();
   const workspaceViewportRef = useRef<HTMLDivElement>(null);
   const workspaceSurfaceRef = useRef<HTMLDivElement>(null);
@@ -165,6 +158,7 @@ function EditorViewport(props: EditorViewportProps) {
     height: 0,
   });
   const [isWorkspacePanning, setIsWorkspacePanning] = useState(false);
+  const leftSidebarContentWidth = leftPanelWidth - LEFT_PANEL_RAIL_WIDTH;
   const activePagePath =
     props.storeComps.pages.find((page) => page.id === props.storeComps.activePageId)
       ?.path ??
@@ -601,23 +595,26 @@ function EditorViewport(props: EditorViewportProps) {
         <div
           className="relative z-20 flex shrink-0 overflow-hidden border-r border-[var(--ide-border)] bg-[var(--ide-sidebar-bg)] transition-[width] duration-150"
           style={{
-            width: isLeftPanelCollapsed ? 0 : leftPanelWidth - LEFT_PANEL_RAIL_WIDTH,
+            width: isLeftPanelCollapsed ? 0 : leftSidebarContentWidth,
           }}
         >
           {!isLeftPanelCollapsed && (
             <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-              <div className="flex h-9 items-center px-4 text-[11px] font-bold uppercase tracking-wider text-[var(--ide-text-muted)]">
-                {activeLeftSection === "components"
-                  ? "组件库"
-                  : activeLeftSection === "outline"
-                    ? "大纲"
-                    : activeLeftSection === "global"
-                      ? "全局"
-                      : activeLeftSection === "ai"
-                        ? "AI生成"
-                      : activeLeftSection === "requests"
-                        ? "请求"
-                        : "数据源"}
+              <div className="flex h-9 items-center justify-between gap-3 px-4 text-[11px] font-bold uppercase tracking-wider text-[var(--ide-text-muted)]">
+                <span>
+                  {activeLeftSection === "components"
+                    ? "组件库"
+                    : activeLeftSection === "outline"
+                      ? "大纲"
+                      : activeLeftSection === "global"
+                        ? "全局"
+                        : activeLeftSection === "ai"
+                          ? "AI生成"
+                        : activeLeftSection === "requests"
+                          ? "请求"
+                          : "数据源"}
+                </span>
+
               </div>
               <div className="flex-1 min-h-0 min-w-0 overflow-auto">
                 {activeLeftSection === "components" && <EditorLeftPanel embedded />}
@@ -655,9 +652,8 @@ function EditorViewport(props: EditorViewportProps) {
           )}
         </div>
 
-        <PanelResizeHandle
+        <PanelToggleRail
           side="left"
-          onPointerDown={startResize("left")}
           onToggle={() => setLeftPanelCollapsed(!isLeftPanelCollapsed)}
           toggleIcon={
             isLeftPanelCollapsed ? (
@@ -666,7 +662,9 @@ function EditorViewport(props: EditorViewportProps) {
               <LeftOutlined className="text-[11px]" />
             )
           }
-          toggleTitle={isLeftPanelCollapsed ? "展开左侧栏" : "收起左侧栏"}
+          toggleTitle={
+            isLeftPanelCollapsed ? "展开左侧栏" : "收起左侧栏"
+          }
         />
 
         {/* Main Editor Area */}
@@ -702,9 +700,8 @@ function EditorViewport(props: EditorViewportProps) {
           </div>
         </div>
 
-        <PanelResizeHandle
+        <PanelToggleRail
           side="right"
-          onPointerDown={startResize("right")}
           onToggle={() => setRightPanelCollapsed(!isRightPanelCollapsed)}
           toggleIcon={
             isRightPanelCollapsed ? (
@@ -725,8 +722,8 @@ function EditorViewport(props: EditorViewportProps) {
         >
           {!isRightPanelCollapsed && (
             <>
-              <div className="flex h-9 items-center px-4 text-[11px] font-bold uppercase tracking-wider text-[var(--ide-text-muted)]">
-                属性设置
+              <div className="flex h-9 items-center justify-between gap-3 px-4 text-[11px] font-bold uppercase tracking-wider text-[var(--ide-text-muted)]">
+                <span>属性设置</span>
               </div>
               <div className="flex min-h-0 w-full flex-1 flex-col overflow-auto">
                 <EditorRightPanel />

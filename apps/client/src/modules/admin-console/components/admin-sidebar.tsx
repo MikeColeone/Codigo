@@ -1,7 +1,6 @@
 import {
   AreaChartOutlined,
   DashboardOutlined,
-  HistoryOutlined,
   SafetyCertificateOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
@@ -23,7 +22,6 @@ const items: AdminNavItem[] = [
     to: "/console/permissions",
     icon: <SafetyCertificateOutlined />,
   },
-  { key: "versions", label: "版本管理", to: "/console/versions", icon: <HistoryOutlined /> },
   { key: "big-screen", label: "数据大屏", to: "/console/big-screen", icon: <AreaChartOutlined /> },
 ];
 

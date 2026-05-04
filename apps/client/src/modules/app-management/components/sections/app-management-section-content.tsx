@@ -66,6 +66,7 @@ function AppManagementSectionContent({
       <TemplateGallery
         canUseTemplate={isLoggedIn}
         templates={templates}
+        virtualized
         onPreview={onPreviewTemplate}
         onUse={onUseTemplate}
       />

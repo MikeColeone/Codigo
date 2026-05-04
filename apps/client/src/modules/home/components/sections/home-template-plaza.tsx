@@ -13,6 +13,10 @@ import { TemplatePreviewModal } from "@/modules/template-center/components/templ
 import {
   buildTemplateSchema,
 } from "@/modules/template-center/utils/template-draft";
+import {
+  getTemplateKindLabel,
+  isSinglePageTemplatePreset,
+} from "@/modules/template-center/utils/template-kind";
 
 type PreviewState = {
   title?: string;
@@ -38,7 +42,7 @@ export function HomeTemplatePlaza() {
       const detail = await fetchTemplateDetail(template.id);
       setPreviewState({
         title: detail.preset.name,
-        subtitle: `${detail.preset.deviceType === "mobile" ? "移动端" : "PC 端"} · ${detail.preset.pages.length} 个页面 · 画布 ${detail.preset.canvasWidth} × ${detail.preset.canvasHeight}`,
+        subtitle: `${getTemplateKindLabel(isSinglePageTemplatePreset(detail.preset))} · ${detail.preset.deviceType === "mobile" ? "移动端" : "PC 端"} · ${detail.preset.pages.length} 个页面 · 画布 ${detail.preset.canvasWidth} × ${detail.preset.canvasHeight}`,
         schema: buildTemplateSchema(detail.preset),
       });
     },

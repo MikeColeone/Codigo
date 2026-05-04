@@ -5,69 +5,15 @@ import {
   EyeOutlined,
   HistoryOutlined,
 } from "@ant-design/icons";
-import type {
-  AppManagementMetric,
-  AppManagementNavItem,
-} from "../types/app-management";
+import type { AppManagementNavItem } from "../types/app-management";
 
 interface UseAppManagementViewModelArgs {
   isLoggedIn: boolean;
-  isUpdatedAfterPublish?: boolean;
-  publicLoading: boolean;
-  publicPagesCount: number;
-  templatesCount: number;
-  versionsCount: number;
 }
 
 export function useAppManagementViewModel({
   isLoggedIn,
-  isUpdatedAfterPublish,
-  publicLoading,
-  publicPagesCount,
-  templatesCount,
-  versionsCount,
 }: UseAppManagementViewModelArgs) {
-  const metrics = useMemo<AppManagementMetric[]>(
-    () =>
-      isLoggedIn
-        ? [
-            {
-              label: "草稿状态",
-              value: isUpdatedAfterPublish ? "待发布更新" : "已同步",
-            },
-            {
-              label: "历史版本",
-              value: `${versionsCount} 个`,
-            },
-            {
-              label: "模板数量",
-              value: `${templatesCount} 套`,
-            },
-          ]
-        : [
-            {
-              label: "公开页面",
-              value: publicLoading ? "加载中" : `${publicPagesCount} 个`,
-            },
-            {
-              label: "模板数量",
-              value: `${templatesCount} 套`,
-            },
-            {
-              label: "当前身份",
-              value: "访客浏览",
-            },
-          ],
-    [
-      isLoggedIn,
-      isUpdatedAfterPublish,
-      publicLoading,
-      publicPagesCount,
-      templatesCount,
-      versionsCount,
-    ],
-  );
-
   const navigationItems = useMemo<AppManagementNavItem[]>(
     () =>
       isLoggedIn
@@ -121,7 +67,6 @@ export function useAppManagementViewModel({
   );
 
   return {
-    metrics,
     navigationItems,
   };
 }

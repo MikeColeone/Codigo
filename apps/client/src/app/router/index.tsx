@@ -14,7 +14,6 @@ import AdminBigScreen from "@/modules/admin-console/pages/big-screen";
 import AdminDashboard from "@/modules/admin-console/pages/dashboard";
 import AdminPermissions from "@/modules/admin-console/pages/permissions";
 import AdminSettings from "@/modules/admin-console/pages/settings";
-import AdminPlaceholder from "@/modules/admin-console/pages/placeholder";
 import { IdeThemeLayout } from "@/app/layouts/ide-theme-layout";
 
 export const router = createHashRouter([
@@ -94,7 +93,6 @@ export const router = createHashRouter([
       { index: true, element: <AdminDashboard /> },
       { path: "settings", element: <AdminSettings /> },
       { path: "permissions", element: <AdminPermissions /> },
-      { path: "versions", element: <AdminPlaceholder title="版本管理" /> },
       { path: "big-screen", element: <AdminBigScreen /> },
     ],
   },
