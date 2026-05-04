@@ -26,6 +26,18 @@ export class TemplateService {
     'admin-analytics-screen': 1,
     'admin-console-standard': 5,
     'admin-console-basic': 3,
+    'ai-chat-copilot-single': 1,
+    'ai-dataset-generator-single': 1,
+    'agent-workflow-center-single': 1,
+    'marketing-copy-studio-single': 1,
+    'knowledge-qa-single': 1,
+    'lead-scoring-center-single': 1,
+    'finance-reconciliation-single': 1,
+    'iot-device-monitor-single': 1,
+    'support-quality-review-single': 1,
+    'recruitment-screening-single': 1,
+    'content-calendar-single': 1,
+    'data-analytics-overview-single': 1,
   };
 
   async ensureDefaults() {

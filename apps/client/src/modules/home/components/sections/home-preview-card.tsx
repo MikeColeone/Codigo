@@ -46,9 +46,6 @@ export function HomePreviewCard() {
           <h3 className="mt-2 text-xl font-semibold tracking-tight text-[var(--ide-text)]">
             常见问题
           </h3>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--ide-text-muted)]">
-            这里先放几个最常被问到的问题，点击后可直接跳到对应说明文档。
-          </p>
         </div>
 
         <div className="space-y-3">
@@ -73,16 +70,9 @@ export function HomePreviewCard() {
                     {item.answer}
                   </p>
                 </div>
-                <span className="shrink-0 rounded-sm border border-[var(--ide-control-border)] px-2 py-1 font-mono text-[11px] text-[var(--ide-text-muted)] transition-colors group-hover:border-[var(--ide-accent)] group-hover:text-[var(--ide-text)]">
-                  /doc
-                </span>
               </div>
             </button>
           ))}
-        </div>
-
-        <div className="mt-6 rounded-sm border border-[var(--ide-border)] bg-[color:color-mix(in_oklab,var(--ide-accent)_8%,var(--ide-control-bg))] px-4 py-3 text-xs leading-6 text-[var(--ide-text-muted)]">
-          需要更完整的说明时，可进入使用手册查看上手、编辑、分享协作与 FAQ 全部章节。
         </div>
       </div>
     </div>
