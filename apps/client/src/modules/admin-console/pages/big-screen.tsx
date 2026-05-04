@@ -21,6 +21,10 @@ type BigScreenPalette = {
   pieColors: string[];
 };
 
+const RELEASE_ROW_HEIGHT = 88;
+const RELEASE_VIEWPORT_HEIGHT = 288;
+const RELEASE_OVERSCAN = 2;
+
 /**
  * 格式化大数字，提升指标卡与榜单可读性。
  */
@@ -230,6 +234,7 @@ export default function AdminBigScreen() {
   useTitle("Codigo - 数据大屏");
   const [data, setData] = useState<AdminBigScreenOverviewResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [releaseScrollTop, setReleaseScrollTop] = useState(0);
   const palette = useMemo(() => resolveBigScreenPalette(), []);
 
   /**
@@ -295,6 +300,27 @@ export default function AdminBigScreen() {
       },
     ];
   }, [data]);
+
+  const virtualReleaseState = useMemo(() => {
+    const releases = data?.recentReleases ?? [];
+    const visibleCount = Math.ceil(RELEASE_VIEWPORT_HEIGHT / RELEASE_ROW_HEIGHT);
+    const startIndex = Math.max(
+      0,
+      Math.floor(releaseScrollTop / RELEASE_ROW_HEIGHT) - RELEASE_OVERSCAN,
+    );
+    const endIndex = Math.min(
+      releases.length,
+      startIndex + visibleCount + RELEASE_OVERSCAN * 2,
+    );
+
+    return {
+      releases,
+      totalHeight: releases.length * RELEASE_ROW_HEIGHT,
+      offsetY: startIndex * RELEASE_ROW_HEIGHT,
+      visibleItems: releases.slice(startIndex, endIndex),
+      startIndex,
+    };
+  }, [data, releaseScrollTop]);
 
   if (loading && !data) {
     return (
@@ -420,28 +446,46 @@ export default function AdminBigScreen() {
               subtitle="展示当前账号最近版本发布记录与可见性"
               className="col-span-12 xl:col-span-8"
             >
-              <div className="space-y-3">
-                {data.recentReleases.map((item) => (
+              <div
+                className="overflow-y-auto rounded-[16px] border border-[var(--ide-border)] bg-[var(--ide-sidebar-bg)]"
+                style={{ height: RELEASE_VIEWPORT_HEIGHT }}
+                onScroll={(event) => {
+                  setReleaseScrollTop(event.currentTarget.scrollTop);
+                }}
+              >
+                <div
+                  className="relative"
+                  style={{ height: Math.max(virtualReleaseState.totalHeight, RELEASE_VIEWPORT_HEIGHT) }}
+                >
                   <div
-                    key={`${item.pageId}-${item.version}-${item.publishedAt}`}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-[16px] border border-[var(--ide-border)] bg-[var(--ide-sidebar-bg)] px-4 py-3"
+                    className="absolute inset-x-0 top-0"
+                    style={{ transform: `translateY(${virtualReleaseState.offsetY}px)` }}
                   >
-                    <div className="min-w-0">
-                      <div className="truncate text-[14px] font-medium text-[var(--ide-text)]">
-                        {item.pageName || `站点 ${item.pageId}`}
-                      </div>
-                      <div className="mt-1 text-[11px] text-[var(--ide-text-muted)]">
-                        发布者 {item.ownerName || "未知"} · V{item.version}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-[11px] text-[var(--ide-text-muted)]">
-                      <Tag color={item.visibility === "public" ? "green" : "purple"}>
-                        {item.visibility === "public" ? "公开" : "私密"}
-                      </Tag>
-                      <span>{formatDateTime(item.publishedAt)}</span>
+                    <div className="space-y-3 p-3">
+                      {virtualReleaseState.visibleItems.map((item) => (
+                        <div
+                          key={`${item.pageId}-${item.version}-${item.publishedAt}`}
+                          className="flex h-[76px] flex-wrap items-center justify-between gap-3 rounded-[16px] border border-[var(--ide-border)] bg-[var(--ide-control-bg)] px-4 py-3"
+                        >
+                          <div className="min-w-0">
+                            <div className="truncate text-[14px] font-medium text-[var(--ide-text)]">
+                              {item.pageName || `站点 ${item.pageId}`}
+                            </div>
+                            <div className="mt-1 text-[11px] text-[var(--ide-text-muted)]">
+                              发布者 {item.ownerName || "未知"} · V{item.version}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 text-[11px] text-[var(--ide-text-muted)]">
+                            <Tag color={item.visibility === "public" ? "green" : "purple"}>
+                              {item.visibility === "public" ? "公开" : "私密"}
+                            </Tag>
+                            <span>{formatDateTime(item.publishedAt)}</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
+                </div>
               </div>
             </BigScreenPanel>
 
