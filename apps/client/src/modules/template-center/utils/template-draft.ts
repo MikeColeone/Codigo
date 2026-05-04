@@ -93,7 +93,7 @@ export function writeTemplateToDraft(template: TemplatePreset) {
     null;
 
   localStorage.setItem(
-    "page-schema",
+    "pageSchema",
     JSON.stringify({
       version: schema.version,
       components: schema.components,
