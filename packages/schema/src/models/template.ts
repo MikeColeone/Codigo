@@ -20,6 +20,12 @@ export interface TemplateComponent {
   styles?: Record<string, unknown>;
 }
 
+/**
+ * 模板页面预设协议
+ * param {string} name: 页面名称
+ * param {string} path: 页面路径
+ * param {array[object]} components: 页面组件配置
+ */
 export interface TemplatePagePreset {
   name: string;
   path: string;

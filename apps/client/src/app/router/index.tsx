@@ -94,7 +94,7 @@ export const router = createHashRouter([
       { path: "permissions", element: <AdminPermissions /> },
       { path: "roles", element: <AdminPlaceholder title="角色管理" /> },
       { path: "versions", element: <AdminPlaceholder title="版本管理" /> },
-      { path: "snippets", element: <AdminPlaceholder title="代码片段管理" /> },
+      { path: "snippets", element: <AdminPlaceholder title="代码管理" /> },
       { path: "big-screen", element: <AdminPlaceholder title="数据大屏" /> },
     ],
   },

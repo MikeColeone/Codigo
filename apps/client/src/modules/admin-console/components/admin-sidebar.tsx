@@ -27,7 +27,7 @@ const items: AdminNavItem[] = [
   },
   { key: "roles", label: "角色管理", to: "/console/roles", icon: <TeamOutlined /> },
   { key: "versions", label: "版本管理", to: "/console/versions", icon: <HistoryOutlined /> },
-  { key: "snippets", label: "代码片段管理", to: "/console/snippets", icon: <CodeOutlined /> },
+  { key: "snippets", label: "代码管理", to: "/console/snippets", icon: <CodeOutlined /> },
   { key: "big-screen", label: "数据大屏", to: "/console/big-screen", icon: <AreaChartOutlined /> },
 ];
 

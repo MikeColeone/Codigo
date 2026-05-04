@@ -1,6 +1,6 @@
 import { ConfigProvider } from "antd";
 import type { ReactNode } from "react";
-import { studioAntdTheme } from "./studio-layout";
+import studioAntdTheme from "@/shared/utils/theme/layout-theme";
 
 interface IdeThemeLayoutProps {
   children: ReactNode;

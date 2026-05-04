@@ -11,6 +11,7 @@ import {
 import { OperationLog } from 'src/modules/flow/entity/operation-log.entity';
 import { PageCollaborator } from 'src/modules/flow/entity/page-collaborator.entity';
 import { PageVersion } from 'src/modules/flow/entity/page-version.entity';
+import { Template } from 'src/modules/template/entity/template.entity';
 import { User } from 'src/modules/user/entity/user.entity';
 import { SecretTool } from 'src/shared/utils/secret.tool';
 
@@ -24,6 +25,7 @@ import { SecretTool } from 'src/shared/utils/secret.tool';
       PageCollaborator,
       OperationLog,
       PageVersion,
+      Template,
     ]),
   ],
   controllers: [AdminController],
