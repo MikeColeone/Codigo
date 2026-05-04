@@ -1,5 +1,10 @@
 import { observer } from "mobx-react-lite";
 import { useEffect, useRef, useState } from "react";
+import type { ActionConfig } from "@codigo/schema";
+import {
+  ActionConfigFields,
+  ActionTypeOptions,
+} from "@/modules/editor/components/right-panel/action-list-editor";
 import { NODE_COLORS, NODE_TYPES } from "../constants";
 import { flowStore } from "../stores/flow-store";
 import type { FlowEdge, FlowNode } from "../types";
@@ -11,6 +16,18 @@ interface HandleInteractionState {
   curX: number;
   curY: number;
   isDragging: boolean;
+}
+
+interface NodeDragState {
+  nodeId: string;
+  offsetX: number;
+  offsetY: number;
+}
+
+interface ActionMenuState {
+  sourceId: string;
+  x: number;
+  y: number;
 }
 
 /**
@@ -51,6 +68,10 @@ function Canvas() {
   const [handleState, setHandleState] = useState<HandleInteractionState | null>(
     null,
   );
+  const [dragState, setDragState] = useState<NodeDragState | null>(null);
+  const [actionMenuState, setActionMenuState] = useState<ActionMenuState | null>(
+    null,
+  );
 
   /**
    * 将鼠标坐标转换为画布内坐标。
@@ -87,89 +108,55 @@ function Canvas() {
   /**
    * 更新节点展示字段。
    */
-  function updateNodeProp(node: FlowNode, key: string, value: unknown) {
+  function createFallbackAction(node: FlowNode): ActionConfig {
+    if (node.type === "notify") {
+      return {
+        type: "toast",
+        message: String(node.props.message ?? ""),
+        variant: (node.props.level as ActionConfig["type"]) ? undefined : "success",
+      } as ActionConfig;
+    }
+    if (node.type === "condition") {
+      return {
+        type: "when",
+        key: String(node.props.key ?? "activePanel"),
+        op: "eq",
+        value: node.props.expr ?? "",
+      };
+    }
+    return {
+      type: "setState",
+      key: String(node.props.key ?? "activePanel"),
+      value: node.props.desc ?? "overview",
+    };
+  }
+
+  /**
+   * 开始拖拽节点。
+   */
+  function startNodeDrag(event: React.MouseEvent, node: FlowNode) {
+    event.stopPropagation();
+    const point = toCanvasPoint(event.clientX, event.clientY);
     flowStore.selectedNodeId = node.id;
     flowStore.selectedEdgeId = null;
-    node.props[key] = value;
+    setDragState({
+      nodeId: node.id,
+      offsetX: point.x - node.x,
+      offsetY: point.y - node.y,
+    });
   }
 
   /**
    * 渲染动作节点的配置表单。
    */
   function renderActionBody(node: FlowNode) {
-    if (node.type === "notify") {
-      return (
-        <div className="space-y-3">
-          <label className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-3 text-[12px] text-zinc-600">
-            <span>提示类型</span>
-            <select
-              value={String(node.props.level ?? "success")}
-              className="h-9 rounded-md border border-zinc-200 bg-white px-3 text-[12px] text-zinc-700 outline-none transition focus:border-zinc-400"
-              onClick={(e) => e.stopPropagation()}
-              onChange={(e) => updateNodeProp(node, "level", e.target.value)}
-            >
-              <option value="success">成功 | Success</option>
-              <option value="info">信息 | Info</option>
-              <option value="warning">警告 | Warning</option>
-              <option value="error">错误 | Error</option>
-            </select>
-          </label>
-          <label className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-3 text-[12px] text-zinc-600">
-            <span>消息内容</span>
-            <input
-              value={String(node.props.message ?? "")}
-              className="h-9 rounded-md border border-zinc-200 bg-white px-3 text-[12px] text-zinc-700 outline-none transition focus:border-zinc-400"
-              onClick={(e) => e.stopPropagation()}
-              onChange={(e) => updateNodeProp(node, "message", e.target.value)}
-            />
-          </label>
-          <label className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-3 text-[12px] text-zinc-600">
-            <span>展示时长</span>
-            <input
-              type="number"
-              min={1}
-              value={Number(node.props.duration ?? 3)}
-              className="h-9 rounded-md border border-zinc-200 bg-white px-3 text-[12px] text-zinc-700 outline-none transition focus:border-zinc-400"
-              onClick={(e) => e.stopPropagation()}
-              onChange={(e) =>
-                updateNodeProp(
-                  node,
-                  "duration",
-                  Number.parseInt(e.target.value || "0", 10) || 1,
-                )
-              }
-            />
-          </label>
-        </div>
-      );
-    }
-
-    if (node.type === "condition") {
-      return (
-        <label className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-3 text-[12px] text-zinc-600">
-          <span>表达式</span>
-          <input
-            value={String(node.props.expr ?? "")}
-            placeholder="例如：count > 0"
-            className="h-9 rounded-md border border-zinc-200 bg-white px-3 text-[12px] text-zinc-700 outline-none transition focus:border-zinc-400"
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) => updateNodeProp(node, "expr", e.target.value)}
-          />
-        </label>
-      );
-    }
-
+    const action = node.action ?? createFallbackAction(node);
     return (
-      <label className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-3 text-[12px] text-zinc-600">
-        <span>动作描述</span>
-        <input
-          value={String(node.props.desc ?? "")}
-          placeholder="例如：setState / navigate / request"
-          className="h-9 rounded-md border border-zinc-200 bg-white px-3 text-[12px] text-zinc-700 outline-none transition focus:border-zinc-400"
-          onClick={(e) => e.stopPropagation()}
-          onChange={(e) => updateNodeProp(node, "desc", e.target.value)}
-        />
-      </label>
+      <ActionConfigFields
+        action={action}
+        onChange={(nextAction) => flowStore.updateNodeAction(node.id, nextAction)}
+        pageOptions={flowStore.pageOptions}
+      />
     );
   }
 
@@ -210,10 +197,18 @@ function Canvas() {
             flowStore.selectedNodeId = node.id;
             flowStore.selectedEdgeId = null;
           }}
+          onMouseDown={
+            isActionNode
+              ? undefined
+              : (event) => startNodeDrag(event, node)
+          }
         >
           {isActionNode ? (
             <div className="flex h-full flex-col">
-              <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
+              <div
+                className="flex cursor-move items-center justify-between border-b border-zinc-100 px-4 py-3"
+                onMouseDown={(event) => startNodeDrag(event, node)}
+              >
                 <div className="flex min-w-0 items-center gap-2">
                   <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-zinc-100 px-1 text-[10px] font-semibold text-zinc-500">
                     {index}
@@ -260,6 +255,7 @@ function Canvas() {
             <button
               type="button"
               className="pointer-events-auto flex h-6 w-6 items-center justify-center rounded-full border border-white bg-indigo-500 text-sm text-white opacity-0 shadow-lg transition-all duration-150 group-hover:opacity-100 hover:scale-110"
+              onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => startCreateNext(e, node.id)}
               title="点击或拖拽新建下一步"
             >
@@ -296,7 +292,11 @@ function Canvas() {
     };
 
     const onMouseUp = () => {
-      flowStore.insertNodeAfter(handleState.sourceId);
+      setActionMenuState({
+        sourceId: handleState.sourceId,
+        x: handleState.curX,
+        y: handleState.curY,
+      });
       setHandleState(null);
     };
 
@@ -308,6 +308,33 @@ function Canvas() {
       window.removeEventListener("mouseup", onMouseUp);
     };
   }, [handleState]);
+
+  useEffect(() => {
+    if (!dragState) {
+      return;
+    }
+
+    const onMouseMove = (event: MouseEvent) => {
+      const point = toCanvasPoint(event.clientX, event.clientY);
+      flowStore.updateNodePos(
+        dragState.nodeId,
+        point.x - dragState.offsetX,
+        point.y - dragState.offsetY,
+      );
+    };
+
+    const onMouseUp = () => {
+      setDragState(null);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [dragState]);
 
   return (
     <div className="relative flex flex-1 overflow-auto bg-slate-100/60 p-8">
@@ -324,6 +351,7 @@ function Canvas() {
           onClick={() => {
             flowStore.selectedNodeId = "";
             flowStore.selectedEdgeId = null;
+            setActionMenuState(null);
           }}
         >
           <svg
@@ -414,6 +442,35 @@ function Canvas() {
               const node = flowStore.nodes.find((item) => item.id === nodeId);
               return node ? renderNode(node, index) : null;
             })}
+            {actionMenuState ? (
+              <div
+                className="absolute z-30 w-[220px] rounded-xl border border-slate-200 bg-white p-2 shadow-2xl"
+                style={{
+                  left: Math.max(24, actionMenuState.x + 12),
+                  top: Math.max(24, actionMenuState.y - 12),
+                }}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="px-2 py-1 text-[11px] font-semibold text-slate-500">
+                  选择下一步动作
+                </div>
+                <div className="mt-1 space-y-1">
+                  {ActionTypeOptions.map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-[12px] text-slate-700 transition-colors hover:bg-slate-50"
+                      onClick={() => {
+                        flowStore.insertNodeAfter(actionMenuState.sourceId, item.value);
+                        setActionMenuState(null);
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

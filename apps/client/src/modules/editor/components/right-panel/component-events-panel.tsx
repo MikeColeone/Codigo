@@ -63,8 +63,9 @@ function ComponentEventsPanel() {
       </div>
     );
   }
+  const currentConfig = config;
 
-  const eventCatalog = getComponentEventCatalog(config.type);
+  const eventCatalog = getComponentEventCatalog(currentConfig.type);
   const visibleEvents = eventCatalog.slice(0, VISIBLE_EVENT_LIMIT);
   const hiddenEvents = eventCatalog.slice(VISIBLE_EVENT_LIMIT);
 
@@ -211,9 +212,14 @@ function ComponentEventsPanel() {
    * 跳转到流程编排工作区，并保留当前查询参数上下文。
    */
   function openFlowWorkspace() {
+    const nextSearch = new URLSearchParams(location.search);
+    nextSearch.set("componentId", currentConfig.id);
+    if (editingEventName) {
+      nextSearch.set("eventName", editingEventName);
+    }
     navigate({
       pathname: "/flow",
-      search: location.search,
+      search: nextSearch.toString(),
     });
   }
 
@@ -221,14 +227,14 @@ function ComponentEventsPanel() {
    * 读取当前事件已配置的动作列表。
    */
   function getEventActions(eventName: ComponentEventName) {
-    return (toJS(config.events?.[eventName]) ?? []) as ActionConfig[];
+    return (toJS(currentConfig.events?.[eventName]) ?? []) as ActionConfig[];
   }
 
   /**
    * 返回当前组件在弹窗标题中的展示名称。
    */
   function getCurrentComponentDisplayName() {
-    return config.name?.trim() || config.id || config.type;
+    return currentConfig.name?.trim() || currentConfig.id || currentConfig.type;
   }
 
   /**

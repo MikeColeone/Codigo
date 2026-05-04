@@ -1,11 +1,12 @@
 import { builtinComponentDefinitions } from "@codigo/materials";
 import { useMemo } from "react";
+import type { TComponentTypes } from "@codigo/schema";
 import { useNavigate } from "react-router-dom";
 import { getEditorComponentSections } from "@/modules/editor/registry/components";
 import { MaterialsList } from "./materials-plaza/materials-list";
 
 export type MaterialMeta = {
-  type: string;
+  type: TComponentTypes;
   name: string;
   description?: string;
   isContainer?: boolean;
@@ -23,39 +24,35 @@ export function HomeMaterialsPlaza() {
       .map((section) => ({
         key: section.key,
         label: section.label,
-        types: new Set(section.items.map((item) => item.type)),
+        types: new Set<TComponentTypes>(section.items.map((item) => item.type)),
       }));
   }, []);
 
   const materials = useMemo<MaterialMeta[]>(
-    () =>
-      builtinComponentDefinitions
-        .map((item) => ({
-          type: String(item.type),
-          name: String(item.name),
-          description: item.description,
-          isContainer: item.isContainer,
-          slots: item.slots,
-          section:
-            sections.find((section) => section.types.has(String(item.type))) ?? null,
-        }))
-        .filter(
-          (
-            item,
-          ): item is Omit<MaterialMeta, "sectionKey" | "sectionLabel"> & {
-            section: (typeof sections)[number];
-          } => Boolean(item.section),
-        )
-        .map((item) => ({
-          type: item.type,
-          name: item.name,
-          description: item.description,
-          isContainer: item.isContainer,
-          slots: item.slots,
-          sectionKey: item.section.key,
-          sectionLabel: item.section.label,
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name)),
+    () => {
+      const result = builtinComponentDefinitions.reduce<MaterialMeta[]>(
+        (list, item) => {
+          const section = sections.find((candidate) =>
+            candidate.types.has(item.type),
+          );
+          if (!section) {
+            return list;
+          }
+          list.push({
+            type: item.type,
+            name: item.name,
+            description: item.description,
+            isContainer: item.isContainer,
+            slots: item.slots,
+            sectionKey: section.key,
+            sectionLabel: section.label,
+          });
+          return list;
+        },
+        [],
+      );
+      return result.sort((a, b) => a.name.localeCompare(b.name));
+    },
     [sections],
   );
 

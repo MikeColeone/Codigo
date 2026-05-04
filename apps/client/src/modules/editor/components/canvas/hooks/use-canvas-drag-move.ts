@@ -8,6 +8,10 @@ import {
 } from "../utils/canvas-move";
 import { clampRectToBounds } from "../utils/collision";
 
+/**
+ * 画布拖拽接口
+ * @param {boolean} 
+ */
 interface UseCanvasDragMoveOptions {
   canEditStructure: boolean;
   canvasRef: RefObject<HTMLDivElement | null>;

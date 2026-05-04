@@ -9,11 +9,26 @@ import "react-quill-new/dist/quill.snow.css";
 
 import { useEditorComponents } from "@/modules/editor/hooks";
 
+/**
+ * 兼容历史富文本节点里遗留的 html 字段，统一映射到 content。
+ */
+function resolveRichTextContent(
+  props: IRichTextComponentProps & { html?: string },
+) {
+  return props.content ?? props.html ?? "";
+}
+
 export default function richTextComponentProps(
-  _props: IRichTextComponentProps,
+  _props: IRichTextComponentProps & { html?: string },
 ) {
   const props = useMemo(() => {
-    return fillComponentPropsByConfig(_props, richTextComponentDefaultConfig);
+    return fillComponentPropsByConfig(
+      {
+        ..._props,
+        content: resolveRichTextContent(_props),
+      },
+      richTextComponentDefaultConfig,
+    );
   }, [_props]);
   const { updateCurrentComponent } = useEditorComponents();
   const [value, setValue] = useState(props.content.value || "");
@@ -22,8 +37,14 @@ export default function richTextComponentProps(
     setValue(props.content.value || "");
   }, [props.content.value]);
 
-  const handleChange = (newValue: string) => {
+  /**
+   * 只在用户真实编辑时回写 store，避免 Quill 挂载阶段归一化 HTML 抹掉模板内联样式。
+   */
+  const handleChange = (newValue: string, _delta: unknown, source: string) => {
     setValue(newValue);
+    if (source !== "user") {
+      return;
+    }
     updateCurrentComponent({ content: newValue });
   };
 

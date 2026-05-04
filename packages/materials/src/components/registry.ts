@@ -741,12 +741,12 @@ export const builtinComponentDefinitions: BuiltinComponentDefinition[] = [
     icon: "FileText",
     component: LowCodeRichText,
     defaultProps: {
-      html: "<p>富文本内容</p>",
+      content: "<p>富文本内容</p>",
     },
     propsConfig: [
       {
-        key: "html",
-        label: "HTML 内容",
+        key: "content",
+        label: "富文本内容",
         type: "textarea",
       },
     ],

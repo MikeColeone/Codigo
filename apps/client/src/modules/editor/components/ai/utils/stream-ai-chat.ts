@@ -1,4 +1,5 @@
 import { BASE_URL } from "@/shared/utils/request";
+import type { CodeSyncNode } from "@/modules/editor/utils/page-schema";
 import type {
   ChatPageContext,
   DraftComponent,
@@ -8,7 +9,7 @@ import { parseSSEBlock } from "./parse-sse";
 
 type StreamAiChatArgs = {
   prompt: string;
-  current: Array<Record<string, unknown>>;
+  current: CodeSyncNode[];
   page?: ChatPageContext;
   token?: string;
   signal: AbortSignal;

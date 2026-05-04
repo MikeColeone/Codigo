@@ -21,17 +21,44 @@ function Editor() {
   const [searchParams, setSearchParams] = useSearchParams();
   const pageId = Number(searchParams.get("id"));
   const templateId = Number(searchParams.get("templateId"));
+  const focusComponentId = searchParams.get("componentId");
 
-  const { applyTemplateToWorkspace, store: storeComps, loadPageData } = useEditorComponents();
+  const {
+    applyTemplateToWorkspace,
+    store: storeComps,
+    loadPageData,
+    setCurrentComponent,
+  } = useEditorComponents();
   const { store: storePage, hydrateGridDashedLinesVisible } = useEditorPage();
   const { initCollaboration, cleanupCollaboration } = useEditorPermission();
   const { store: storeAuth } = useStoreAuth();
   const canvasRef = useRef<any>(null);
   const appliedTemplateRef = useRef<number | null>(null);
+  const appliedFocusComponentIdRef = useRef<string | null>(null);
+  const setCurrentComponentRef = useRef(setCurrentComponent);
+  const focusTargetReady = Boolean(
+    focusComponentId && storeComps.compConfigs[focusComponentId],
+  );
+
+  useEffect(() => {
+    setCurrentComponentRef.current = setCurrentComponent;
+  }, [setCurrentComponent]);
 
   useEffect(() => {
     hydrateGridDashedLinesVisible(pageId || null);
   }, [pageId]);
+
+  useEffect(() => {
+    if (!focusComponentId) {
+      appliedFocusComponentIdRef.current = null;
+      return;
+    }
+    if (!focusTargetReady || appliedFocusComponentIdRef.current === focusComponentId) {
+      return;
+    }
+    setCurrentComponentRef.current(focusComponentId);
+    appliedFocusComponentIdRef.current = focusComponentId;
+  }, [focusComponentId, focusTargetReady]);
 
   useEffect(() => {
     if (!Number.isFinite(templateId) || templateId <= 0) {

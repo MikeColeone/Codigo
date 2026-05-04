@@ -1,7 +1,9 @@
 import { toJS } from "mobx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ulid } from "ulid";
+import type { ComponentNodeRecord } from "@codigo/schema";
 import { storeAuth } from "@/shared/hooks/use-store-auth";
+import type { CodeSyncNode } from "@/modules/editor/utils/page-schema";
 import type {
   ChatMessage,
   ChatPageContext,
@@ -19,21 +21,14 @@ import {
 } from "../utils/chat-storage";
 import { streamAiChat } from "../utils/stream-ai-chat";
 
-type CanvasComponent = {
-  id: string;
-  type: string;
-  props?: Record<string, unknown>;
-  styles?: Record<string, unknown>;
-};
-
 type UseAiChatSessionArgs = {
   store: {
     activePageId?: string | null;
     pages: Array<{ id: string; path: string; name: string }>;
     sortableCompConfig: string[];
   };
-  getComponentById: (id: string) => CanvasComponent | null | undefined;
-  replaceByCode: (components: Array<Record<string, unknown>>) => void;
+  getComponentById: (id: string) => ComponentNodeRecord | null | undefined;
+  replaceByCode: (components: CodeSyncNode[]) => void;
 };
 
 const defaultPreferences = getDefaultPreferences();
@@ -182,7 +177,7 @@ export function useAiChatSession({
     if (!userPrompt || submitting) return;
 
     const appendMode = session.preferences.appendMode;
-    const current = appendMode
+    const current: CodeSyncNode[] = appendMode
       ? store.sortableCompConfig
           .map((id) => getComponentById(id))
           .filter((item): item is NonNullable<typeof item> => Boolean(item))
@@ -238,7 +233,7 @@ export function useAiChatSession({
         prompt: userPrompt,
         current,
         page: pageContext,
-        token: storeAuth.token,
+        token: storeAuth.token ?? undefined,
         signal: controller.signal,
         onDelta: (delta) => {
           streamedText += delta;

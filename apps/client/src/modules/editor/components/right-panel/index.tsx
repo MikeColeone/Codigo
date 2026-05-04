@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, Tooltip } from "antd";
 import {
   AppstoreOutlined,
   ThunderboltOutlined,
 } from "@ant-design/icons";
+import { useSearchParams } from "react-router-dom";
 import ComponentFields from "./component-fields";
 import ComponentEventsPanel from "./component-events-panel";
 import { useEditorComponents, useEditorPage } from "@/modules/editor/hooks";
@@ -11,7 +12,15 @@ import { useEditorComponents, useEditorPage } from "@/modules/editor/hooks";
 export default function EditorRightPanel() {
   const { store: pageStore } = useEditorPage();
   const { store: storeComps } = useEditorComponents();
+  const [searchParams] = useSearchParams();
   const [activeKey, setActiveKey] = useState("components-fields");
+  const searchParamsText = searchParams.toString();
+
+  useEffect(() => {
+    if (searchParams.get("panel") === "events" || searchParams.get("eventName")) {
+      setActiveKey("events");
+    }
+  }, [searchParamsText]);
 
   const items = [
     {
