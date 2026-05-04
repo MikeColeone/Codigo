@@ -2,7 +2,6 @@
 import {
   ApartmentOutlined,
   AppstoreOutlined,
-  DatabaseOutlined,
   GlobalOutlined,
   LeftOutlined,
   RightOutlined,
@@ -25,6 +24,14 @@ import { EditorOutlineTree } from "../right-panel/component-fields";
 import GlobalFields from "../right-panel/global-fields";
 import EditorCanvas from "../canvas";
 import { SandboxCanvas } from "../canvas/sandbox-canvas";
+import {
+  createMockRequestRecord,
+  RequestBottomSheet,
+  RequestPanel,
+  RequestTypeModal,
+  type EditorRequestRecord,
+  type RequestModuleType,
+} from "../request-panel";
 import { useEditorPanelLayout } from "./use-editor-panel-layout";
 import { WebIdeFrame } from "./web-ideframe";
 import { EditorStatusBarActions } from "./editor-status-bar-actions";
@@ -43,11 +50,30 @@ type LeftPanelSection =
   | "outline"
   | "global"
   | "ai"
-  | "requests"
-  | "datasources";
+  | "requests";
 
 const WORKSPACE_STAGE_PADDING = 64;
 const MOBILE_FRAME_SIZE = 24;
+
+/**
+ * 调整请求列表顺序，供底部配置台拖拽排序使用。
+ */
+function reorderRequests(
+  requests: EditorRequestRecord[],
+  sourceId: string,
+  targetId: string,
+) {
+  const sourceIndex = requests.findIndex((item) => item.id === sourceId);
+  const targetIndex = requests.findIndex((item) => item.id === targetId);
+  if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
+    return requests;
+  }
+
+  const next = [...requests];
+  const [moved] = next.splice(sourceIndex, 1);
+  next.splice(targetIndex, 0, moved);
+  return next;
+}
 
 function PanelToggleRail({
   side,
@@ -153,6 +179,10 @@ function EditorViewport(props: EditorViewportProps) {
   } | null>(null);
   const [activeLeftSection, setActiveLeftSection] =
     useState<LeftPanelSection>("components");
+  const [requestRecords, setRequestRecords] = useState<EditorRequestRecord[]>([]);
+  const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
+  const [isRequestTypeModalOpen, setIsRequestTypeModalOpen] = useState(false);
+  const [isRequestSheetOpen, setIsRequestSheetOpen] = useState(false);
   const [workspaceViewportSize, setWorkspaceViewportSize] = useState({
     width: 0,
     height: 0,
@@ -193,11 +223,6 @@ function EditorViewport(props: EditorViewportProps) {
       key: "requests",
       icon: <SendOutlined className="text-xl" />,
       label: "请求",
-    },
-    {
-      key: "datasources",
-      icon: <DatabaseOutlined className="text-xl" />,
-      label: "数据源",
     },
   ];
 
@@ -532,6 +557,35 @@ function EditorViewport(props: EditorViewportProps) {
     event.preventDefault();
   }
 
+  /**
+   * 创建新的 mock 请求记录，并拉起底部配置台。
+   */
+  function handleCreateRequest(type: RequestModuleType) {
+    const nextRequest = createMockRequestRecord(type, requestRecords.length + 1);
+    setRequestRecords((current) => [...current, nextRequest]);
+    setActiveRequestId(nextRequest.id);
+    setIsRequestTypeModalOpen(false);
+    setIsRequestSheetOpen(true);
+    setActiveLeftSection("requests");
+  }
+
+  /**
+   * 打开指定请求的底部配置台。
+   */
+  function handleSelectRequest(requestId: string) {
+    setActiveRequestId(requestId);
+    setIsRequestSheetOpen(true);
+  }
+
+  /**
+   * 更新当前请求的本地 mock 配置。
+   */
+  function handleChangeRequest(nextRequest: EditorRequestRecord) {
+    setRequestRecords((current) =>
+      current.map((item) => (item.id === nextRequest.id ? nextRequest : item)),
+    );
+  }
+
   if (props.storePage.editorMode === "webide") {
     return (
       <div className="h-full w-full overflow-hidden bg-[var(--ide-bg)]">
@@ -610,9 +664,7 @@ function EditorViewport(props: EditorViewportProps) {
                         ? "全局"
                         : activeLeftSection === "ai"
                           ? "AI生成"
-                        : activeLeftSection === "requests"
-                          ? "请求"
-                          : "数据源"}
+                          : "请求"}
                 </span>
 
               </div>
@@ -624,28 +676,12 @@ function EditorViewport(props: EditorViewportProps) {
                 )}
                 {activeLeftSection === "ai" && <AiChatPanel />}
                 {activeLeftSection === "requests" && (
-                  <div className="px-4 py-3">
-                    <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-hover)] p-3">
-                      <div className="text-[12px] font-medium text-[var(--ide-text)]">
-                        请求
-                      </div>
-                      <div className="mt-1 text-[11px] leading-relaxed text-[var(--ide-text-muted)]">
-                        功能后续补充
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {activeLeftSection === "datasources" && (
-                  <div className="px-4 py-3">
-                    <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-hover)] p-3">
-                      <div className="text-[12px] font-medium text-[var(--ide-text)]">
-                        数据源
-                      </div>
-                      <div className="mt-1 text-[11px] leading-relaxed text-[var(--ide-text-muted)]">
-                        功能后续补充
-                      </div>
-                    </div>
-                  </div>
+                  <RequestPanel
+                    requests={requestRecords}
+                    activeRequestId={activeRequestId}
+                    onAdd={() => setIsRequestTypeModalOpen(true)}
+                    onSelect={handleSelectRequest}
+                  />
                 )}
               </div>
             </div>
@@ -732,6 +768,24 @@ function EditorViewport(props: EditorViewportProps) {
           )}
         </div>
       </div>
+
+      <RequestBottomSheet
+        open={isRequestSheetOpen}
+        requests={requestRecords}
+        activeRequestId={activeRequestId}
+        onClose={() => setIsRequestSheetOpen(false)}
+        onSelect={handleSelectRequest}
+        onReorder={(sourceId, targetId) => {
+          setRequestRecords((current) => reorderRequests(current, sourceId, targetId));
+        }}
+        onChange={handleChangeRequest}
+      />
+
+      <RequestTypeModal
+        open={isRequestTypeModalOpen}
+        onClose={() => setIsRequestTypeModalOpen(false)}
+        onSelect={handleCreateRequest}
+      />
 
       {/* Status Bar */}
       <div className="z-40 flex h-[var(--status-bar-height)] flex-shrink-0 select-none items-center justify-between bg-[var(--ide-statusbar-bg)] px-3 text-[11px] text-[var(--ide-statusbar-text)]">

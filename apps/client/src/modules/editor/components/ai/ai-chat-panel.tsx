@@ -182,9 +182,6 @@ function AIChatPanel() {
           updatePreferences({ appendMode: checked });
         }}
         prompt={prompt}
-        suggestionLabel={
-          !hasConversation ? "点击上方提示词可一键带入输入框。" : undefined
-        }
         setPrompt={setPrompt}
         submitting={submitting}
       />
