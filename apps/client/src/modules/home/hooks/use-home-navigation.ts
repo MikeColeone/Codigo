@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { useStoreAuth } from "@/shared/hooks/use-store-auth";
 
 const navigationItems = [
-  { label: "首页", path: "/" },
   { label: "模板广场", path: "/?view=templates" },
   { label: "物料广场", path: "/?view=materials" },
   { label: "使用手册", path: "/doc" },

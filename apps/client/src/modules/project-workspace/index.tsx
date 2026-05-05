@@ -3,7 +3,6 @@ import { useTitle } from "ahooks";
 import { useNavigate } from "react-router-dom";
 import { TemplatePreviewModal } from "@/modules/template-center/components/template-preview-modal";
 import { useProjectWorkspaceController } from "./hooks/use-project-workspace-controller";
-import ProjectWorkspaceHero from "./components/layout/project-workspace-hero";
 import ProjectWorkspaceLayout from "./components/layout/project-workspace-layout";
 import ProjectWorkspaceSectionContent from "./components/sections/project-workspace-section-content";
 
@@ -25,7 +24,7 @@ function ProjectWorkspace() {
     <div className="relative h-full bg-[var(--ide-bg)] text-[var(--ide-text)]">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,rgba(15,108,189,0.08),transparent_70%)]" />
       <div className="relative h-full">
-        <ProjectWorkspaceLayout hero={<ProjectWorkspaceHero />}>
+        <ProjectWorkspaceLayout>
           <ProjectWorkspaceSectionContent
             draftMeta={localDraftMeta}
             myPageData={myPageData}

@@ -80,13 +80,6 @@ export function HomeTemplatePlaza() {
             选择模板快速启动后台页面结构。悬浮卡片即可查看模板或直接使用。
           </p>
         </div>
-        <button
-          type="button"
-          className="rounded-sm border border-[var(--ide-control-border)] bg-[var(--ide-control-bg)] px-3 py-2 text-sm font-medium text-[var(--ide-text)] shadow-[var(--ide-panel-shadow)] transition-colors hover:bg-[var(--ide-hover)]"
-          onClick={() => navigate("/?view=templates")}
-        >
-          查看全部模板
-        </button>
       </div>
 
       <div className="mt-8">

@@ -159,7 +159,7 @@ export default function AdminPermissions() {
           {resolvingPageId ? null : hasPageId ? (
             <>
               <Button type="default" onClick={() => navigate(`/editor?id=${pageId}`)}>
-                返回编辑器
+                进入编辑器
               </Button>
               <Button type="default" loading={loading} onClick={loadCollaborators}>
                 刷新
