@@ -1,18 +1,10 @@
 import type { ReactNode } from "react";
 import type { TemplatePreviewSchema } from "@/modules/template-center/utils/preview";
 
-export interface AppManagementPageRecord {
+export interface ProjectWorkspacePageRecord {
   id: number;
   page_name: string;
   desc?: string | null;
-}
-
-export interface PublicPageItem extends AppManagementPageRecord {
-  owner_name: string;
-  owner_head_img?: string | null;
-  version_count: number;
-  latest_version: number;
-  latest_published_at?: string | null;
 }
 
 export interface PageVersionItem {
@@ -24,7 +16,7 @@ export interface PageVersionItem {
 }
 
 export interface MyPagePayload {
-  page: AppManagementPageRecord | null;
+  page: ProjectWorkspacePageRecord | null;
   versions: PageVersionItem[];
 }
 
@@ -40,21 +32,15 @@ export interface LocalDraftMeta {
   updatedAt: string;
 }
 
-export interface AppManagementMetric {
-  label: string;
-  value: string;
-}
-
-export interface AppManagementNavItem {
+export interface ProjectWorkspaceNavItem {
   description: string;
   icon: ReactNode;
-  key: AppManagementTab;
+  key: ProjectWorkspaceTab;
   label: string;
   title: string;
 }
 
-export type AppManagementTab =
+export type ProjectWorkspaceTab =
   | "developing"
   | "published"
-  | "versions"
-  | "templates";
+  | "versions";

@@ -1,32 +1,32 @@
 import type { ReactNode } from "react";
 import type {
-  AppManagementNavItem,
-  AppManagementTab,
-} from "../../types/app-management";
-import AppManagementSidebar from "../navigation/app-management-sidebar";
+  ProjectWorkspaceNavItem,
+  ProjectWorkspaceTab,
+} from "../../types/project-workspace";
+import ProjectWorkspaceSidebar from "../navigation/project-workspace-sidebar";
 
-interface AppManagementWorkspaceProps {
+interface ProjectWorkspaceLayoutProps {
   children: ReactNode;
-  currentTab: AppManagementTab;
+  currentTab: ProjectWorkspaceTab;
   footer?: ReactNode;
   hero: ReactNode;
-  items: AppManagementNavItem[];
-  onChange: (tab: AppManagementTab) => void;
+  items: ProjectWorkspaceNavItem[];
+  onChange: (tab: ProjectWorkspaceTab) => void;
 }
 
-function AppManagementWorkspace({
+function ProjectWorkspaceLayout({
   children,
   currentTab,
   footer,
   hero,
   items,
   onChange,
-}: AppManagementWorkspaceProps) {
+}: ProjectWorkspaceLayoutProps) {
   const currentItem = items.find((item) => item.key === currentTab) ?? items[0];
 
   return (
     <section className="flex min-h-0 flex-1 overflow-hidden">
-      <AppManagementSidebar
+      <ProjectWorkspaceSidebar
         currentTab={currentTab}
         items={items}
         onChange={onChange}
@@ -59,4 +59,4 @@ function AppManagementWorkspace({
   );
 }
 
-export default AppManagementWorkspace;
+export default ProjectWorkspaceLayout;

@@ -1,8 +1,8 @@
 import { HistoryOutlined } from "@ant-design/icons";
 import { Avatar, Button, Empty, Spin } from "antd";
 import dayjs from "dayjs";
-import { useVirtualWindow } from "../../hooks/use-virtual-window";
-import type { PageVersionItem } from "../../types/app-management";
+import { useVirtualWindow } from "@/shared/hooks";
+import type { PageVersionItem } from "../../types/project-workspace";
 
 interface HistorySectionProps {
   loading: boolean;

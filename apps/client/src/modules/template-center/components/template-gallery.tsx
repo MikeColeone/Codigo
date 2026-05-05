@@ -1,6 +1,6 @@
 import type { TemplateListItem } from "@codigo/schema";
 import { useMemo, useState } from "react";
-import { useVirtualWindow } from "@/modules/app-management/hooks/use-virtual-window";
+import { useVirtualWindow } from "@/shared/hooks";
 import { TemplateGalleryCard } from "./template-gallery-card";
 
 interface TemplateGalleryProps {

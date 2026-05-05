@@ -3,7 +3,6 @@ import {
   getLowCodePage,
   getPageVersionDetail,
   getPageVersions,
-  getPublicPages,
   getPublishedPage,
 } from "@/modules/editor/api/low-code";
 import type {
@@ -11,14 +10,8 @@ import type {
   MyPagePayload,
   PageVersionItem,
   PreviewState,
-  PublicPageItem,
-} from "../types/app-management";
+} from "../types/project-workspace";
 import { resolveSchemaFromReleasePayload } from "@/modules/template-center/utils/preview";
-
-export async function fetchPublicPages() {
-  const res = await getPublicPages();
-  return (res.data ?? []) as PublicPageItem[];
-}
 
 export async function fetchMyPageData() {
   const pageRes = await getLowCodePage();
@@ -64,10 +57,10 @@ export async function fetchVersionPreview(version: PageVersionItem) {
 }
 
 /**
- * 获取本地草稿元元数据
+ * 获取本地草稿元数据。
  * @param isLoggedIn 是否登录
- * @param hasPage 是否有页面
- * @returns 
+ * @param hasPage 是否已有页面
+ * @returns 草稿摘要；无草稿且无页面时返回 null
  */
 export function getLocalDraftMeta(
   isLoggedIn: boolean,

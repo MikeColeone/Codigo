@@ -1,13 +1,13 @@
-# Codigo
+﻿# Codigo
 
-Codigo 是一个基于 pnpm workspace + turbo 的低代码平台 Monorepo。仓库将协议层、运行时物料、编辑器、发布端、服务端与嵌入式 IDE 拆分为清晰边界，避免双源定义与包边界漂移。
+Codigo 鏄竴涓熀浜?pnpm workspace + turbo 鐨勪綆浠ｇ爜骞冲彴 Monorepo銆備粨搴撳皢鍗忚灞傘€佽繍琛屾椂鐗╂枡銆佺紪杈戝櫒銆佸彂甯冪銆佹湇鍔＄涓庡祵鍏ュ紡 IDE 鎷嗗垎涓烘竻鏅拌竟鐣岋紝閬垮厤鍙屾簮瀹氫箟涓庡寘杈圭晫婕傜Щ銆?
 
-## 目录结构
+## 鐩綍缁撴瀯
 
 ```text
 codigo/
 ├─ apps/
-│  ├─ client/   # 主前端（编辑器/应用管理/预览入口）
+│  ├─ client/   # 主前端（编辑器/项目工作台/预览入口）
 │  ├─ admin/    # 后台管理前端
 │  ├─ server/   # NestJS 后端
 │  └─ ide/      # OpenSumi IDE 外壳
@@ -23,40 +23,40 @@ codigo/
 └─ .trae/rules/  # 本地协作规则（不参与生产构建）
 ```
 
-## 环境要求
+## 鐜瑕佹眰
 
-- **Node.js**: 20.19+ 或 22.12+（Vite 7 需要）
+- **Node.js**: 20.19+ 鎴?22.12+锛圴ite 7 闇€瑕侊級
 - **pnpm**: 10.28.2+
-- **数据库**: MySQL 8.0+
-- **缓存**: Redis 6.0+
+- **鏁版嵁搴?*: MySQL 8.0+
+- **缂撳瓨**: Redis 6.0+
 
-## 快速开始
+## 蹇€熷紑濮?
 
-### 1. 安装依赖
+### 1. 瀹夎渚濊禆
 
 ```bash
 pnpm install
 ```
 
-### 2. 配置数据库
+### 2. 閰嶇疆鏁版嵁搴?
 
-#### 方式一：本地 Docker 启动（推荐）
+#### 鏂瑰紡涓€锛氭湰鍦?Docker 鍚姩锛堟帹鑽愶級
 
 ```bash
-# 启动 MySQL
+# 鍚姩 MySQL
 docker run -d --name codigo-mysql \
   -p 13306:3306 \
   -e MYSQL_ROOT_PASSWORD=123456 \
   -e MYSQL_DATABASE=codigo_lowcode \
   mysql:8
 
-# 启动 Redis
+# 鍚姩 Redis
 docker run -d --name codigo-redis \
   -p 6379:6379 \
   redis:alpine
 ```
 
-然后修改数据库配置：
+鐒跺悗淇敼鏁版嵁搴撻厤缃細
 
 **apps/server/src/config/index.ts**
 ```typescript
@@ -79,48 +79,48 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
 };
 ```
 
-#### 方式二：远程数据库（虚拟机/NAS）
+#### 鏂瑰紡浜岋細杩滅▼鏁版嵁搴擄紙铏氭嫙鏈?NAS锛?
 
-如果数据库运行在虚拟机或另一台电脑上：
+濡傛灉鏁版嵁搴撹繍琛屽湪铏氭嫙鏈烘垨鍙︿竴鍙扮數鑴戜笂锛?
 
-1. **虚拟机使用桥接网络**：虚拟机将获得和主机同一网段的 IP，直接修改配置中的 host 为虚拟机 IP
+1. **铏氭嫙鏈轰娇鐢ㄦˉ鎺ョ綉缁?*锛氳櫄鎷熸満灏嗚幏寰楀拰涓绘満鍚屼竴缃戞鐨?IP锛岀洿鎺ヤ慨鏀归厤缃腑鐨?host 涓鸿櫄鎷熸満 IP
 
-2. **虚拟机使用 NAT + 端口转发**：
-   - VMware: 虚拟机设置 → 网络适配器 → NAT 模式 → 高级 → 端口转发
-   - VirtualBox: 设置 → 网络 → 高级 → 端口转发
+2. **铏氭嫙鏈轰娇鐢?NAT + 绔彛杞彂**锛?
+   - VMware: 铏氭嫙鏈鸿缃?鈫?缃戠粶閫傞厤鍣?鈫?NAT 妯″紡 鈫?楂樼骇 鈫?绔彛杞彂
+   - VirtualBox: 璁剧疆 鈫?缃戠粶 鈫?楂樼骇 鈫?绔彛杞彂
    
-   添加规则：
-   | 主机端口 | 类型 | 虚拟机端口 |
+   娣诲姞瑙勫垯锛?
+   | 涓绘満绔彛 | 绫诲瀷 | 铏氭嫙鏈虹鍙?|
    |---------|------|-----------|
    | 13306   | TCP  | 13306     |
    | 6379    | TCP  | 6379      |
    
-   配置中使用 `host: 'localhost'` 通过端口转发访问
+   閰嶇疆涓娇鐢?`host: 'localhost'` 閫氳繃绔彛杞彂璁块棶
 
-### 3. 启动开发服务器
+### 3. 鍚姩寮€鍙戞湇鍔″櫒
 
-#### 全部启动（需要数据库）
+#### 鍏ㄩ儴鍚姩锛堥渶瑕佹暟鎹簱锛?
 
 ```bash
 pnpm run dev
 ```
 
-#### 单独启动应用
+#### 鍗曠嫭鍚姩搴旂敤
 
 ```bash
-# 只启动前端（不需要数据库）
+# 鍙惎鍔ㄥ墠绔紙涓嶉渶瑕佹暟鎹簱锛?
 pnpm run run:client
 
-# 启动其他应用
-pnpm run run:admin      # 后台管理
-pnpm run run:server     # 后端服务（需要数据库）
+# 鍚姩鍏朵粬搴旂敤
+pnpm run run:admin      # 鍚庡彴绠＄悊
+pnpm run run:server     # 鍚庣鏈嶅姟锛堥渶瑕佹暟鎹簱锛?
 pnpm run run:ide        # OpenSumi IDE
-pnpm run run:release    # 发布端
+pnpm run run:release    # 鍙戝竷绔?
 ```
 
-### 4. 访问应用
+### 4. 璁块棶搴旂敤
 
-| 应用 | 地址 |
+| 搴旂敤 | 鍦板潃 |
 |------|------|
 | Client | http://localhost:5173/ |
 | Admin | http://localhost:5174/ |
@@ -128,77 +128,78 @@ pnpm run run:release    # 发布端
 | OpenSumi IDE | http://localhost:8080/ |
 | Release | http://localhost:3001/ |
 
-## 常见问题
+## 甯歌闂
 
-### 1. Vite 报错 `crypto.hash is not a function`
+### 1. Vite 鎶ラ敊 `crypto.hash is not a function`
 
-**原因**: Node.js 版本过低（需要 20.19+）
+**鍘熷洜**: Node.js 鐗堟湰杩囦綆锛堥渶瑕?20.19+锛?
 
-**解决**:
+**瑙ｅ喅**:
 ```bash
-# 使用 nvm 切换版本
+# 浣跨敤 nvm 鍒囨崲鐗堟湰
 nvm use 20
-# 或
+# 鎴?
 nvm use 22
 ```
 
-### 2. 浏览器报错 `SyntaxError: Unexpected token '-'`
+### 2. 娴忚鍣ㄦ姤閿?`SyntaxError: Unexpected token '-'`
 
-**原因**: Vite 预构建缓存损坏
+**鍘熷洜**: Vite 棰勬瀯寤虹紦瀛樻崯鍧?
 
-**解决**:
+**瑙ｅ喅**:
 ```bash
 rm -rf node_modules/.vite
 rm -rf apps/client/node_modules/.vite
 pnpm run run:client
 ```
 
-### 3. 后端报错 `Unable to connect to the database`
+### 3. 鍚庣鎶ラ敊 `Unable to connect to the database`
 
-**原因**: 数据库连接失败
+**鍘熷洜**: 鏁版嵁搴撹繛鎺ュけ璐?
 
-**解决**:
-1. 检查 MySQL 和 Redis 是否运行
-2. 检查配置中的 host、port、密码是否正确
-3. 检查网络连接（虚拟机需要配置端口转发或桥接）
+**瑙ｅ喅**:
+1. 妫€鏌?MySQL 鍜?Redis 鏄惁杩愯
+2. 妫€鏌ラ厤缃腑鐨?host銆乸ort銆佸瘑鐮佹槸鍚︽纭?
+3. 妫€鏌ョ綉缁滆繛鎺ワ紙铏氭嫙鏈洪渶瑕侀厤缃鍙ｈ浆鍙戞垨妗ユ帴锛?
 
-### 4. 端口被占用
+### 4. 绔彛琚崰鐢?
 
-Vite 会自动尝试下一个可用端口（5173 → 5174 → 5175...），查看控制台输出确认实际端口。
+Vite 浼氳嚜鍔ㄥ皾璇曚笅涓€涓彲鐢ㄧ鍙ｏ紙5173 鈫?5174 鈫?5175...锛夛紝鏌ョ湅鎺у埗鍙拌緭鍑虹‘璁ゅ疄闄呯鍙ｃ€?
 
-## 构建与质量
+## 鏋勫缓涓庤川閲?
 
 ```bash
-# 构建所有包
+# 鏋勫缓鎵€鏈夊寘
 pnpm run build
 
-# 代码检查
+# 浠ｇ爜妫€鏌?
 pnpm run lint
 
-# 类型检查
+# 绫诲瀷妫€鏌?
 pnpm run typecheck
 
-# 运行测试
+# 杩愯娴嬭瘯
 pnpm run test
 
-# 构建特定应用
+# 鏋勫缓鐗瑰畾搴旂敤
 pnpm run build:client
 pnpm run build:server
 pnpm run build:admin
 ```
 
-## 协作规则
+## 鍗忎綔瑙勫垯
 
-- 架构边界与依赖方向：见 `.trae/rules/BASIC_RULES.md`
-- 协作与风格约束：见 `.trae/rules/USER_GUIDE.md`
-- 项目包与目录职责：见 `.trae/rules/ARTCH.md`
+- 鏋舵瀯杈圭晫涓庝緷璧栨柟鍚戯細瑙?`.trae/rules/BASIC_RULES.md`
+- 鍗忎綔涓庨鏍肩害鏉燂細瑙?`.trae/rules/USER_GUIDE.md`
+- 椤圭洰鍖呬笌鐩綍鑱岃矗锛氳 `.trae/rules/ARTCH.md`
 
-## 研发工作日志
+## 鐮斿彂宸ヤ綔鏃ュ織
 
-仓库内置任务日志系统，任务结束前需要生成一份工作日志：
+浠撳簱鍐呯疆浠诲姟鏃ュ織绯荤粺锛屼换鍔＄粨鏉熷墠闇€瑕佺敓鎴愪竴浠藉伐浣滄棩蹇楋細
 
 ```bash
-pnpm run task:log -- --title "任务标题" --goal "任务目标" --summary "交付结果" --repro "复现步骤 1"
+pnpm run task:log -- --title "浠诲姟鏍囬" --goal "浠诲姟鐩爣" --summary "浜や粯缁撴灉" --repro "澶嶇幇姝ラ 1"
 ```
 
-日志归档目录：`.trae/task-logs/`
+鏃ュ織褰掓。鐩綍锛歚.trae/task-logs/`
+

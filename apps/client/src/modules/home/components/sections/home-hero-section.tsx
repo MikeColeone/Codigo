@@ -3,7 +3,7 @@ import { HomePreviewCard } from "./home-preview-card";
 
 /** 渲染首页首屏营销信息与核心行动按钮。 */
 export function HomeHeroSection() {
-  const { openAppManagement, openRoute } = useHomeNavigation();
+  const { openProjects, openRoute } = useHomeNavigation();
 
   return (
     <section className="mx-auto w-full max-w-7xl px-6 pb-20 pt-12">
@@ -55,9 +55,9 @@ export function HomeHeroSection() {
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <button
               className="group inline-flex items-center justify-center rounded-sm bg-[var(--ide-accent)] px-6 py-3 text-sm font-semibold text-[var(--ide-statusbar-text)] shadow-[var(--ide-panel-shadow)] transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-[var(--ide-accent)] focus:ring-offset-2 focus:ring-offset-[var(--ide-bg)]"
-              onClick={openAppManagement}
+              onClick={openProjects}
             >
-              <span className="mr-2">进入应用管理</span>
+              <span className="mr-2">进入我的项目</span>
               <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>

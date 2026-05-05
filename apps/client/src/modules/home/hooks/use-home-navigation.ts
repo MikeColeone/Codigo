@@ -9,7 +9,7 @@ const navigationItems = [
   { label: "模板广场", path: "/?view=templates" },
   { label: "物料广场", path: "/?view=materials" },
   { label: "使用手册", path: "/doc" },
-  { label: "应用管理", path: "/app-management?tab=developing" },
+  { label: "我的项目", path: "/console/projects?tab=developing" },
 ] as const;
 
 export function useHomeNavigation(options?: {
@@ -54,7 +54,7 @@ export function useHomeNavigation(options?: {
     navigationItems,
     userMenuItems,
     username: store.details?.username,
-    openAppManagement: () => navigate("/app-management?tab=developing"),
+    openProjects: () => navigate("/console/projects?tab=developing"),
     openDashboard: () => navigate("/console"),
     openHome: () => navigate("/"),
     openLogin: () => {

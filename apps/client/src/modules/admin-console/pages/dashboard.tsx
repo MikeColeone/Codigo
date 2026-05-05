@@ -1,17 +1,17 @@
 import { ArrowRightOutlined, FileTextOutlined, FormOutlined } from "@ant-design/icons";
 import { Button } from "antd";
 import { useTitle } from "ahooks";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useStoreAuth } from "@/shared/hooks";
+import { useAdminPageId } from "../hooks/use-admin-page-id";
 import { withPageId } from "../utils/page-id-route";
 
 /** 页面搭建者工作台概览页：提供常用入口与项目状态摘要。 */
 export default function AdminDashboard() {
-  useTitle("Codigo - 页面管理");
+  useTitle("Codigo - 控制台概览");
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { store: storeAuth } = useStoreAuth();
-  const pageId = Number(searchParams.get("id"));
+  const { pageId } = useAdminPageId();
 
   return (
     <div className="h-full p-4">
@@ -21,7 +21,7 @@ export default function AdminDashboard() {
             欢迎回来，{storeAuth.details?.username ?? "用户"}
           </div>
           <h2 className="mt-0.5 truncate text-[14px] font-semibold text-[var(--ide-text)]">
-            页面管理工作台
+            控制台概览
           </h2>
         </div>
         <div className="flex items-center gap-2">
@@ -50,7 +50,7 @@ export default function AdminDashboard() {
                 快捷入口
               </div>
               <div className="mt-0.5 text-[11px] text-[var(--ide-text-muted)]">
-                常用能力收口在这里：应用管理、编辑器与文档。
+                常用能力收口在这里：我的项目、编辑器与文档。
               </div>
             </div>
           </div>
@@ -58,14 +58,14 @@ export default function AdminDashboard() {
           <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
             <button
               className="group flex items-center justify-between rounded-sm border border-[var(--ide-control-border)] bg-[var(--ide-sidebar-bg)] px-3 py-2 text-left transition-colors hover:bg-[var(--ide-hover)]"
-              onClick={() => navigate("/app-management?tab=published")}
+              onClick={() => navigate(withPageId("/console/projects?tab=developing", pageId))}
             >
               <div className="min-w-0">
                 <div className="text-[12px] font-medium text-[var(--ide-text)]">
-                  应用管理
+                  我的项目
                 </div>
                 <div className="mt-0.5 truncate text-[11px] text-[var(--ide-text-muted)]">
-                  查看已发布/开发中应用
+                  查看草稿、发布结果与版本记录
                 </div>
               </div>
               <ArrowRightOutlined className="text-[12px] text-[var(--ide-text-muted)] transition-colors group-hover:text-[var(--ide-text)]" />

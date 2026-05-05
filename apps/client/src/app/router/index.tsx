@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { Navigate, createHashRouter } from "react-router-dom";
+import { Navigate, createHashRouter, useLocation } from "react-router-dom";
 import { StudioLayout } from "@/app/layouts/studio-layout";
 import SuspensedRouteElement from "@/app/router/suspensed-route-element";
 import Home from "@/modules/home";
@@ -7,7 +7,7 @@ import { AdminLayout } from "@/modules/admin-console/components/admin-layout";
 import { AdminRouteGuard } from "@/modules/admin-console/components/admin-route-guard";
 import { EditorRouteGuard } from "@/modules/editor/components/editor-route-guard";
 import { IdeThemeRouteElement } from "./ide-theme-route-element";
-const AppManagement = lazy(() => import("@/modules/app-management"));
+const ProjectWorkspace = lazy(() => import("@/modules/project-workspace"));
 const DevDoc = lazy(() => import("@/modules/dev-document"));
 const Editor = lazy(() => import("@/modules/editor"));
 const Flow = lazy(() => import("@/modules/flow"));
@@ -17,6 +17,12 @@ const AdminBigScreen = lazy(() => import("@/modules/admin-console/pages/big-scre
 const AdminDashboard = lazy(() => import("@/modules/admin-console/pages/dashboard"));
 const AdminPermissions = lazy(() => import("@/modules/admin-console/pages/permissions"));
 const AdminSettings = lazy(() => import("@/modules/admin-console/pages/settings"));
+
+function LegacyProjectWorkspaceRedirect() {
+  const location = useLocation();
+
+  return <Navigate replace to={`/console/projects${location.search}`} />;
+}
 
 
 
@@ -42,11 +48,7 @@ export const router = createHashRouter([
   },
   {
     path: "/app-management",
-    element: (
-      <SuspensedRouteElement loadingMode="fullscreen">
-        <AppManagement />
-      </SuspensedRouteElement>
-    ),
+    element: <LegacyProjectWorkspaceRedirect />,
   },
   {
     path: "/login",
@@ -124,6 +126,14 @@ export const router = createHashRouter([
         element: (
           <SuspensedRouteElement>
             <AdminSettings />
+          </SuspensedRouteElement>
+        ),
+      },
+      {
+        path: "projects",
+        element: (
+          <SuspensedRouteElement>
+            <ProjectWorkspace />
           </SuspensedRouteElement>
         ),
       },

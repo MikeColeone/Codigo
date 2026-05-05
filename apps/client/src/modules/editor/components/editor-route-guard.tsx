@@ -14,15 +14,15 @@ function EditorRouteGuard({ children }: EditorRouteGuardProps) {
 
   useEffect(() => {
     if (!storeAuth.token) {
-      message.info("访客仅可查看已发布页面和模板内容");
-      navigate("/app-management?tab=published", { replace: true });
+      message.info("访客仅可浏览模板与公开页面内容");
+      navigate("/?view=templates", { replace: true });
       return;
     }
 
     if (!storeAuth.details) {
       fetchUserInfo().then((res) => {
         if (!res) {
-          navigate("/app-management?tab=published", { replace: true });
+          navigate("/?view=templates", { replace: true });
         }
       });
     }

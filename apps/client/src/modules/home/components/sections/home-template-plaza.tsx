@@ -83,9 +83,9 @@ export function HomeTemplatePlaza() {
         <button
           type="button"
           className="rounded-sm border border-[var(--ide-control-border)] bg-[var(--ide-control-bg)] px-3 py-2 text-sm font-medium text-[var(--ide-text)] shadow-[var(--ide-panel-shadow)] transition-colors hover:bg-[var(--ide-hover)]"
-          onClick={() => navigate("/app-management?tab=templates")}
+          onClick={() => navigate("/?view=templates")}
         >
-          打开模板管理
+          查看全部模板
         </button>
       </div>
 

@@ -1,14 +1,11 @@
-import type { AppManagementTab, LocalDraftMeta, MyPagePayload, PageVersionItem, PublicPageItem } from "../../types/app-management";
-import { TemplateGallery } from "@/modules/template-center/components/template-gallery";
-import type { TemplateListItem } from "@codigo/schema";
+import type { ProjectWorkspaceTab, LocalDraftMeta, MyPagePayload, PageVersionItem } from "../../types/project-workspace";
 import DevelopingSection from "./developing-section";
 import HistorySection from "./history-section";
 import PublishedSection from "./published-section";
 
-interface AppManagementSectionContentProps {
-  currentTab: AppManagementTab;
+interface ProjectWorkspaceSectionContentProps {
+  currentTab: ProjectWorkspaceTab;
   draftMeta: LocalDraftMeta | null;
-  isLoggedIn: boolean;
   myPageData?: MyPagePayload;
   myPageLoading: boolean;
   onContinue: () => void;
@@ -17,29 +14,18 @@ interface AppManagementSectionContentProps {
     title: string,
     subtitle: string,
   ) => void | Promise<void>;
-  onPreviewTemplate: (template: TemplateListItem) => void;
   onPreviewVersion: (version: PageVersionItem) => void | Promise<void>;
-  onUseTemplate: (template: TemplateListItem) => void;
-  publicLoading: boolean;
-  publicPages: PublicPageItem[];
-  templates: TemplateListItem[];
 }
 
-function AppManagementSectionContent({
+function ProjectWorkspaceSectionContent({
   currentTab,
   draftMeta,
-  isLoggedIn,
   myPageData,
   myPageLoading,
   onContinue,
   onPreviewPublished,
-  onPreviewTemplate,
   onPreviewVersion,
-  onUseTemplate,
-  publicLoading,
-  publicPages,
-  templates,
-}: AppManagementSectionContentProps) {
+}: ProjectWorkspaceSectionContentProps) {
   if (currentTab === "developing") {
     return (
       <DevelopingSection
@@ -61,28 +47,13 @@ function AppManagementSectionContent({
     );
   }
 
-  if (currentTab === "templates") {
-    return (
-      <TemplateGallery
-        canUseTemplate={isLoggedIn}
-        templates={templates}
-        virtualized
-        onPreview={onPreviewTemplate}
-        onUse={onUseTemplate}
-      />
-    );
-  }
-
   return (
     <PublishedSection
-      isLoggedIn={isLoggedIn}
       loading={myPageLoading}
       myPageData={myPageData}
-      publicLoading={publicLoading}
-      publicPages={publicPages}
       onPreview={onPreviewPublished}
     />
   );
 }
 
-export default AppManagementSectionContent;
+export default ProjectWorkspaceSectionContent;

@@ -1,6 +1,6 @@
 import { Button } from "antd";
 
-interface AppCardProps {
+interface ProjectCardProps {
   actionText: string;
   desc: string;
   meta: string[];
@@ -8,13 +8,13 @@ interface AppCardProps {
   title: string;
 }
 
-function AppCard({
+function ProjectCard({
   actionText,
   desc,
   meta,
   onAction,
   title,
-}: AppCardProps) {
+}: ProjectCardProps) {
   return (
     <article className="rounded-md border border-[var(--ide-border)] bg-[var(--ide-control-bg)] p-4 shadow-[var(--ide-panel-shadow)]">
       <div className="flex flex-col justify-between gap-3">
@@ -49,4 +49,4 @@ function AppCard({
   );
 }
 
-export default AppCard;
+export default ProjectCard;

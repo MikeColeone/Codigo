@@ -1,16 +1,16 @@
-import type { AppManagementNavItem, AppManagementTab } from "../../types/app-management";
+import type { ProjectWorkspaceNavItem, ProjectWorkspaceTab } from "../../types/project-workspace";
 
-interface AppManagementSidebarProps {
-  currentTab: AppManagementTab;
-  items: AppManagementNavItem[];
-  onChange: (tab: AppManagementTab) => void;
+interface ProjectWorkspaceSidebarProps {
+  currentTab: ProjectWorkspaceTab;
+  items: ProjectWorkspaceNavItem[];
+  onChange: (tab: ProjectWorkspaceTab) => void;
 }
 
-function AppManagementSidebar({
+function ProjectWorkspaceSidebar({
   currentTab,
   items,
   onChange,
-}: AppManagementSidebarProps) {
+}: ProjectWorkspaceSidebarProps) {
   return (
     <>
       <aside className="hidden w-[64px] shrink-0 border-r border-[var(--ide-border)] bg-[color:color-mix(in_oklab,var(--ide-sidebar-bg)_88%,transparent)] backdrop-blur lg:flex">
@@ -69,4 +69,4 @@ function AppManagementSidebar({
   );
 }
 
-export default AppManagementSidebar;
+export default ProjectWorkspaceSidebar;

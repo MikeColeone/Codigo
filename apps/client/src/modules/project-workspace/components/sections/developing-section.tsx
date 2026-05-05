@@ -2,8 +2,8 @@ import { Empty, Spin } from "antd";
 import type {
   LocalDraftMeta,
   MyPagePayload,
-} from "../../types/app-management";
-import AppCard from "../shared/app-card";
+} from "../../types/project-workspace";
+import ProjectCard from "../shared/project-card";
 
 interface DevelopingSectionProps {
   draftMeta: LocalDraftMeta | null;
@@ -28,7 +28,7 @@ function DevelopingSection({
 
   if (myPageData?.page || draftMeta) {
     return (
-      <AppCard
+      <ProjectCard
         actionText="继续开发"
         desc={
           draftMeta?.isUpdatedAfterPublish
@@ -39,7 +39,7 @@ function DevelopingSection({
           draftMeta?.isUpdatedAfterPublish ? "草稿待发布" : "草稿已同步",
           `最近编辑 ${draftMeta?.updatedAt ?? "暂无"}`,
         ]}
-        title={myPageData?.page?.page_name || "未命名应用"}
+        title={myPageData?.page?.page_name || "未命名项目"}
         onAction={onContinue}
       />
     );
@@ -47,7 +47,7 @@ function DevelopingSection({
 
   return (
     <Empty
-      description="暂无开发中的应用，选择模板后即可开始搭建"
+      description="当前还没有项目草稿，先从模板广场选择模板开始搭建"
       image={Empty.PRESENTED_IMAGE_SIMPLE}
     />
   );

@@ -10,8 +10,9 @@ import {
   Space,
   message,
 } from "antd";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import request from "@/shared/utils/request";
+import { useAdminPageId } from "../hooks/use-admin-page-id";
 import {
   roleColorMap,
   roleLabelMap,
@@ -28,9 +29,7 @@ type CollaboratorRow = {
 export default function AdminPermissions() {
   useTitle("Codigo - 权限设置");
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const pageId = Number(searchParams.get("id"));
-
+  const { pageId, resolvingPageId, hasPageId } = useAdminPageId();
   const [collaborators, setCollaborators] = useState<CollaboratorRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [inviteName, setInviteName] = useState("");
@@ -139,8 +138,6 @@ export default function AdminPermissions() {
   const owner = collaborators.find((item) => item.role === "owner") ?? null;
   const members = collaborators.filter((item) => item.role !== "owner");
 
-  const hasPageId = Boolean(pageId);
-
   useEffect(() => {
     if (hasPageId) {
       void loadCollaborators();
@@ -159,7 +156,7 @@ export default function AdminPermissions() {
           </h2>
         </div>
         <div className="flex items-center gap-2">
-          {hasPageId ? (
+          {resolvingPageId ? null : hasPageId ? (
             <>
               <Button type="default" onClick={() => navigate(`/editor?id=${pageId}`)}>
                 返回编辑器
@@ -176,13 +173,22 @@ export default function AdminPermissions() {
         </div>
       </div>
 
-      {!hasPageId ? (
+      {resolvingPageId ? (
         <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-control-bg)] p-4 shadow-[var(--ide-panel-shadow)]">
           <div className="text-[12px] font-medium text-[var(--ide-text)]">
-            缺少页面编号
+            正在读取页面
           </div>
           <div className="mt-1 text-[11px] text-[var(--ide-text-muted)]">
-            请从编辑器的“分享链接 - 权限设置”入口进入，本页会携带 id 参数。
+            当前入口未携带页面编号，正在读取你拥有的页面权限信息。
+          </div>
+        </div>
+      ) : !hasPageId ? (
+        <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-control-bg)] p-4 shadow-[var(--ide-panel-shadow)]">
+          <div className="text-[12px] font-medium text-[var(--ide-text)]">
+            暂无可管理页面
+          </div>
+          <div className="mt-1 text-[11px] text-[var(--ide-text-muted)]">
+            当前入口未携带页面编号，且没有读取到你拥有的页面。请先进入编辑器创建或打开一个页面。
           </div>
         </div>
       ) : (

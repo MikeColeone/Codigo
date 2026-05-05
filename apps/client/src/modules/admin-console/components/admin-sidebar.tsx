@@ -1,10 +1,12 @@
 import {
+  AppstoreOutlined,
   AreaChartOutlined,
   DashboardOutlined,
   SafetyCertificateOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
-import { NavLink, useSearchParams } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import { useAdminPageId } from "../hooks/use-admin-page-id";
 import { withPageId } from "../utils/page-id-route";
 
 type AdminNavItem = {
@@ -16,6 +18,7 @@ type AdminNavItem = {
 
 const items: AdminNavItem[] = [
   { key: "dashboard", label: "概览", to: "/console", icon: <DashboardOutlined /> },
+  { key: "projects", label: "我的项目", to: "/console/projects", icon: <AppstoreOutlined /> },
   { key: "settings", label: "基础设置", to: "/console/settings", icon: <SettingOutlined /> },
   {
     key: "permissions",
@@ -28,8 +31,7 @@ const items: AdminNavItem[] = [
 
 /** 页面管理工作台侧边栏：聚合页面搭建者模块入口（暂不提供 npm 包管理）。 */
 export default function AdminSidebar() {
-  const [searchParams] = useSearchParams();
-  const pageId = Number(searchParams.get("id"));
+  const { pageId } = useAdminPageId();
 
   return (
     <div className="flex h-full flex-col">
