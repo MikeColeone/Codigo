@@ -1,24 +1,17 @@
-import { useStoreAuth } from "@/shared/hooks/use-store-auth";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import { useRequest } from "ahooks";
 import { getLoginWithPhone } from "@/modules/auth/api/user";
-import { resolveSafeRedirect } from "@/modules/auth/utils/redirect";
+import { useAuthSuccess } from "@/modules/auth/hooks/use-auth-success";
 
 export function usePhoneLogin() {
-  const { login } = useStoreAuth();
-  const nav = useNavigate();
-  const [searchParams] = useSearchParams();
+  const { handleAuthSuccess } = useAuthSuccess();
 
   return useRequest(getLoginWithPhone, {
     manual: true,
     onSuccess: async (res) => {
-      await login(res.data);
-      const redirect = resolveSafeRedirect(searchParams.get("redirect"));
-      nav(redirect ?? "/");
+      await handleAuthSuccess(res.data);
     },
   });
 }
-
 
 
 

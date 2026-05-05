@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { AxiosError } from "axios";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { getPublishedPage } from "@/modules/editor/api/low-code";
+import { buildLoginModalPath } from "@/modules/auth/utils/redirect";
 import {
   generateComponent,
   resolveInitialPageState,
@@ -352,7 +353,7 @@ export default function Release() {
                   <Button
                     type="primary"
                     onClick={() => {
-                      nav(`/?modal=login&redirect=${encodeURIComponent(redirectTo)}`);
+                      nav(buildLoginModalPath(redirectTo));
                     }}
                   >
                     去登录

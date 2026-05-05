@@ -281,13 +281,13 @@ export default function AdminBigScreen() {
         accent: "linear-gradient(90deg, #30d19c, #58f2b0)",
       },
       {
-        label: "模拟 PV",
+        label: "PV",
         value: formatNumber(data.summary.pageViewCount),
-        detail: "当前版本先使用 mock 访问量",
+        detail: "当前访问量",
         accent: "linear-gradient(90deg, #ffb020, #ffd36b)",
       },
       {
-        label: "模拟 UV",
+        label: "UV",
         value: formatNumber(data.summary.uniqueVisitorCount),
         detail: `协作页面 ${formatNumber(data.summary.collaborationPageCount)} 个`,
         accent: "linear-gradient(90deg, #ff6f91, #ff9d6c)",

@@ -6,13 +6,6 @@ import { getCaptcha, sendCode } from "@/modules/auth/api/user";
 
 const COUNTDOWN_SECONDS = 60;
 
-/**
- * 管理短信验证码发送、图形验证码刷新与倒计时状态。
- *
- * @param form - 表单实例
- * @param type - 验证码业务类型
- * @returns 验证码表单所需的状态与动作
- */
 export function useSendCode(form: FormInstance, type: string) {
   const [countDown, setCountDown] = useState(0);
   const [captchaSrc, setCaptchaSrc] = useState("");

@@ -37,14 +37,12 @@ export default function LoginOrRegister({
       }}
     >
       {isModal ? (
-        <div className="p-4">
-          <div className="relative z-10">
-            {showLogin ? (
-              <Login changeState={changeState} />
-            ) : (
-              <Register changeState={changeState} />
-            )}
-          </div>
+        <div className="relative z-10">
+          {showLogin ? (
+            <Login changeState={changeState} />
+          ) : (
+            <Register changeState={changeState} />
+          )}
         </div>
       ) : (
         <div className="relative flex h-full min-h-screen items-center justify-center overflow-hidden bg-[#f3f3f3] font-sans text-[#1f2328]">

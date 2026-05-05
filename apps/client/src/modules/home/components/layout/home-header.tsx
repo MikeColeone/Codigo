@@ -5,6 +5,7 @@ import { createElement, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Profile from "@/modules/profile";
 import LoginOrRegister from "@/modules/auth";
+import { buildLoginModalSearchParams } from "@/modules/auth/utils/redirect";
 import { useHomeNavigation } from "../../hooks/use-home-navigation";
 import { HomeUserEntry } from "./home-user-entry";
 
@@ -31,8 +32,7 @@ function HomeHeader() {
       setSearchParams(nextParams, { replace: true });
     },
     onOpenLogin: () => {
-      const nextParams = new URLSearchParams(searchParams);
-      nextParams.set("modal", "login");
+      const nextParams = buildLoginModalSearchParams(searchParams);
       setSearchParams(nextParams, { replace: true });
     },
   });
@@ -124,7 +124,7 @@ function HomeHeader() {
       </Modal>
 
       <Modal
-        title="登录"
+        title={null}
         open={hasLoginModalParam}
         onCancel={() => {
           const nextParams = new URLSearchParams(searchParams);

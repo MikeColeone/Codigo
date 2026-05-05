@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { message, Spin } from "antd";
 import { observer } from "mobx-react-lite";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { buildLoginModalPath } from "@/modules/auth/utils/redirect";
 import { useStoreAuth } from "@/shared/hooks";
 
 type EditorRouteGuardProps = {
@@ -11,22 +12,24 @@ type EditorRouteGuardProps = {
 function EditorRouteGuard({ children }: EditorRouteGuardProps) {
   const { store: storeAuth, fetchUserInfo } = useStoreAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = `${location.pathname}${location.search}`;
 
   useEffect(() => {
     if (!storeAuth.token) {
-      message.info("访客仅可浏览模板与公开页面内容");
-      navigate("/?view=templates", { replace: true });
+      message.info("请先登录");
+      navigate(buildLoginModalPath(redirectTo), { replace: true });
       return;
     }
 
     if (!storeAuth.details) {
       fetchUserInfo().then((res) => {
         if (!res) {
-          navigate("/?view=templates", { replace: true });
+          navigate(buildLoginModalPath(redirectTo), { replace: true });
         }
       });
     }
-  }, [fetchUserInfo, navigate, storeAuth.details, storeAuth.token]);
+  }, [fetchUserInfo, navigate, redirectTo, storeAuth.details, storeAuth.token]);
 
   if (!storeAuth.token || !storeAuth.details) {
     return (

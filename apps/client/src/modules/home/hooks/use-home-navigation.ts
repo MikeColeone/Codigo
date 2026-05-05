@@ -3,6 +3,7 @@ import type { MenuProps } from "antd";
 import { createElement, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStoreAuth } from "@/shared/hooks/use-store-auth";
+import { buildLoginModalPath } from "@/modules/auth/utils/redirect";
 
 const navigationItems = [
   { label: "模板广场", path: "/?view=templates" },
@@ -40,7 +41,7 @@ export function useHomeNavigation(options?: {
         label: "退出登录",
         onClick: () => {
           logout();
-          navigate("/?modal=login");
+          navigate(buildLoginModalPath());
         },
       },
     ],
@@ -61,7 +62,7 @@ export function useHomeNavigation(options?: {
         onOpenLogin();
         return;
       }
-      navigate("/?modal=login");
+      navigate(buildLoginModalPath());
     },
     openRoute: (path: string) => navigate(path),
   };

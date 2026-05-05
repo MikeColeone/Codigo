@@ -2,6 +2,7 @@ import { lazy } from "react";
 import { Navigate, createHashRouter } from "react-router-dom";
 import { StudioLayout } from "@/app/layouts/studio-layout";
 import SuspensedRouteElement from "@/app/router/suspensed-route-element";
+import { buildLoginModalPath } from "@/modules/auth/utils/redirect";
 import Home from "@/modules/home";
 import { AdminLayout } from "@/modules/admin-console/components/admin-layout";
 import { AdminRouteGuard } from "@/modules/admin-console/components/admin-route-guard";
@@ -37,7 +38,7 @@ export const router = createHashRouter([
   },
   {
     path: "/login",
-    element: <Navigate to="/?modal=login" replace />,
+    element: <Navigate to={buildLoginModalPath()} replace />,
   },
   {
     path: "/profile",

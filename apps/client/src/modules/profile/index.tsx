@@ -7,6 +7,7 @@ import {
 } from "@ant-design/icons";
 import { useStoreAuth } from "@/shared/hooks/use-store-auth";
 import { updateProfile, updatePassword } from "@/modules/auth/api/user";
+import { buildLoginModalPath } from "@/modules/auth/utils/redirect";
 import { useNavigate } from "react-router-dom";
 import { ProfilePageHeader } from "./components/profile-page-header";
 
@@ -28,7 +29,7 @@ function Profile({
 
     useEffect(() => {
       if (!store.token) {
-        navigate("/?modal=login");
+        navigate(buildLoginModalPath());
         return;
       }
       if (store.details) {

@@ -9,6 +9,7 @@ import type { MenuProps } from "antd";
 import { observer } from "mobx-react-lite";
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { buildLoginModalPath } from "@/modules/auth/utils/redirect";
 import { useStoreAuth } from "@/shared/hooks";
 import Profile from "@/modules/profile";
 import { useEditorPermission } from "@/modules/editor/hooks";
@@ -75,7 +76,7 @@ function Right() {
       label: "退出登录",
       onClick: () => {
         logout();
-        navigate("/?modal=login");
+        navigate(buildLoginModalPath());
       },
     },
   ];
