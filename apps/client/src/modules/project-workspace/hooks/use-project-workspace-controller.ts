@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { useRequest } from "ahooks";
-import { useSearchParams } from "react-router-dom";
 import { useStoreAuth } from "@/shared/hooks";
 import {
   fetchMyPageData,
@@ -8,14 +7,9 @@ import {
   fetchVersionPreview,
   getLocalDraftMeta,
 } from "../api";
-import type {
-  ProjectWorkspaceTab,
-  PageVersionItem,
-  PreviewState,
-} from "../types/project-workspace";
+import type { PageVersionItem, PreviewState } from "../types/project-workspace";
 
 export function useProjectWorkspaceController() {
-  const [searchParams, setSearchParams] = useSearchParams();
   const { isLogin, store: storeAuth } = useStoreAuth();
   const [previewState, setPreviewState] = useState<PreviewState | null>(null);
   const isLoggedIn = Boolean(storeAuth.token);
@@ -43,21 +37,6 @@ export function useProjectWorkspaceController() {
     [isLoggedIn, myPageData?.page],
   );
 
-  const availableTabs = useMemo<ProjectWorkspaceTab[]>(
-    () => ["developing", "published", "versions"],
-    [],
-  );
-
-  const currentTab = availableTabs.includes(
-    (searchParams.get("tab") ?? "") as ProjectWorkspaceTab,
-  )
-    ? (searchParams.get("tab") as ProjectWorkspaceTab)
-    : availableTabs[0];
-
-  const handleTabChange = (tab: ProjectWorkspaceTab) => {
-    setSearchParams({ tab });
-  };
-
   const handleOpenPublishedPage = async (
     pageId: number,
     title: string,
@@ -71,11 +50,8 @@ export function useProjectWorkspaceController() {
   };
 
   return {
-    availableTabs,
-    currentTab,
     handleOpenPublishedPage,
     handleOpenVersion,
-    handleTabChange,
     isLoggedIn: isLogin.get(),
     localDraftMeta,
     myPageData,

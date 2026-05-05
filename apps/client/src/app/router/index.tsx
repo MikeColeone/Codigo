@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { Navigate, createHashRouter, useLocation } from "react-router-dom";
+import { Navigate, createHashRouter } from "react-router-dom";
 import { StudioLayout } from "@/app/layouts/studio-layout";
 import SuspensedRouteElement from "@/app/router/suspensed-route-element";
 import Home from "@/modules/home";
@@ -18,17 +18,6 @@ const AdminDashboard = lazy(() => import("@/modules/admin-console/pages/dashboar
 const AdminPermissions = lazy(() => import("@/modules/admin-console/pages/permissions"));
 const AdminSettings = lazy(() => import("@/modules/admin-console/pages/settings"));
 
-function LegacyProjectWorkspaceRedirect() {
-  const location = useLocation();
-
-  return <Navigate replace to={`/console/projects${location.search}`} />;
-}
-
-
-
-
-
-
 export const router = createHashRouter([
   {
     path: "/",
@@ -45,10 +34,6 @@ export const router = createHashRouter([
         <DevDoc />
       </SuspensedRouteElement>
     ),
-  },
-  {
-    path: "/app-management",
-    element: <LegacyProjectWorkspaceRedirect />,
   },
   {
     path: "/login",

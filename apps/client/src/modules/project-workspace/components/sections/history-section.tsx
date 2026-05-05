@@ -5,16 +5,18 @@ import { useVirtualWindow } from "@/shared/hooks";
 import type { PageVersionItem } from "../../types/project-workspace";
 
 interface HistorySectionProps {
+  embedded?: boolean;
   loading: boolean;
   onPreview: (version: PageVersionItem) => void | Promise<void>;
   versions: PageVersionItem[];
 }
 
 const HISTORY_ROW_HEIGHT = 88;
-const HISTORY_VIEWPORT_HEIGHT = "clamp(320px, calc(100vh - 420px), 500px)";
-const HISTORY_VIEWPORT_FALLBACK_HEIGHT = 420;
+const HISTORY_VIEWPORT_HEIGHT = "clamp(360px, calc(100vh - 360px), 620px)";
+const HISTORY_VIEWPORT_FALLBACK_HEIGHT = 480;
 
 function HistorySection({
+  embedded = false,
   loading,
   onPreview,
   versions,
@@ -47,10 +49,16 @@ function HistorySection({
   }
 
   return (
-    <div className="overflow-hidden rounded-md border border-[var(--ide-border)] bg-[var(--ide-sidebar-bg)]">
+    <div
+      className={
+        embedded
+          ? "overflow-hidden"
+          : "overflow-hidden rounded-md border border-[var(--ide-border)] bg-[var(--ide-sidebar-bg)]"
+      }
+    >
       <div
         ref={virtualWindow.containerRef}
-        className="overflow-y-auto"
+        className="overflow-y-auto pr-1"
         style={{ height: HISTORY_VIEWPORT_HEIGHT }}
         onScroll={virtualWindow.onScroll}
       >

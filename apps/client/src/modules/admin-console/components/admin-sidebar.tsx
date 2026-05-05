@@ -18,7 +18,7 @@ type AdminNavItem = {
 
 const items: AdminNavItem[] = [
   { key: "dashboard", label: "概览", to: "/console", icon: <DashboardOutlined /> },
-  { key: "projects", label: "我的项目", to: "/console/projects", icon: <AppstoreOutlined /> },
+  { key: "projects", label: "我的站点", to: "/console/projects", icon: <AppstoreOutlined /> },
   { key: "settings", label: "基础设置", to: "/console/settings", icon: <SettingOutlined /> },
   {
     key: "permissions",
