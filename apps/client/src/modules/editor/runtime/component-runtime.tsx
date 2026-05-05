@@ -1,5 +1,5 @@
 import { toJS } from "mobx";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { getComponentByType } from "@codigo/materials";
 import {
@@ -227,6 +227,9 @@ function RuntimeNodeShell({
   children,
 }: RuntimeNodeShellProps) {
   const hasMountedRef = useRef(false);
+  const scaleFrameRef = useRef<HTMLDivElement>(null);
+  const scaleContentRef = useRef<HTMLDivElement>(null);
+  const [contentScaleY, setContentScaleY] = useState(1);
 
   useEffect(() => {
     if (runtime?.mode !== "preview" || hasMountedRef.current) {
@@ -243,15 +246,92 @@ function RuntimeNodeShell({
     void run().catch(() => {});
   }, [conf, runtime]);
 
+  useEffect(() => {
+    if (!shouldStretchHeight) {
+      setContentScaleY(1);
+      return;
+    }
+
+    const frame = scaleFrameRef.current;
+    const content = scaleContentRef.current;
+    if (!frame || !content) {
+      return;
+    }
+
+    /**
+     * 根据当前渲染内容的自然高度，计算需要应用的纵向缩放比例。
+     */
+    const syncScale = () => {
+      const nextFrameHeight = frame.clientHeight;
+      const nextContentHeight = content.offsetHeight;
+      if (nextFrameHeight <= 0 || nextContentHeight <= 0) {
+        setContentScaleY(1);
+        return;
+      }
+
+      const nextScale = Number((nextFrameHeight / nextContentHeight).toFixed(4));
+      setContentScaleY((current) => {
+        return Math.abs(current - nextScale) < 0.001 ? current : nextScale;
+      });
+    };
+
+    syncScale();
+    const observer = new ResizeObserver(() => {
+      syncScale();
+    });
+    observer.observe(frame);
+    observer.observe(content);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [conf.id, conf.styles?.height, shouldStretchHeight]);
+
+  const shellClassName = [
+    shouldStretchWidth ? "[&>*]:w-full" : "",
+    shouldStretchHeight ? "flex min-h-0 flex-col" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const childShellClassName = [
+    shouldStretchWidth ? "w-full [&>*]:w-full" : "",
+    shouldStretchHeight
+      ? "flex h-full min-h-0 w-full flex-col [&>*]:block [&>*]:h-full [&>*]:min-h-0 [&>*]:w-full"
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const wrappedChildren =
+    childShellClassName.length > 0 ? (
+      <div
+        ref={scaleFrameRef}
+        className={shouldStretchHeight ? "h-full min-h-0 w-full overflow-hidden" : undefined}
+      >
+        <div
+          ref={scaleContentRef}
+          className={childShellClassName}
+          style={{
+            transform: shouldStretchHeight ? `scaleY(${contentScaleY})` : undefined,
+            transformOrigin: shouldStretchHeight ? "top left" : undefined,
+          }}
+        >
+          {children}
+        </div>
+      </div>
+    ) : (
+      children
+    );
+
   return (
     <div
       data-render-node={conf.id}
       onClick={() => handleComponentClickActions(conf, runtime)}
-      className={`${shouldStretchWidth ? "[&>*]:w-full" : ""} ${shouldStretchHeight ? "[&>*]:h-full" : ""}`}
+      className={shellClassName || undefined}
       style={{
         position: "relative",
         width: conf.styles?.width || "100%",
         height: conf.styles?.height || "auto",
+        minHeight: shouldStretchHeight ? 0 : undefined,
         marginTop: conf.styles?.marginTop,
         marginBottom: conf.styles?.marginBottom,
         marginLeft: conf.styles?.marginLeft,
@@ -263,7 +343,7 @@ function RuntimeNodeShell({
         overflow: "visible",
       }}
     >
-      {children}
+      {wrappedChildren}
     </div>
   );
 }

@@ -1,20 +1,27 @@
+import { lazy } from "react";
 import { Navigate, createHashRouter } from "react-router-dom";
-import Editor from "@/modules/editor";
-import Home from "@/modules/home/index";
-import Release from "@/modules/release";
-import Preview from "@/modules/preview";
-import Flow from "@/modules/flow";
-import DevDoc from "@/modules/dev-document";
-import AppManagement from "@/modules/app-management/index";
 import { StudioLayout } from "@/app/layouts/studio-layout";
-import { EditorRouteGuard } from "@/modules/editor/components/editor-route-guard";
-import AdminLayout from "@/modules/admin-console/components/admin-layout";
+import SuspensedRouteElement from "@/app/router/suspensed-route-element";
+import Home from "@/modules/home";
+import { AdminLayout } from "@/modules/admin-console/components/admin-layout";
 import { AdminRouteGuard } from "@/modules/admin-console/components/admin-route-guard";
-import AdminBigScreen from "@/modules/admin-console/pages/big-screen";
-import AdminDashboard from "@/modules/admin-console/pages/dashboard";
-import AdminPermissions from "@/modules/admin-console/pages/permissions";
-import AdminSettings from "@/modules/admin-console/pages/settings";
-import { IdeThemeLayout } from "@/app/layouts/ide-theme-layout";
+import { EditorRouteGuard } from "@/modules/editor/components/editor-route-guard";
+import { IdeThemeRouteElement } from "./ide-theme-route-element";
+const AppManagement = lazy(() => import("@/modules/app-management"));
+const DevDoc = lazy(() => import("@/modules/dev-document"));
+const Editor = lazy(() => import("@/modules/editor"));
+const Flow = lazy(() => import("@/modules/flow"));
+const Preview = lazy(() => import("@/modules/preview"));
+const Release = lazy(() => import("@/modules/release"));
+const AdminBigScreen = lazy(() => import("@/modules/admin-console/pages/big-screen"));
+const AdminDashboard = lazy(() => import("@/modules/admin-console/pages/dashboard"));
+const AdminPermissions = lazy(() => import("@/modules/admin-console/pages/permissions"));
+const AdminSettings = lazy(() => import("@/modules/admin-console/pages/settings"));
+
+
+
+
+
 
 export const router = createHashRouter([
   {
@@ -27,11 +34,19 @@ export const router = createHashRouter([
   },
   {
     path: "/doc",
-    element: <DevDoc />,
+    element: (
+      <SuspensedRouteElement loadingMode="fullscreen">
+        <DevDoc />
+      </SuspensedRouteElement>
+    ),
   },
   {
     path: "/app-management",
-    element: <AppManagement />,
+    element: (
+      <SuspensedRouteElement loadingMode="fullscreen">
+        <AppManagement />
+      </SuspensedRouteElement>
+    ),
   },
   {
     path: "/login",
@@ -44,25 +59,25 @@ export const router = createHashRouter([
   {
     path: "/preview",
     element: (
-      <IdeThemeLayout className="h-full w-full overflow-hidden">
+      <IdeThemeRouteElement>
         <Preview />
-      </IdeThemeLayout>
+      </IdeThemeRouteElement>
     ),
   },
   {
     path: "/release",
     element: (
-      <IdeThemeLayout className="h-full w-full overflow-hidden">
+      <IdeThemeRouteElement>
         <Release />
-      </IdeThemeLayout>
+      </IdeThemeRouteElement>
     ),
   },
   {
     path: "/release/:id",
     element: (
-      <IdeThemeLayout className="h-full w-full overflow-hidden">
+      <IdeThemeRouteElement>
         <Release />
-      </IdeThemeLayout>
+      </IdeThemeRouteElement>
     ),
   },
   {
@@ -71,14 +86,20 @@ export const router = createHashRouter([
       {
         path: "/editor",
         element: (
-          <EditorRouteGuard>
-            <Editor />
-          </EditorRouteGuard>
+          <SuspensedRouteElement>
+            <EditorRouteGuard>
+              <Editor />
+            </EditorRouteGuard>
+          </SuspensedRouteElement>
         ),
       },
       {
         path: "/flow",
-        element: <Flow />,
+        element: (
+          <SuspensedRouteElement>
+            <Flow />
+          </SuspensedRouteElement>
+        ),
       },
     ],
   },
@@ -90,10 +111,38 @@ export const router = createHashRouter([
       </AdminRouteGuard>
     ),
     children: [
-      { index: true, element: <AdminDashboard /> },
-      { path: "settings", element: <AdminSettings /> },
-      { path: "permissions", element: <AdminPermissions /> },
-      { path: "big-screen", element: <AdminBigScreen /> },
+      {
+        index: true,
+        element: (
+          <SuspensedRouteElement>
+            <AdminDashboard />
+          </SuspensedRouteElement>
+        ),
+      },
+      {
+        path: "settings",
+        element: (
+          <SuspensedRouteElement>
+            <AdminSettings />
+          </SuspensedRouteElement>
+        ),
+      },
+      {
+        path: "permissions",
+        element: (
+          <SuspensedRouteElement>
+            <AdminPermissions />
+          </SuspensedRouteElement>
+        ),
+      },
+      {
+        path: "big-screen",
+        element: (
+          <SuspensedRouteElement>
+            <AdminBigScreen />
+          </SuspensedRouteElement>
+        ),
+      },
     ],
   },
   {

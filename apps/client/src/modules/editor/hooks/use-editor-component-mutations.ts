@@ -81,36 +81,56 @@ export function createEditorComponentMutations(
       Array.isArray(actions) ? actions.map(normalizeActionConfig) : undefined;
 
     const normalizedBranches = normalizeList(actionConfig.branches);
-    const normalizedAction =
-      actionConfig.type === "setState"
-        ? {
-            ...actionConfig,
-            value: calcValueByString(actionConfig.value as any),
-          }
-        : { ...actionConfig };
+    const branchConfig = normalizedBranches?.length
+      ? { branches: normalizedBranches }
+      : {};
 
-    if (actionConfig.type === "confirm") {
-      normalizedAction.onOk = normalizeList(actionConfig.onOk);
-      normalizedAction.onCancel = normalizeList(actionConfig.onCancel);
+    switch (actionConfig.type) {
+      case "setState":
+        return {
+          ...actionConfig,
+          ...branchConfig,
+          value: calcValueByString(actionConfig.value as any),
+        };
+      case "confirm": {
+        const { onOk: _onOk, onCancel: _onCancel, ...rest } = actionConfig;
+        const onOk = normalizeList(actionConfig.onOk);
+        const onCancel = normalizeList(actionConfig.onCancel);
+        return {
+          ...rest,
+          ...branchConfig,
+          ...(onOk?.length ? { onOk } : {}),
+          ...(onCancel?.length ? { onCancel } : {}),
+        };
+      }
+      case "when": {
+        const { onTrue: _onTrue, onFalse: _onFalse, ...rest } = actionConfig;
+        const onTrue = normalizeList(actionConfig.onTrue);
+        const onFalse = normalizeList(actionConfig.onFalse);
+        return {
+          ...rest,
+          ...branchConfig,
+          ...(onTrue?.length ? { onTrue } : {}),
+          ...(onFalse?.length ? { onFalse } : {}),
+        };
+      }
+      case "request": {
+        const { onSuccess: _onSuccess, onError: _onError, ...rest } = actionConfig;
+        const onSuccess = normalizeList(actionConfig.onSuccess);
+        const onError = normalizeList(actionConfig.onError);
+        return {
+          ...rest,
+          ...branchConfig,
+          ...(onSuccess?.length ? { onSuccess } : {}),
+          ...(onError?.length ? { onError } : {}),
+        };
+      }
+      default:
+        return {
+          ...actionConfig,
+          ...branchConfig,
+        };
     }
-
-    if (actionConfig.type === "when") {
-      normalizedAction.onTrue = normalizeList(actionConfig.onTrue);
-      normalizedAction.onFalse = normalizeList(actionConfig.onFalse);
-    }
-
-    if (actionConfig.type === "request") {
-      normalizedAction.onSuccess = normalizeList(actionConfig.onSuccess);
-      normalizedAction.onError = normalizeList(actionConfig.onError);
-    }
-
-    if (normalizedBranches?.length) {
-      normalizedAction.branches = normalizedBranches;
-    } else {
-      delete normalizedAction.branches;
-    }
-
-    return normalizedAction as ActionConfig;
   };
 
   /**

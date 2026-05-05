@@ -45,6 +45,10 @@ interface EditorViewportProps {
   canvasRef: RefObject<any>;
 }
 
+interface EditorStageProps extends EditorViewportProps {
+  onStageSizeChange: (size: { width: number; height: number }) => void;
+}
+
 type LeftPanelSection =
   | "components"
   | "outline"
@@ -115,7 +119,41 @@ function EditorStage({
   storeComps,
   storePage,
   canvasRef,
-}: EditorViewportProps) {
+  onStageSizeChange,
+}: EditorStageProps) {
+  const stageContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const target = stageContainerRef.current;
+    if (!target) {
+      return;
+    }
+
+    const reportSize = () => {
+      const rect = target.getBoundingClientRect();
+      onStageSizeChange({
+        width: Math.ceil(rect.width),
+        height: Math.ceil(Math.max(rect.height, target.scrollHeight)),
+      });
+    };
+
+    reportSize();
+    const observer = new ResizeObserver(() => {
+      reportSize();
+    });
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [
+    onStageSizeChange,
+    storePage.canvasHeight,
+    storePage.canvasWidth,
+    storePage.deviceType,
+    storePage.editorMode,
+  ]);
+
   if (storePage.editorMode === "code") {
     return (
       <div className="relative z-0 h-full w-full overflow-hidden border border-[var(--ide-border)] bg-[var(--ide-bg)]">
@@ -128,15 +166,17 @@ function EditorStage({
     (() => {
       const canvas = (
         <div
-          className={`editor-canvas-container relative z-0 overflow-hidden bg-white text-left transition-all duration-300 ease-out shadow-lg ${
+          ref={stageContainerRef}
+          className={`editor-canvas-container relative z-0 bg-white text-left transition-all duration-300 ease-out shadow-lg ${
             storePage.deviceType === "mobile"
               ? "border-[12px] border-[#000000] rounded-[32px]"
               : "border border-[var(--ide-border)]"
           }`}
           style={{
             width: storePage.canvasWidth,
-            height: storePage.canvasHeight,
-            maxHeight: "100%",
+            minHeight: storePage.canvasHeight,
+            height: "auto",
+            overflow: "visible",
           }}
         >
           {storePage.deviceType === "mobile" && (
@@ -187,6 +227,10 @@ function EditorViewport(props: EditorViewportProps) {
     width: 0,
     height: 0,
   });
+  const [stageFrameSize, setStageFrameSize] = useState({
+    width: 0,
+    height: 0,
+  });
   const [isWorkspacePanning, setIsWorkspacePanning] = useState(false);
   const leftSidebarContentWidth = leftPanelWidth - LEFT_PANEL_RAIL_WIDTH;
   const activePagePath =
@@ -227,12 +271,17 @@ function EditorViewport(props: EditorViewportProps) {
   ];
 
   // ... rest of logic (no changes to logic, just UI below)
-  const stageFrameWidth =
+  const fallbackStageFrameWidth =
     props.storePage.canvasWidth +
     (props.storePage.deviceType === "mobile" ? MOBILE_FRAME_SIZE : 0);
-  const stageFrameHeight =
+  const fallbackStageFrameHeight =
     props.storePage.canvasHeight +
     (props.storePage.deviceType === "mobile" ? MOBILE_FRAME_SIZE : 0);
+  const stageFrameWidth = Math.max(fallbackStageFrameWidth, stageFrameSize.width);
+  const stageFrameHeight = Math.max(
+    fallbackStageFrameHeight,
+    stageFrameSize.height,
+  );
   const hasMeasuredWorkspaceViewport =
     workspaceViewportSize.width > 0 && workspaceViewportSize.height > 0;
   const workspaceWidth = Math.max(
@@ -730,7 +779,20 @@ function EditorViewport(props: EditorViewportProps) {
                   padding: WORKSPACE_STAGE_PADDING,
                 }}
               >
-                <EditorStage {...props} />
+                <EditorStage
+                  {...props}
+                  onStageSizeChange={(nextSize) => {
+                    setStageFrameSize((current) => {
+                      if (
+                        current.width === nextSize.width &&
+                        current.height === nextSize.height
+                      ) {
+                        return current;
+                      }
+                      return nextSize;
+                    });
+                  }}
+                />
               </div>
             </div>
           </div>

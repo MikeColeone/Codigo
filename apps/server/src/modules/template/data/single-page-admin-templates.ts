@@ -119,7 +119,7 @@ function createMetricGrid(
         items,
       },
     },
-    { left: 24, top, width: 1392, height: 132 },
+    { left: 24, top, width: 1392, height: 156 },
   );
 }
 

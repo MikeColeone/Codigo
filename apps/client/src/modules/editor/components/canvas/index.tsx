@@ -145,7 +145,9 @@ const ComponentWrapper: FC<ComponentWrapperProps> = ({
           </button>
         </>
       )}
-      <div>{children}</div>
+      <div className={layout === "flow" ? "w-full" : "h-full w-full"}>
+        {children}
+      </div>
     </div>
   );
 };
@@ -566,8 +568,8 @@ function EditorCanvas({ store, onRef }: EditorCanvasProps) {
                     }),
             }}
           >
-            <div className="relative">
-              <div>
+            <div className="relative h-full w-full">
+              <div className="h-full w-full">
                 {generateComponent(
                   node,
                   storePage.chartTheme || undefined,

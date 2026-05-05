@@ -100,30 +100,49 @@ class FlowStore {
     const cloneList = (actions: ActionConfig[] | undefined) =>
       Array.isArray(actions) ? actions.map((item) => this.cloneAction(item)) : undefined;
 
-    const nextAction = { ...action } as ActionConfig;
     const branches = cloneList(action.branches);
-    if (branches?.length) {
-      nextAction.branches = branches;
-    } else {
-      delete nextAction.branches;
-    }
+    const branchConfig = branches?.length ? { branches } : {};
 
-    if (action.type === "confirm") {
-      nextAction.onOk = cloneList(action.onOk);
-      nextAction.onCancel = cloneList(action.onCancel);
+    switch (action.type) {
+      case "confirm": {
+        const { onOk: _onOk, onCancel: _onCancel, ...rest } = action;
+        const onOk = cloneList(action.onOk);
+        const onCancel = cloneList(action.onCancel);
+        return {
+          ...rest,
+          ...branchConfig,
+          ...(onOk?.length ? { onOk } : {}),
+          ...(onCancel?.length ? { onCancel } : {}),
+        };
+      }
+      case "when": {
+        const { onTrue: _onTrue, onFalse: _onFalse, ...rest } = action;
+        const onTrue = cloneList(action.onTrue);
+        const onFalse = cloneList(action.onFalse);
+        return {
+          ...rest,
+          ...branchConfig,
+          ...(onTrue?.length ? { onTrue } : {}),
+          ...(onFalse?.length ? { onFalse } : {}),
+        };
+      }
+      case "request": {
+        const { onSuccess: _onSuccess, onError: _onError, ...rest } = action;
+        const onSuccess = cloneList(action.onSuccess);
+        const onError = cloneList(action.onError);
+        return {
+          ...rest,
+          ...branchConfig,
+          ...(onSuccess?.length ? { onSuccess } : {}),
+          ...(onError?.length ? { onError } : {}),
+        };
+      }
+      default:
+        return {
+          ...action,
+          ...branchConfig,
+        };
     }
-
-    if (action.type === "when") {
-      nextAction.onTrue = cloneList(action.onTrue);
-      nextAction.onFalse = cloneList(action.onFalse);
-    }
-
-    if (action.type === "request") {
-      nextAction.onSuccess = cloneList(action.onSuccess);
-      nextAction.onError = cloneList(action.onError);
-    }
-
-    return nextAction;
   }
 
   private createFallbackAction(node: FlowNode): ActionConfig {
@@ -481,7 +500,6 @@ class FlowStore {
 }
 
 export const flowStore = new FlowStore();
-
 
 
 

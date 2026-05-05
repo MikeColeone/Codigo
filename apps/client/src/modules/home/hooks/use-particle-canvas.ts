@@ -57,8 +57,10 @@ export function useParticleCanvas(
     const accent = readCssVar("--ide-accent") || "#0f6cbd";
     const gridLine = readCssVar("--ide-grid-line") || "rgba(31, 35, 40, 0.05)";
     const accentRgb = hexToRgb(accent) ?? { r: 15, g: 108, b: 189 };
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     let animationFrameId = 0;
+    let isAnimationRunning = false;
     let mouseX = 0;
     let mouseY = 0;
     let particles: Particle[] = [];
@@ -98,6 +100,12 @@ export function useParticleCanvas(
         context.lineTo(canvas.width, y);
         context.stroke();
       }
+    };
+
+    /** 绘制静态背景，供减少动态效果模式与暂停动画时复用。 */
+    const drawStaticBackground = () => {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      drawGrid();
     };
 
     const render = () => {
@@ -152,21 +160,52 @@ export function useParticleCanvas(
       animationFrameId = window.requestAnimationFrame(render);
     };
 
+    /** 根据页面可见性与系统动效偏好决定是否启动动画。 */
+    const syncAnimationState = () => {
+      const shouldAnimate =
+        !prefersReducedMotion.matches && document.visibilityState === "visible";
+      if (shouldAnimate && !isAnimationRunning) {
+        isAnimationRunning = true;
+        render();
+        return;
+      }
+      if (!shouldAnimate && isAnimationRunning) {
+        isAnimationRunning = false;
+        window.cancelAnimationFrame(animationFrameId);
+        drawStaticBackground();
+        return;
+      }
+      if (!shouldAnimate) {
+        drawStaticBackground();
+      }
+    };
+
     const handleMouseMove = (event: MouseEvent) => {
       mouseX = event.clientX;
       mouseY = event.clientY;
     };
 
+    /** 视窗尺寸变化后重建粒子并同步动画状态。 */
+    const handleResize = () => {
+      resizeCanvas();
+      syncAnimationState();
+    };
+
     window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("resize", handleResize);
+    document.addEventListener("visibilitychange", syncAnimationState);
+    prefersReducedMotion.addEventListener("change", syncAnimationState);
 
     resizeCanvas();
-    render();
+    syncAnimationState();
 
     return () => {
+      isAnimationRunning = false;
       window.cancelAnimationFrame(animationFrameId);
       window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener("resize", handleResize);
+      document.removeEventListener("visibilitychange", syncAnimationState);
+      prefersReducedMotion.removeEventListener("change", syncAnimationState);
     };
   }, [canvasRef]);
 }
