@@ -15,7 +15,6 @@ const Flow = lazy(() => import("@/modules/flow"));
 const Preview = lazy(() => import("@/modules/preview"));
 const Release = lazy(() => import("@/modules/release"));
 const AdminBigScreen = lazy(() => import("@/modules/admin-console/pages/big-screen"));
-const AdminDashboard = lazy(() => import("@/modules/admin-console/pages/dashboard"));
 const AdminPermissions = lazy(() => import("@/modules/admin-console/pages/permissions"));
 const AdminSettings = lazy(() => import("@/modules/admin-console/pages/settings"));
 
@@ -99,14 +98,6 @@ export const router = createHashRouter([
       </AdminRouteGuard>
     ),
     children: [
-      {
-        index: true,
-        element: (
-          <SuspensedRouteElement>
-            <AdminDashboard />
-          </SuspensedRouteElement>
-        ),
-      },
       {
         path: "settings",
         element: (

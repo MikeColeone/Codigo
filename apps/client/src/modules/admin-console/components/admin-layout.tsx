@@ -3,7 +3,6 @@ import { ConfigProvider, theme } from "antd";
 import { HomeHeader } from "@/modules/home/components/layout/home-header";
 import AdminSidebar from "./admin-sidebar";
 
-/** 页面管理工作台 Layout：复用 IDE 主题变量，提供顶部导航与侧边栏。 */
 export function AdminLayout() {
   return (
     <ConfigProvider

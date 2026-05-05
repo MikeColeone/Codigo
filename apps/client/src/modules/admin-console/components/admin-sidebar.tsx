@@ -1,7 +1,6 @@
 import {
   AppstoreOutlined,
   AreaChartOutlined,
-  DashboardOutlined,
   SafetyCertificateOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
@@ -17,7 +16,6 @@ type AdminNavItem = {
 };
 
 const items: AdminNavItem[] = [
-  { key: "dashboard", label: "概览", to: "/console", icon: <DashboardOutlined /> },
   { key: "projects", label: "我的站点", to: "/console/projects", icon: <AppstoreOutlined /> },
   { key: "settings", label: "基础设置", to: "/console/settings", icon: <SettingOutlined /> },
   {
@@ -29,7 +27,6 @@ const items: AdminNavItem[] = [
   { key: "big-screen", label: "数据大屏", to: "/console/big-screen", icon: <AreaChartOutlined /> },
 ];
 
-/** 页面管理工作台侧边栏：聚合页面搭建者模块入口（暂不提供 npm 包管理）。 */
 export default function AdminSidebar() {
   const { pageId } = useAdminPageId();
 
@@ -64,11 +61,6 @@ export default function AdminSidebar() {
           ))}
         </div>
       </nav>
-      <div className="border-t border-[var(--ide-border)] p-2">
-        <div className="text-[11px] leading-5 text-[var(--ide-text-muted)]">
-          建议先从“使用手册”了解流程
-        </div>
-      </div>
     </div>
   );
 }

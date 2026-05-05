@@ -139,20 +139,6 @@ export function MaterialsList({ materials, onSelect, sections }: MaterialsListPr
                   {material.sectionLabel}
                 </span>
               </div>
-              <div className="mt-3 line-clamp-2 text-sm leading-6 text-[var(--ide-text-muted)]">
-                {material.description ?? "暂无描述"}
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2 text-xs text-[var(--ide-text-muted)]">
-                {material.slots?.length ? (
-                  <span className="rounded-full border border-[var(--ide-border)] bg-[var(--ide-hover)] px-3 py-1">
-                    {material.slots.length} 个插槽
-                  </span>
-                ) : (
-                  <span className="rounded-full border border-[var(--ide-border)] bg-[var(--ide-hover)] px-3 py-1">
-                    无插槽
-                  </span>
-                )}
-              </div>
             </button>
           );
         })}

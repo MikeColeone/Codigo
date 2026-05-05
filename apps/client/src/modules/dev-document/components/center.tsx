@@ -793,29 +793,6 @@ export default function Center({ variant = "page" }: { variant?: "page" | "embed
                   : "sm:sticky sm:top-[calc(var(--header-height)+18px)] sm:max-h-[calc(100vh-var(--header-height)-36px)] sm:overflow-y-auto",
               )}
             >
-          <div className={cx("flex items-start justify-between gap-3", !isPage && "px-4")}>
-            <div>
-              <div className="text-sm font-semibold tracking-tight text-[var(--ide-text)]">
-                使用手册
-              </div>
-              <div className="mt-1 text-xs text-[var(--ide-text-muted)]">
-                /doc · 面向最终用户的产品说明书
-              </div>
-            </div>
-            <button
-              type="button"
-              className={cx(
-                "rounded-md border px-2 py-1 text-xs transition-colors",
-                "border-[var(--ide-control-border)] bg-[var(--ide-control-bg)] text-[var(--ide-text-muted)]",
-                "hover:bg-[var(--ide-hover)] hover:text-[var(--ide-text)]",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ide-accent)]",
-              )}
-              onClick={() => navigate("/editor")}
-            >
-              editor
-            </button>
-          </div>
-
           <div className={cx("mt-4", !isPage && "px-4")}>
             <label className="sr-only" htmlFor="doc-search">
               搜索文档

@@ -1,6 +1,5 @@
 import { observer } from "mobx-react-lite";
 import { toJS } from "mobx";
-import { getComponentContainerMeta } from "@codigo/materials";
 import { AppstoreOutlined, NodeIndexOutlined } from "@ant-design/icons";
 import type { ComponentNode } from "@codigo/schema";
 import type { ReactNode } from "react";
@@ -131,7 +130,6 @@ function ComponentFields({ store }: ComponentFieldsProps) {
 
   const {
     getCurrentComponentConfig,
-    getAvailableSlots,
     updateCurrentComponentStyles,
   } = useEditorComponents();
   const { store: pageStore } = useEditorPage();
@@ -141,9 +139,6 @@ function ComponentFields({ store }: ComponentFieldsProps) {
 
   const ComponentProps = getComponentPropsByType(config.type);
   const styles = config.styles || {};
-  const containerMeta = getComponentContainerMeta(config.type);
-  const currentSlots = getAvailableSlots(config.type);
-  const childrenCount = config.childIds?.length ?? 0;
 
   const handleStyleChange = (_changedValues: any, allValues: any) => {
     const formattedStyles = { ...allValues };
@@ -200,7 +195,6 @@ function ComponentFields({ store }: ComponentFieldsProps) {
         <Collapse
           defaultActiveKey={["props", "structure", "styles"]}
           ghost
-          expandIconPosition="end"
           className="[&_.ant-collapse-item]:mb-1 [&_.ant-collapse-item]:border-b [&_.ant-collapse-item]:border-[var(--ide-border)] [&_.ant-collapse-header]:!px-1 [&_.ant-collapse-header]:!py-2 [&_.ant-collapse-content-box]:!px-1 [&_.ant-collapse-content-box]:!pb-3 [&_.ant-collapse-content-box]:!pt-1"
         >
           <Panel
@@ -221,48 +215,6 @@ function ComponentFields({ store }: ComponentFieldsProps) {
               )}
             </div>
           </Panel>
-
-          <Panel
-            header={
-              <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--ide-text)]">
-                结构与插槽
-              </div>
-            }
-            key="structure"
-          >
-            <div className="space-y-1.5">
-              <div className="grid grid-cols-2 gap-1.5">
-                <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-hover)] p-2">
-                  <div className="mb-1 text-[10px] text-[var(--ide-text-muted)]">插槽</div>
-                  <div className="text-[12px] font-medium text-[var(--ide-text)]">
-                    {config.slot ?? "root"}
-                  </div>
-                </div>
-                <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-hover)] p-2">
-                  <div className="mb-1 text-[10px] text-[var(--ide-text-muted)]">子节点</div>
-                  <div className="text-[12px] font-medium text-[var(--ide-text)]">
-                    {childrenCount}
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-sm border border-[var(--ide-border)] bg-[var(--ide-hover)] p-2">
-                <div className="mb-1 flex items-center gap-1.5 text-[11px] font-bold text-[var(--ide-text)]">
-                  <NodeIndexOutlined className="text-[var(--ide-accent)]" />
-                  容器信息
-                </div>
-                <div className="space-y-1 text-[11px] text-[var(--ide-text-muted)]">
-                  <div>类型：{containerMeta.isContainer ? "容器" : "普通"}</div>
-                  <div>
-                    插槽：{containerMeta.isContainer
-                      ? currentSlots.map((item) => item.name).join("/")
-                      : "无"}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Panel>
-
           <Panel
             header={
               <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--ide-text)]">
