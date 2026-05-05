@@ -1,10 +1,11 @@
 import { Button, Form, Input } from "antd";
-import { useSendCode } from "@/shared/hooks/use-send-code";
+import { SendCodeField } from "@/modules/auth/components/send-code-field";
 import { usePhoneLogin } from "@/modules/auth/hooks/use-phone-login";
+import { useSendCode } from "@/modules/auth/hooks/use-send-code";
 
 export default function Captcha() {
   const [form] = Form.useForm();
-  const { sendCodeTemplate } = useSendCode(form, "login");
+  const sendCode = useSendCode(form, "login");
   const { run, loading } = usePhoneLogin();
 
   return (
@@ -20,7 +21,7 @@ export default function Captcha() {
         <Input placeholder="请输入手机号" />
       </Form.Item>
 
-      {sendCodeTemplate}
+      <SendCodeField {...sendCode} />
 
       <Form.Item>
         <Button
@@ -35,7 +36,6 @@ export default function Captcha() {
     </Form>
   );
 }
-
 
 
 

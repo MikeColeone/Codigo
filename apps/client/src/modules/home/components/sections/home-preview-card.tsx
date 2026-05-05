@@ -34,11 +34,7 @@ export function HomePreviewCard() {
             <div className="h-3 w-3 rounded-full border border-[var(--ide-border)] bg-[var(--ide-hover)]" />
             <div className="h-3 w-3 rounded-full border border-[var(--ide-border)] bg-[var(--ide-hover)]" />
           </div>
-          <div className="font-mono text-xs text-[var(--ide-text-muted)]">
-            system_status: active
-          </div>
         </div>
-
         <div className="mb-4">
           <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--ide-text-muted)]">
             Frequently Asked Questions
@@ -47,7 +43,6 @@ export function HomePreviewCard() {
             常见问题
           </h3>
         </div>
-
         <div className="space-y-3">
           {faqItems.map((item, index) => (
             <button

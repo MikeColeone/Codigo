@@ -209,34 +209,64 @@ export function useStorePage() {
   });
 
   /**
-   * 更新页面信息
-   * @param page - 部分页面信息
+   * 批量同步页面字段到 store。
+   * @param page - 需要合并的页面字段
    */
-  const updatePage = action((page: Partial<TStorePage>) => {
-    if (!page) return;
-    for (const [key, value] of Object.entries(page))
-      // @ts-ignore
-      storePage[key as keyof TStorePage] = value;
+  const syncPageFields = (page: Partial<TStorePage>) => {
+    Object.assign(storePage, page);
+  };
 
-    if (page.pageCategory) {
-      if (page.pageCategory === "admin") {
-        storePage.deviceType = page.deviceType ?? "pc";
-        storePage.canvasWidth = page.canvasWidth ?? 1280;
-        storePage.canvasHeight = page.canvasHeight ?? 900;
-      }
-    }
-
+  /**
+   * 归一化需要兼容旧数据的页面字段。
+   * @param page - 待归一化的页面字段
+   */
+  const applyNormalizations = (page: Partial<TStorePage>) => {
     if (Object.prototype.hasOwnProperty.call(page, "layoutMode")) {
       storePage.layoutMode = normalizePageLayoutMode(page.layoutMode);
     }
 
     if (Object.prototype.hasOwnProperty.call(page, "shellLayout")) {
-      storePage.shellLayout = normalizePageShellLayout((page as any).shellLayout);
+      storePage.shellLayout = normalizePageShellLayout(
+        (page as { shellLayout?: unknown }).shellLayout,
+      );
+    }
+  };
+
+  /**
+   * 补齐后台页面的默认画布配置。
+   * @param page - 当前更新的页面字段
+   */
+  const applyAdminDefaults = (page: Partial<TStorePage>) => {
+    if (page.pageCategory !== "admin") {
+      return;
     }
 
+    storePage.deviceType = page.deviceType ?? "pc";
+    storePage.canvasWidth = page.canvasWidth ?? 1280;
+    storePage.canvasHeight = page.canvasHeight ?? 900;
+  };
+
+  /**
+   * 处理页面更新后的联动副作用。
+   * @param page - 当前更新的页面字段
+   */
+  const applyEffects = (page: Partial<TStorePage>) => {
     if (Object.prototype.hasOwnProperty.call(page, "chartTheme")) {
       setDefaultEChartsTheme(storePage.chartTheme || undefined);
     }
+  };
+
+  /**
+   * 更新页面信息
+   * @param page - 部分页面信息
+   */
+  const updatePage = action((page: Partial<TStorePage>) => {
+    if (!page) return;
+
+    syncPageFields(page);
+    applyNormalizations(page);
+    applyAdminDefaults(page);
+    applyEffects(page);
   });
 
   return {

@@ -758,20 +758,16 @@ export default function Center({ variant = "page" }: { variant?: "page" | "embed
     <main
       className={cx(
         "relative w-full",
-        !isPage && "bg-[var(--ide-bg)]",
+        !isPage && "bg-transparent",
         isPage && "h-full overflow-hidden",
       )}
     >
-      {!isPage ? (
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(1200px_600px_at_10%_0%,color-mix(in_oklab,var(--ide-accent)_18%,transparent),transparent_60%),radial-gradient(900px_500px_at_90%_10%,color-mix(in_oklab,var(--ide-active)_25%,transparent),transparent_62%)]" />
-      ) : null}
-
       <div
         className={cx(
           "relative",
           isPage
             ? "h-full"
-            : "rounded-2xl border border-[var(--ide-border)] shadow-[var(--ide-panel-shadow)]",
+            : "rounded-none border-0 shadow-none",
         )}
       >
         <div

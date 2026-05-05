@@ -2,6 +2,7 @@ import { Suspense, lazy } from "react";
 import { Spin } from "antd";
 import { useSearchParams } from "react-router-dom";
 import { ParticleBackground } from "../background/particle-background";
+import { ProjectPlazaBackground } from "../background/project-plaza-background";
 import { HomeFeatureGrid } from "../sections/home-feature-grid";
 import { HomeHeroSection } from "../sections/home-hero-section";
 import { HomeFooter } from "./home-footer";
@@ -36,12 +37,19 @@ function HomeSectionFallback() {
 export function HomePage() {
   const [searchParams] = useSearchParams();
   const view = searchParams.get("view") ?? "home";
+  const isProjectPlazaView =
+    view === "templates" || view === "materials" || view === "doc";
 
   return (
     <div className="relative min-h-full bg-[var(--ide-bg)] text-[var(--ide-text)]">
       <HomeHeader />
-      <ParticleBackground />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(15,108,189,0.06),transparent_45%)]" />
+      {view === "home" ? (
+        <>
+          <ParticleBackground />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(15,108,189,0.06),transparent_45%)]" />
+        </>
+      ) : null}
+      {isProjectPlazaView ? <ProjectPlazaBackground /> : null}
       <main className="relative z-10 pt-[var(--header-height)]">
         <Suspense fallback={<HomeSectionFallback />}>
           {view === "templates" ? (

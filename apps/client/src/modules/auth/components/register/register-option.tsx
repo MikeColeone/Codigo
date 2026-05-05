@@ -1,11 +1,12 @@
 import { Button, Checkbox, Form, Input } from "antd";
-import { useSendCode } from "@/shared/hooks/use-send-code";
+import { SendCodeField } from "@/modules/auth/components/send-code-field";
+import { useSendCode } from "@/modules/auth/hooks/use-send-code";
 import { useRegister } from "@/modules/auth/hooks/use-register";
 
 export default function RegisterCaptcha() {
   const [form] = Form.useForm();
-  const { sendCodeTemplate } = useSendCode(form, "register");
-  const { run, loading } = useRegister(form);
+  const sendCode = useSendCode(form, "register");
+  const { run, loading } = useRegister(sendCode.refreshCaptcha);
 
   return (
     <Form form={form} onFinish={run} initialValues={{ remember: true }}>
@@ -17,7 +18,7 @@ export default function RegisterCaptcha() {
         <Input />
       </Form.Item>
 
-      {sendCodeTemplate}
+      <SendCodeField {...sendCode} />
 
       <Form.Item
         label="密码"
@@ -63,8 +64,6 @@ export default function RegisterCaptcha() {
     </Form>
   );
 }
-
-
 
 
 
